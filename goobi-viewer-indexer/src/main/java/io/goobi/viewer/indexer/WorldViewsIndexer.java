@@ -86,8 +86,6 @@ public class WorldViewsIndexer extends Indexer {
     /** Constant <code>DEFAULT_FULLTEXT_CHARSET="Cp1250"</code> */
     public static final String DEFAULT_FULLTEXT_CHARSET = "Cp1250";
 
-    private static List<Path> reindexedChildrenFileList = new ArrayList<>();
-
     /**
      * Constructor.
      *
@@ -380,15 +378,6 @@ public class WorldViewsIndexer extends Indexer {
             indexObj.removeDuplicateGroupedMetadata();
             addGroupedMetadataDocs(useWriteStrategy, indexObj, indexObj.getGroupedMetadataFields(), indexObj.getIddoc());
 
-            boolean indexedChildrenFileList = false;
-
-            logger.debug("reindexedChildrenFileList.size(): {}", WorldViewsIndexer.reindexedChildrenFileList.size());
-            if (WorldViewsIndexer.reindexedChildrenFileList.contains(mainFile)) {
-                logger.debug("{} in reindexedChildrenFileList, removing...", mainFile.toAbsolutePath());
-                WorldViewsIndexer.reindexedChildrenFileList.remove(mainFile);
-                indexedChildrenFileList = true;
-            }
-
             SolrInputDocument rootDoc = SolrSearchIndex.createDocument(indexObj.getLuceneFields());
             useWriteStrategy.setRootDoc(rootDoc);
 
@@ -400,9 +389,9 @@ public class WorldViewsIndexer extends Indexer {
 
             logger.debug("Writing document to index...");
             useWriteStrategy.writeDocs(SolrIndexerDaemon.getInstance().getConfiguration().isAggregateRecords());
-            if (indexObj.isVolume() && (!indexObj.isUpdate() || indexedChildrenFileList)) {
-                logger.info("Re-indexing anchor...");
-                copyAndReIndexAnchor(indexObj, hotfolder, dataRepository);
+            // New volume: flag its anchor for deferred, coalesced reconciliation of NUMVOLUMES + METS.
+            if (indexObj.isVolume() && !indexObj.isUpdate() && indexObj.getParent() != null) {
+                hotfolder.flagAnchorForReconciliation(indexObj.getParent().getPi());
             }
             logger.info("Finished writing data for '{}' to Solr.", pi);
         } catch (InterruptedException e) {
@@ -818,31 +807,6 @@ public class WorldViewsIndexer extends Indexer {
         }
 
         return ret;
-    }
-
-    /**
-     * Adds the anchor for the given volume object to the re-index queue.
-     * 
-     * @param indexObj {@link IndexObject}
-     * @param hotfolder
-     * @param dataRepository
-     */
-    static void copyAndReIndexAnchor(IndexObject indexObj, Hotfolder hotfolder, DataRepository dataRepository) {
-        logger.debug("copyAndReIndexAnchor: {}", indexObj.getPi());
-        if (indexObj.getParent() != null) {
-            String piParent = indexObj.getParent().getPi();
-            String indexedAnchorFilePath =
-                    new StringBuilder(dataRepository.getDir(DataRepository.PARAM_INDEXED_METS).toAbsolutePath().toString()).append("/")
-                            .append(piParent)
-                            .append(FileTools.XML_EXTENSION)
-                            .toString();
-            Path indexedAnchor = Paths.get(indexedAnchorFilePath);
-            if (Files.exists(indexedAnchor)) {
-                hotfolder.getHighPriorityQueue().add(indexedAnchor);
-            }
-        } else {
-            logger.warn("No anchor file has been indexed for this work yet.");
-        }
     }
 
     @Override

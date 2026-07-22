@@ -47,6 +47,12 @@ public class GroupedMetadata {
 
     private static final Logger logger = LogManager.getLogger(GroupedMetadata.class);
 
+    /**
+     * Prefix for {@code <field>} configuration values that reference a resolved authority data field (e.g. "authorityData:NORM_NAME") instead of
+     * an XPath expression. Such fields are not evaluated against the source XML and are instead resolved once authority data has been retrieved.
+     */
+    public static final String AUTHORITY_DATA_FIELD_PREFIX = "authorityData:";
+
     private String label;
     private String mainValue;
     private String authorityURI;
@@ -156,6 +162,10 @@ public class GroupedMetadata {
 
             SubfieldConfig subfield = entry.getValue();
             for (final String xp : subfield.getXpaths()) {
+                if (xp.startsWith(AUTHORITY_DATA_FIELD_PREFIX)) {
+                    // Resolved later, once authority data has been retrieved - not a real XPath expression
+                    continue;
+                }
                 String xpath = xp;
                 if (xpathReplacements != null && !xpathReplacements.isEmpty()) {
                     boolean replacementKeyFound = false;

@@ -1736,21 +1736,11 @@ public abstract class Indexer {
         if (thumbnail != null) {
             indexObj.setThumbnailRepresent((String) thumbnail);
         }
-        if (isAnchor()) {
-            // Keep old IDDOC
-            indexObj.setIddoc(String.valueOf(doc.getFieldValue(SolrConstants.IDDOC)));
-            // Delete old doc
-            iddocsToDelete.add(indexObj.getIddoc());
-            // Delete secondary docs (grouped metadata, events)
-            hits = SolrIndexerDaemon.getInstance()
-                    .getSearchIndex()
-                    .search(SolrConstants.IDDOC_OWNER + ":\"" + indexObj.getIddoc() + "\" " + SolrConstants.PI_TOPSTRUCT + ":\"" + indexObj.getPi()
-                            + '"', Collections.singletonList(SolrConstants.IDDOC));
-            for (SolrDocument doc2 : hits) {
-                iddocsToDelete.add((String) doc2.getFieldValue(SolrConstants.IDDOC));
-            }
-        } else if (!fromOldIndex) {
-            // Recursively delete all children, if not an anchor
+        if (!fromOldIndex) {
+            // Delete the previous instance of this record before re-indexing it with a fresh IDDOC. For an anchor this
+            // removes only its own doc and secondary docs (grouped metadata/events share its PI_TOPSTRUCT); its volumes
+            // have different PIs and are not affected. Volumes link to the anchor via the stable PI_PARENT, so the
+            // anchor no longer needs to keep its IDDOC across re-indexing.
             iddocsToDelete = deleteWithPI(pi, false, false, SolrIndexerDaemon.getInstance().getSearchIndex());
         }
     }
@@ -1924,7 +1914,7 @@ public abstract class Indexer {
      * 
      * @param hotfolderPath
      * @param fileNameRoot
-     * @return Map<String, Path>
+     * @return {@code Map<String, Path>}
      * @throws IOException
      * @should add data folder paths correctly
      */
@@ -2087,6 +2077,7 @@ public abstract class Indexer {
      * @param pageDoc
      * @return Alternative file name if fileName not image and alternatives available; otherwise fileName
      * @should replace value correctly
+     * @should return png alt value if no other alternative available
      * @should return fileName if image
      * @should return fileNAme if url
      */
@@ -2095,12 +2086,16 @@ public abstract class Indexer {
         if (!Utils.isValidImageOrIiifURI(fileName) && !FileTools.isImageFile(fileName) && pageDoc != null) {
             String filenameTiffField = SolrConstants.FILENAME + "_TIFF";
             String filenameJpegField = SolrConstants.FILENAME + "_JPEG";
+            String filenamePngField = SolrConstants.FILENAME + "_PNG";
             if (pageDoc.getFieldValue(filenameTiffField) != null) {
                 ret = (String) pageDoc.getFieldValue(filenameTiffField);
                 logger.info("Using {}:{} for {}", filenameTiffField, ret, SolrConstants.THUMBNAIL);
             } else if (pageDoc.getFieldValue(filenameJpegField) != null) {
                 ret = (String) pageDoc.getFieldValue(filenameJpegField);
                 logger.info("Using {}:{} for {}", filenameJpegField, ret, SolrConstants.THUMBNAIL);
+            } else if (pageDoc.getFieldValue(filenamePngField) != null) {
+                ret = (String) pageDoc.getFieldValue(filenamePngField);
+                logger.info("Using {}:{} for {}", filenamePngField, ret, SolrConstants.THUMBNAIL);
             } else {
                 logger.warn("'{}' is not a valid thumbnail file name, but no alternative was found.", fileName);
             }

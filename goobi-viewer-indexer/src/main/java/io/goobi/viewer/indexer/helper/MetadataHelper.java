@@ -57,6 +57,7 @@ import io.goobi.viewer.indexer.model.SolrConstants.MetadataGroupType;
 import io.goobi.viewer.indexer.model.config.FieldConfig;
 import io.goobi.viewer.indexer.model.config.GroupEntity;
 import io.goobi.viewer.indexer.model.config.NonSortConfiguration;
+import io.goobi.viewer.indexer.model.config.SubfieldConfig;
 import io.goobi.viewer.indexer.model.config.ValueNormalizer;
 import io.goobi.viewer.indexer.model.config.XPathConfig;
 
@@ -1331,7 +1332,7 @@ public final class MetadataHelper {
             }
         }
 
-        // Retrieve authority data
+        // Retrieve authority data  
         if (authorityDataEnabled && ret.getAuthorityURI() != null) {
             authorityData.addAll(retrieveAuthorityData(ret.getAuthorityURI(), sbDefaultMetadataValues,
                     sbAuthorityDataTerms, addAuthorityDataFieldsToDefault, configurationItem.getReplaceRules(),
@@ -1365,6 +1366,26 @@ public final class MetadataHelper {
                         }
                         break;
                     default: // nothing
+                }
+            }
+        }
+
+        // Resolve fields configured as "authorityData:NORM_XXX" (instead of an XPath expression) against the retrieved authority data
+        if (!authorityData.isEmpty()) {
+            for (SubfieldConfig subfield : groupEntity.getSubfields().values()) {
+                for (String xp : subfield.getXpaths()) {
+                    if (!xp.startsWith(GroupedMetadata.AUTHORITY_DATA_FIELD_PREFIX)) {
+                        continue;
+                    }
+                    String authorityFieldName = xp.substring(GroupedMetadata.AUTHORITY_DATA_FIELD_PREFIX.length());
+                    for (LuceneField authorityField : authorityData) {
+                        if (authorityField.getField().equals(authorityFieldName) && StringUtils.isNotBlank(authorityField.getValue())) {
+                            ret.getFields().add(new LuceneField(subfield.getFieldname(), authorityField.getValue()));
+                            if (!subfield.isMultivalued()) {
+                                break;
+                            }
+                        }
+                    }
                 }
             }
         }

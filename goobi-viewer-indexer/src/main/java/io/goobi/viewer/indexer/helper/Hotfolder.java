@@ -137,6 +137,8 @@ public class Hotfolder {
     private final Queue<Path> indexQueue = new LinkedBlockingQueue<>(queueCapacity);
     /** High priority index queue for volume re-indexing, etc. */
     private final Queue<Path> highPriorityIndexQueue = new LinkedList<>();
+    /** PIs of anchor records whose volume count changed and that must be reconciled (NUMVOLUMES + METS) once queues drain. */
+    private final Set<String> anchorPisPendingReconciliation = new HashSet<>();
 
     /**
      * Zero-arg constructor for tests.
@@ -472,6 +474,11 @@ public class Hotfolder {
                 return true; // always break after attempting to index a file, so that the loop restarts
             }
 
+            // Both the priority queue and the regular index queue have drained: reconcile any anchors whose volume count
+            // changed during this batch. Coalescing here means a bulk import re-indexes each anchor at most once per
+            // batch (per queue drain) instead of once per volume.
+            reconcilePendingAnchors();
+
             logger.debug("Hotfolder ({}): Listing files...", getHotfolderPath().getFileName());
             List<Path> newFiles = new ArrayList<>();
             try (DirectoryStream<Path> stream = Files.newDirectoryStream(hotfolderPath, "*.{xml,json,delete,purge,docupdate,UPDATED}")) {
@@ -500,6 +507,99 @@ public class Hotfolder {
         }
 
         return !highPriorityIndexQueue.isEmpty() || !indexQueue.isEmpty();
+    }
+
+    /**
+     * Flags the anchor record with the given PI for deferred reconciliation of its volume count (NUMVOLUMES) and METS
+     * logical structure. The actual re-indexing is coalesced and carried out by {@link #reconcilePendingAnchors()} once
+     * the regular index queue has drained, so importing many volumes of the same anchor results in a single anchor
+     * re-index per batch instead of one re-index per volume.
+     *
+     * @param anchorPi PI of the anchor to reconcile; null or empty values are ignored
+     */
+    public void flagAnchorForReconciliation(String anchorPi) {
+        if (StringUtils.isNotEmpty(anchorPi)) {
+            anchorPisPendingReconciliation.add(anchorPi);
+        }
+    }
+
+    /**
+     * Re-indexes every flagged anchor whose stored NUMVOLUMES no longer matches the actual number of indexed volumes.
+     * Called when both queues have drained, so volume membership changes from a batch are coalesced into at most one
+     * anchor re-index per anchor.
+     *
+     * @throws FatalIndexerException
+     */
+    public void reconcilePendingAnchors() throws FatalIndexerException {
+        if (anchorPisPendingReconciliation.isEmpty()) {
+            return;
+        }
+        List<String> anchorPis = new ArrayList<>(anchorPisPendingReconciliation);
+        anchorPisPendingReconciliation.clear();
+        for (String anchorPi : anchorPis) {
+            reconcileAnchor(anchorPi);
+        }
+    }
+
+    /**
+     * Schedules a re-index of the given anchor's indexed METS file, but only if its stored NUMVOLUMES differs from the
+     * actual number of currently indexed volumes. Anchors that are already up to date are skipped, so this stays cheap
+     * when nothing changed. The anchor file is resolved from the anchor's own data repository.
+     *
+     * @param anchorPi PI of the anchor to reconcile
+     * @throws FatalIndexerException
+     */
+    private void reconcileAnchor(String anchorPi) throws FatalIndexerException {
+        SolrSearchIndex searchIndex = SolrIndexerDaemon.getInstance().getSearchIndex();
+        try {
+            SolrDocumentList anchorHits =
+                    searchIndex.search(SolrConstants.PI + ":\"" + anchorPi + '"', Collections.singletonList(SolrConstants.NUMVOLUMES));
+            if (anchorHits.isEmpty()) {
+                // Anchor not (yet) indexed; its own indexing will compute the correct count.
+                logger.debug("Anchor '{}' is not in the index (yet), skipping reconciliation.", anchorPi);
+                return;
+            }
+            long storedNumVolumes = -1;
+            Object numVolumesValue = anchorHits.get(0).getFieldValue(SolrConstants.NUMVOLUMES);
+            if (numVolumesValue != null) {
+                storedNumVolumes = Long.parseLong(numVolumesValue.toString());
+            }
+            long actualNumVolumes = searchIndex.getNumHits(new StringBuilder(SolrConstants.PI_PARENT).append(":\"")
+                    .append(anchorPi)
+                    .append('"')
+                    .append(SolrConstants.SOLR_QUERY_AND)
+                    .append(SolrConstants.ISWORK)
+                    .append(SolrConstants.SOLR_QUERY_TRUE)
+                    .toString());
+            if (storedNumVolumes == actualNumVolumes) {
+                logger.debug("Anchor '{}' is up to date (NUMVOLUMES={}), no re-index needed.", anchorPi, actualNumVolumes);
+                return;
+            }
+            DataRepository[] repositories = dataRepositoryStrategy.selectDataRepository(anchorPi, null, null, searchIndex,
+                    SolrIndexerDaemon.getInstance().getOldSearchIndex());
+            DataRepository anchorRepository = repositories[1] != null ? repositories[1] : repositories[0];
+            if (anchorRepository == null || anchorRepository.getDir(DataRepository.PARAM_INDEXED_METS) == null) {
+                logger.warn("Could not resolve a data repository for anchor '{}'; skipping reconciliation.", anchorPi);
+                return;
+            }
+            Path indexedAnchor = Paths.get(anchorRepository.getDir(DataRepository.PARAM_INDEXED_METS).toAbsolutePath().toString(),
+                    anchorPi + ".xml");
+            if (!Files.exists(indexedAnchor)) {
+                logger.warn("Indexed anchor file not found for '{}' at '{}'; cannot reconcile NUMVOLUMES.", anchorPi, indexedAnchor);
+                return;
+            }
+            if (!highPriorityIndexQueue.contains(indexedAnchor)) {
+                highPriorityIndexQueue.add(indexedAnchor);
+            }
+            logger.info("Anchor '{}' volume count changed ({} -> {}); scheduled for re-index.", anchorPi, storedNumVolumes,
+                    actualNumVolumes);
+        } catch (SolrServerException | IOException e) {
+            logger.error("Could not reconcile anchor '{}': {}", anchorPi, e.getMessage());
+            // Retry on a later queue drain
+            anchorPisPendingReconciliation.add(anchorPi);
+        } catch (NumberFormatException e) {
+            logger.error("Malformed NUMVOLUMES value for anchor '{}': {}", anchorPi, e.getMessage());
+        }
     }
 
     /**
@@ -846,12 +946,15 @@ public class Hotfolder {
                 logger.warn("XML file '{}' not found.", actualXmlFile.getFileName());
             }
             // Determine document format
-            String[] fields = { SolrConstants.SOURCEDOCFORMAT, SolrConstants.DATEDELETED, SolrConstants.DOCTYPE };
+            String[] fields = { SolrConstants.SOURCEDOCFORMAT, SolrConstants.DATEDELETED, SolrConstants.DOCTYPE, SolrConstants.PI_PARENT };
             SolrDocumentList result =
                     SolrIndexerDaemon.getInstance().getSearchIndex().search(SolrConstants.PI + ":" + baseFileName, Arrays.asList(fields));
             boolean trace = createTraceDoc;
+            // PI of the parent anchor if the record being deleted is a volume; used to reconcile the anchor afterwards
+            String deletedRecordAnchorPi = null;
             if (!result.isEmpty()) {
                 SolrDocument doc = result.get(0);
+                deletedRecordAnchorPi = (String) doc.getFieldValue(SolrConstants.PI_PARENT);
                 format = FileFormat.getByName((String) doc.getFieldValue(SolrConstants.SOURCEDOCFORMAT));
                 // Attempt to determine the file format by the path if no SOURCEDOCFORMAT field exists
                 if (format.equals(FileFormat.UNKNOWN)) {
@@ -907,6 +1010,9 @@ public class Hotfolder {
                     return null;
             }
             if (success) {
+                // A volume was removed: flag its anchor so NUMVOLUMES + METS get reconciled (deferred/coalesced).
+                // No-op for non-volume records (deletedRecordAnchorPi is null).
+                flagAnchorForReconciliation(deletedRecordAnchorPi);
                 dataRepository.deleteDataFoldersForRecord(baseFileName);
                 if (actualXmlFile.toFile().exists()) {
                     Path deleted = Paths.get(deletedMets.toAbsolutePath().toString(), actualXmlFile.getFileName().toString());

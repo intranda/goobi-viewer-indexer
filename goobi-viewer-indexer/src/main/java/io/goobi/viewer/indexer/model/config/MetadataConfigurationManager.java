@@ -80,7 +80,7 @@ public final class MetadataConfigurationManager {
     /**
      * 
      * @param config
-     * @return Map<String, List<FieldConfig>>
+     * @return {@code Map<String, List<FieldConfig>>}
      * @should load all field configs correctly
      * @should load nested group entities correctly
      */

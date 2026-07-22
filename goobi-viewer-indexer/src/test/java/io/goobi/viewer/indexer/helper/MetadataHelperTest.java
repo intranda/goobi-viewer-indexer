@@ -287,6 +287,56 @@ class MetadataHelperTest extends AbstractTest {
     }
 
     /**
+     * @see MetadataHelper#getGroupedMetadata(Element,GroupEntity,FieldConfig,String,StringBuilder,List)
+     * @verifies resolve authority data field references correctly
+     */
+    @Test
+    void getGroupedMetadata_shouldResolveAuthorityDataFieldReferencesCorrectly() throws Exception {
+        String url = "https://www.geonames.org/2950159";
+        List<NormData> normDataList = new ArrayList<>();
+        normDataList.add(new NormData("NORM_NAME", new NormDataValue("Berlin", null, null)));
+        MetadataHelper.authorityDataCache.put(url, new TestRecord(normDataList));
+        try {
+            List<FieldConfig> fieldConfigurations = SolrIndexerDaemon.getInstance()
+                    .getConfiguration()
+                    .getMetadataConfigurationManager()
+                    .getConfigurationListForField("MD_PLACEPUBLISH");
+            assertNotNull(fieldConfigurations);
+            assertEquals(1, fieldConfigurations.size());
+            FieldConfig fieldConfig = fieldConfigurations.get(0);
+            assertNotNull(fieldConfig.getGroupEntity());
+
+            Element elePlace = new Element("placeTerm");
+            elePlace.setAttribute("valueURI", url);
+            elePlace.setText("Berlin");
+
+            GroupedMetadata gmd = MetadataHelper.getGroupedMetadata(elePlace, fieldConfig.getGroupEntity(), fieldConfig, "MD_PLACEPUBLISH",
+                    new StringBuilder(), new ArrayList<>());
+            String mainName = null;
+            for (LuceneField field : gmd.getFields()) {
+                if ("MD_MAINNAME".equals(field.getField())) {
+                    mainName = field.getValue();
+                    break;
+                }
+            }
+            assertEquals("Berlin", mainName);
+        } finally {
+            MetadataHelper.authorityDataCache.remove(url);
+        }
+    }
+
+    /**
+     * Minimal concrete {@link de.intranda.digiverso.normdataimporter.model.Record} for seeding the authority data cache in tests, avoiding real
+     * network calls to authority data providers.
+     */
+    private static class TestRecord extends de.intranda.digiverso.normdataimporter.model.Record {
+
+        TestRecord(List<NormData> normDataList) {
+            this.normDataList = normDataList;
+        }
+    }
+
+    /**
      * @see MetadataHelper#completeCenturies(List)
      * @verifies complete centuries correctly
      */

@@ -490,8 +490,13 @@
 				<item>
                     <xpath>mets:xmlData/mods:mods/mods:originInfo[not(mods:edition[text() = '[Electronic ed.]'])]/mods:place/mods:placeTerm[@type="text"]</xpath>
                     <xpath>mets:xmlData/bib/record/datafield[@tag="264"]/subfield[@code="a"]</xpath>
-                    
+
 					<addToDefault>true</addToDefault>
+					<groupEntity type="LOCATION" addCoordsToDocstruct="true">
+						<field name="MD_VALUE">text()</field>
+						<field name="NORM_URI">@valueURI</field>
+						<field name="MD_MAINNAME" multivalued="false">authorityData:NORM_NAME</field>
+					</groupEntity>
 				</item>
 			</list>
 		</MD_PLACEPUBLISH>

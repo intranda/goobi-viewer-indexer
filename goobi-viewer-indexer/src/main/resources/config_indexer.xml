@@ -125,6 +125,9 @@
 				it will be used for indexing image file paths. -->
 			<preferredImageFileGroup>BOOKVIEWER</preferredImageFileGroup>
 			<preferredImageFileGroup>ZOOMIFY</preferredImageFileGroup>
+			<!-- thumbnailFileGroup: File group whose first file is used as THUMBNAIL if no other representative image could be
+				determined. This group never generates PAGE documents. Defaults to "TEASER" if not configured. -->
+			<thumbnailFileGroup>TEASER</thumbnailFileGroup>
             <!-- physicalElementTypes/type (0-n): Values of mets:div/@TYPE that shall be processed as pages. Type "page" is always allowed,
                 others must be configured here. -->
             <physicalElementTypes>
@@ -780,6 +783,10 @@
 					<groupEntity type="LOCATION" addCoordsToDocstruct="true">
 						<field name="MD_VALUE">text()</field>
 						<field name="NORM_URI">@valueURI</field>
+						<!-- Instead of an XPath expression, "authorityData:NORM_XXX" resolves a value from the retrieved authority
+							data (e.g. the preferred name from a GeoNames record) once it has been retrieved, and writes it to this
+							METADATA document under the given field name. -->
+						<field name="MD_MAINNAME" multivalued="false">authorityData:NORM_NAME</field>
 					</groupEntity>
 				</item>
 			</list>

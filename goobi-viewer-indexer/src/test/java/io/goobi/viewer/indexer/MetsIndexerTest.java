@@ -20,10 +20,10 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.File;
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -31,12 +31,10 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.io.FilenameUtils;
-import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
 import org.apache.solr.common.SolrInputDocument;
@@ -52,7 +50,6 @@ import io.goobi.viewer.indexer.helper.JDomXP;
 import io.goobi.viewer.indexer.helper.JDomXP.FileFormat;
 import io.goobi.viewer.indexer.helper.SolrSearchIndex;
 import io.goobi.viewer.indexer.helper.Utils;
-import io.goobi.viewer.indexer.model.IndexObject;
 import io.goobi.viewer.indexer.model.IndexingResult;
 import io.goobi.viewer.indexer.model.PhysicalElement;
 import io.goobi.viewer.indexer.model.SolrConstants;
@@ -535,65 +532,98 @@ class MetsIndexerTest extends AbstractSolrEnabledTest {
     }
 
     /**
-     * @see MetsIndexer#index(File,ISolrWriteStrategy,boolean,Map)
-     * @verifies re-index anchor children even if anchor IDDOC is kept
+     * Copies the test anchor METS file into the data repository location where {@link Hotfolder} reconciliation expects it. The low-level
+     * {@code index()} used by these tests does not populate indexed_mets (the daemon's addToIndex() does that in production), so we stage it
+     * explicitly here.
+     */
+    private void placeIndexedAnchorFile(String piAnchor) throws Exception {
+        DataRepository[] repositories = hotfolder.getDataRepositoryStrategy()
+                .selectDataRepository(piAnchor, null, null,
+                        SolrIndexerDaemon.getInstance().getSearchIndex(), SolrIndexerDaemon.getInstance().getOldSearchIndex());
+        DataRepository repository = repositories[1] != null ? repositories[1] : repositories[0];
+        Files.copy(metsFileAnchor1, repository.getDir(DataRepository.PARAM_INDEXED_METS).resolve(piAnchor + ".xml"),
+                StandardCopyOption.REPLACE_EXISTING);
+    }
+
+    /**
+     * @see Hotfolder#reconcilePendingAnchors()
+     * @verifies coalesce multiple new volumes into a single anchor re-index
      */
     @Test
-    void index_shouldReindexAnchorChildrenEvenIfAnchorIddocIsKept() throws Exception {
+    void reconcilePendingAnchors_shouldCoalesceNewVolumesIntoOneAnchorReindex() throws Exception {
+        String piAnchor = "PPN559838239";
         Map<String, Path> dataFolders = new HashMap<>();
+        MetsIndexer indexer = new MetsIndexer(hotfolder);
 
-        // Index the anchor once so it exists in the index
-        IndexingResult result = new MetsIndexer(hotfolder).index(metsFileAnchor1, dataFolders, null, 1, false);
-        Assertions.assertNull(result.getError());
+        // Index the anchor first (NUMVOLUMES=0), then two NEW volumes. Each new volume only FLAGS the anchor (deduped),
+        // it does not re-index it. So two new volumes must coalesce into a single pending reconciliation.
+        Assertions.assertNull(indexer.index(metsFileAnchor1, dataFolders, null, 1, false).getError());
+        Assertions.assertNull(indexer.index(metsFileVol1, dataFolders, null, 1, false).getError());
+        Assertions.assertNull(indexer.index(metsFileVol2, dataFolders, null, 1, false).getError());
+        placeIndexedAnchorFile(piAnchor);
 
-        // Re-index the same anchor. This is an UPDATE, so the anchor keeps its old IDDOC (see
-        // Indexer#checkReindexSettings). Regression for #27141 / v25.09 (220d0f8): the child-volume
-        // re-index safety net used to be skipped on this path, leaving volumes without IDDOC_PARENT
-        // until an unrelated re-index. It must always run; volumes already pointing at the (unchanged)
-        // anchor IDDOC are skipped inside the method, so this stays cheap.
-        AtomicBoolean updateAnchorChildrenCalled = new AtomicBoolean(false);
-        MetsIndexer spyIndexer = new MetsIndexer(hotfolder) {
-            @Override
-            protected void updateAnchorChildrenParentIddoc(IndexObject indexObj) throws IOException, SolrServerException {
-                updateAnchorChildrenCalled.set(true);
-                super.updateAnchorChildrenParentIddoc(indexObj);
-            }
-        };
-        result = spyIndexer.index(metsFileAnchor1, dataFolders, null, 1, false);
-        Assertions.assertNull(result.getError());
-        assertTrue(updateAnchorChildrenCalled.get(),
-                "updateAnchorChildrenParentIddoc must run when re-indexing an existing anchor, even though its IDDOC is kept");
+        hotfolder.getHighPriorityQueue().clear();
+        hotfolder.reconcilePendingAnchors();
+        assertEquals(1, hotfolder.getHighPriorityQueue().size(), "two new volumes must coalesce into exactly one anchor re-index");
+        assertEquals(piAnchor + ".xml", hotfolder.getHighPriorityQueue().poll().getFileName().toString());
+
+        // The pending set was cleared by the flush: a second reconcile enqueues nothing more.
+        hotfolder.getHighPriorityQueue().clear();
+        hotfolder.reconcilePendingAnchors();
+        assertTrue(hotfolder.getHighPriorityQueue().isEmpty(), "pending anchors must be cleared after a flush");
+    }
+
+    /**
+     * @see Hotfolder#reconcilePendingAnchors()
+     * @verifies skip up-to-date anchors and re-index when the volume count drops
+     */
+    @Test
+    void reconcilePendingAnchors_shouldSkipUpToDateAnchorAndReindexOnVolumeDrop() throws Exception {
+        String piAnchor = "PPN559838239";
+        Map<String, Path> dataFolders = new HashMap<>();
+        MetsIndexer indexer = new MetsIndexer(hotfolder);
+
+        // Index both volumes first, then the anchor -> the anchor's NUMVOLUMES is computed as 2 (accurate).
+        Assertions.assertNull(indexer.index(metsFileVol1, dataFolders, null, 1, false).getError());
+        Assertions.assertNull(indexer.index(metsFileVol2, dataFolders, null, 1, false).getError());
+        Assertions.assertNull(indexer.index(metsFileAnchor1, dataFolders, null, 1, false).getError());
+        placeIndexedAnchorFile(piAnchor);
+
+        // Up to date (stored NUMVOLUMES == actual): reconciliation must NOT schedule a re-index.
+        hotfolder.getHighPriorityQueue().clear();
+        hotfolder.flagAnchorForReconciliation(piAnchor);
+        hotfolder.reconcilePendingAnchors();
+        assertTrue(hotfolder.getHighPriorityQueue().isEmpty(), "an up-to-date anchor must not be re-indexed");
+
+        // Remove one volume from the index (as a deletion would): the actual count drops to 1.
+        Indexer.delete("PPN612054551", false, SolrIndexerDaemon.getInstance().getSearchIndex());
+
+        hotfolder.getHighPriorityQueue().clear();
+        hotfolder.flagAnchorForReconciliation(piAnchor);
+        hotfolder.reconcilePendingAnchors();
+        assertEquals(1, hotfolder.getHighPriorityQueue().size(), "an anchor whose volume count dropped must be re-indexed once");
+        assertEquals(piAnchor + ".xml", hotfolder.getHighPriorityQueue().poll().getFileName().toString());
     }
 
     /**
      * @see MetsIndexer#index(File,ISolrWriteStrategy,boolean,Map)
-     * @verifies re-index anchor when an existing volume is re-indexed
+     * @verifies not flag anchor for a pure volume metadata update
      */
     @Test
-    void index_shouldReindexAnchorWhenAnExistingVolumeIsReindexed() throws Exception {
+    void index_shouldNotFlagAnchorForVolumeMetadataUpdate() throws Exception {
         Map<String, Path> dataFolders = new HashMap<>();
+        MetsIndexer indexer = new MetsIndexer(hotfolder);
 
-        // Index the anchor, then a volume (NEW), so both exist in the index and the volume resolves its parent.
-        Assertions.assertNull(new MetsIndexer(hotfolder).index(metsFileAnchor1, dataFolders, null, 1, false).getError());
-        Assertions.assertNull(new MetsIndexer(hotfolder).index(metsFileVol1, dataFolders, null, 1, false).getError());
+        // Anchor + one new volume; drain the resulting reconciliation so the pending set is empty.
+        Assertions.assertNull(indexer.index(metsFileAnchor1, dataFolders, null, 1, false).getError());
+        Assertions.assertNull(indexer.index(metsFileVol1, dataFolders, null, 1, false).getError());
+        hotfolder.reconcilePendingAnchors();
+        hotfolder.getHighPriorityQueue().clear();
 
-        // Re-index the SAME volume - this time it is an UPDATE. Regression for #27141 / v25.09 (220d0f8):
-        // the revert of #26820 (commit 35ec99dc) re-added a '!isUpdate()' gate, so re-indexing an existing
-        // volume no longer triggered an anchor re-index, leaving the anchor's NUMVOLUMES stale (0 or 1) after
-        // a full re-index. The anchor re-index must be triggered for any (re-)indexed volume.
-        AtomicBoolean anchorReindexTriggered = new AtomicBoolean(false);
-        MetsIndexer spyIndexer = new MetsIndexer(hotfolder) {
-            @Override
-            void copyAndReIndexAnchor(IndexObject indexObj, Hotfolder hotfolder, DataRepository dataRepository) {
-                if (indexObj.isVolume()) {
-                    anchorReindexTriggered.set(true);
-                }
-                super.copyAndReIndexAnchor(indexObj, hotfolder, dataRepository);
-            }
-        };
-        Assertions.assertNull(spyIndexer.index(metsFileVol1, dataFolders, null, 1, false).getError());
-        assertTrue(anchorReindexTriggered.get(),
-                "re-indexing an existing volume must trigger an anchor re-index so NUMVOLUMES stays up to date");
+        // Re-indexing the same volume is an UPDATE (no membership change): it must NOT flag the anchor.
+        Assertions.assertNull(indexer.index(metsFileVol1, dataFolders, null, 1, false).getError());
+        hotfolder.reconcilePendingAnchors();
+        assertTrue(hotfolder.getHighPriorityQueue().isEmpty(), "a pure volume metadata update must not trigger an anchor re-index");
     }
 
     /**
@@ -1484,6 +1514,54 @@ class MetsIndexerTest extends AbstractSolrEnabledTest {
         Assertions.assertTrue(mimetypeMap.get("image/tiff").stream().allMatch(doc -> doc.getFieldValue("FILENAME").toString().matches("\\w+\\.tif")));
         Assertions.assertTrue(mimetypeMap.get("audio/ogg").stream().allMatch(doc -> doc.getFieldValue("FILENAME").toString().matches("\\w+\\.ogg")));
 
+    }
+
+    @Test
+    void index_shouldIndexWebarchives() throws Exception {
+        Map<String, Path> dataFolders = new HashMap<>();
+        Path metPath = Paths.get("src/test/resources/METS/webarchive/12345__26070802.xml").toAbsolutePath();
+        MetsIndexer indexer = new MetsIndexer(hotfolder, List.of("WEBARCHIVE"));
+        IndexingResult result = indexer.index(metPath, dataFolders, null, 1, false);
+        assertEquals("12345__26070802.xml", result.getRecordFileName());
+        Assertions.assertNull(result.getError());
+
+        SolrDocumentList docList = SolrIndexerDaemon.getInstance()
+                .getSearchIndex()
+                .search("+%s:%s".formatted(SolrConstants.PI, "12345__26070802"),
+                        List.of("MIMETYPE", "FILENAME*", "THUMBNAIL"));
+        Assertions.assertEquals(1, docList.size());
+        Assertions.assertEquals("tag-der-clubkultur-default.jpg", docList.get(0).getFieldValue(SolrConstants.THUMBNAIL).toString());
+
+        // No PAGE document should be created for the TEASER file group
+        Assertions.assertEquals(0, SolrIndexerDaemon.getInstance()
+                .getSearchIndex()
+                .search("+%s:%s +%s:%s".formatted(SolrConstants.PI_TOPSTRUCT, "12345__26070802", SolrConstants.DOCTYPE, "PAGE"), null)
+                .stream()
+                .filter(doc -> "tag-der-clubkultur-default.jpg".equals(doc.getFieldValue(SolrConstants.FILENAME)))
+                .count());
+    }
+
+    @Test
+    void index_shouldIndexWebarchivesWithTeaserOnly() throws Exception {
+        Map<String, Path> dataFolders = new HashMap<>();
+        Path metPath = Paths.get("src/test/resources/METS/webarchive/35423530_2024.xml").toAbsolutePath();
+        MetsIndexer indexer = new MetsIndexer(hotfolder, List.of("WEBARCHIVE"));
+        IndexingResult result = indexer.index(metPath, dataFolders, null, 1, false);
+        assertEquals("35423530_2024.xml", result.getRecordFileName());
+        Assertions.assertNull(result.getError());
+
+        SolrDocumentList docList = SolrIndexerDaemon.getInstance()
+                .getSearchIndex()
+                .search("+%s:%s".formatted(SolrConstants.PI, "35423530_2024"),
+                        List.of("MIMETYPE", "FILENAME*", "THUMBNAIL"));
+        Assertions.assertEquals(1, docList.size());
+        Assertions.assertEquals("tag-der-clubkultur-default.jpg", docList.get(0).getFieldValue(SolrConstants.THUMBNAIL).toString());
+
+        // No PAGE document should be created for the TEASER file group, since there is no other file group present
+        Assertions.assertEquals(0, SolrIndexerDaemon.getInstance()
+                .getSearchIndex()
+                .search("+%s:%s +%s:%s".formatted(SolrConstants.PI_TOPSTRUCT, "35423530_2024", SolrConstants.DOCTYPE, "PAGE"), null)
+                .size());
     }
 
     @Test
