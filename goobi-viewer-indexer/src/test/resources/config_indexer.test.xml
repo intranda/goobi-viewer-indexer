@@ -72,7 +72,9 @@
 		<deleteContentFilesOnFailure>false</deleteContentFilesOnFailure>
 		<!-- If true, all collection names from volumes will be added to their 
 			corresponding anchor record (default is false) -->
-		<addVolumeCollectionsToAnchor>false</addVolumeCollectionsToAnchor>
+		<addVolumeCollectionsToAnchor enabled="false">
+			<field>DC</field>
+		</addVolumeCollectionsToAnchor>
 		<!-- If true, the PI will be split at the configured character, and the 
 			left part will be used as the partner ID. -->
 		<piContainsPartnerId>true</piContainsPartnerId>

@@ -125,7 +125,7 @@ public class Hotfolder {
     private Path successFolder;
 
     private Indexer currentIndexer;
-    private boolean addVolumeCollectionsToAnchor = false;
+    private List<String> addVolumeCollectionsToAnchorFields = Collections.emptyList();
     private boolean deleteContentFilesOnFailure = true;
     private boolean prioritizeLargeImageFolders = false;
     private boolean emailConfigurationComplete = false;
@@ -167,9 +167,9 @@ public class Hotfolder {
         metsFileSizeThreshold = SolrIndexerDaemon.getInstance().getConfiguration().getInt("performance.metsFileSizeThreshold", 10485760);
         dataFolderSizeThreshold = SolrIndexerDaemon.getInstance().getConfiguration().getInt("performance.dataFolderSizeThreshold", 157286400);
 
-        addVolumeCollectionsToAnchor = SolrIndexerDaemon.getInstance().getConfiguration().isAddVolumeCollectionsToAnchor();
-        if (addVolumeCollectionsToAnchor) {
-            logger.info("Volume collections WILL BE ADDED to anchors.");
+        addVolumeCollectionsToAnchorFields = SolrIndexerDaemon.getInstance().getConfiguration().getAddVolumeCollectionsToAnchorFields();
+        if (!addVolumeCollectionsToAnchorFields.isEmpty()) {
+            logger.info("Volume collections WILL BE ADDED to anchors for fields: {}", addVolumeCollectionsToAnchorFields);
         } else {
             logger.info("Volume collections WILL NOT BE ADDED to anchors.");
         }
@@ -571,7 +571,9 @@ public class Hotfolder {
                     .append(SolrConstants.ISWORK)
                     .append(SolrConstants.SOLR_QUERY_TRUE)
                     .toString());
-            if (storedNumVolumes == actualNumVolumes) {
+            // When volume collections are copied up into anchors, a volume metadata change may alter the anchor's collections without
+            // changing the volume count, so the anchor must still be re-indexed even if NUMVOLUMES is unchanged.
+            if (storedNumVolumes == actualNumVolumes && addVolumeCollectionsToAnchorFields.isEmpty()) {
                 logger.debug("Anchor '{}' is up to date (NUMVOLUMES={}), no re-index needed.", anchorPi, actualNumVolumes);
                 return;
             }
@@ -1233,7 +1235,18 @@ public class Hotfolder {
      * @return the addVolumeCollectionsToAnchor
      */
     public boolean isAddVolumeCollectionsToAnchor() {
-        return addVolumeCollectionsToAnchor;
+        return !addVolumeCollectionsToAnchorFields.isEmpty();
+    }
+
+    /**
+     * <p>
+     * Returns the list of Solr field names whose values are copied from volumes up into their anchor record.
+     * </p>
+     *
+     * @return the configured field names; an empty list if the feature is disabled
+     */
+    public List<String> getAddVolumeCollectionsToAnchorFields() {
+        return addVolumeCollectionsToAnchorFields;
     }
 
     /**
