@@ -70,11 +70,8 @@
 		<!-- Delete images, full-texts, etc. from the hotfolder if indexing has failed (default is false) -->
 		<deleteContentFilesOnFailure>false</deleteContentFilesOnFailure>
 
-		<!-- Copies collection values from volumes up into their anchor record (also creates the collection element if the anchor has none).
-		     Set enabled="true" to activate the feature. List one or more Solr fields as <field> children (DC by default). -->
-		<addVolumeCollectionsToAnchor enabled="false">
-			<field>DC</field>
-		</addVolumeCollectionsToAnchor>
+		<!-- If true, all collection names from volumes will be added to their corresponding anchor record (default is false) -->
+		<addVolumeCollectionsToAnchor>false</addVolumeCollectionsToAnchor>
 
 		<representativeImage>
 			<!-- If true, the first page of a document is set as the representative image if no other page is
