@@ -137,7 +137,14 @@ public class Hotfolder {
     private final Queue<Path> indexQueue = new LinkedBlockingQueue<>(queueCapacity);
     /** High priority index queue for volume re-indexing, etc. */
     private final Queue<Path> highPriorityIndexQueue = new LinkedList<>();
-    /** PIs of anchor records whose volume count changed and that must be reconciled (NUMVOLUMES + METS) once queues drain. */
+    /**
+     * PIs of anchor records whose volume count changed and that must be reconciled (NUMVOLUMES + METS) once queues drain.
+     * <p>
+     * This set is in-memory only and is not persisted across restarts. If the indexer is stopped between a volume import and the deferred
+     * anchor reconciliation, the affected anchor's NUMVOLUMES may remain stale until the next volume of that anchor is imported (which
+     * re-triggers {@link #flagAnchorForReconciliation(String)}). Since {@link #reconcileAnchor(String)} always validates the stored count
+     * against Solr, this causes only a delayed count refresh, never data corruption.
+     */
     private final Set<String> anchorPisPendingReconciliation = new HashSet<>();
 
     /**
@@ -422,6 +429,36 @@ public class Hotfolder {
         }
 
         return false;
+    }
+
+    /**
+     * Enqueues any pre-existing {@code *.UPDATED} (anchor-update) files found in the hotfolder into the high priority queue. Meant to be called
+     * once at startup to recover files that were still queued in memory when the indexer was last stopped: the regular scan (see {@link #scan()})
+     * deliberately ignores {@code .UPDATED} files, and the high priority queue is not persisted, so such files would otherwise never be processed
+     * and their anchor records would remain stale forever.
+     *
+     * @return number of files enqueued
+     * @should enqueue orphaned UPDATED files
+     */
+    public int enqueueOrphanedAnchorUpdateFiles() {
+        if (!Files.isDirectory(hotfolderPath)) {
+            logger.error("Hotfolder not found in file system: {}", hotfolderPath);
+            return 0;
+        }
+        int count = 0;
+        try (DirectoryStream<Path> stream = Files.newDirectoryStream(hotfolderPath, "*" + MetsIndexer.ANCHOR_UPDATE_EXTENSION)) {
+            for (Path path : stream) {
+                if (Files.isDirectory(path) || highPriorityIndexQueue.contains(path)) {
+                    continue;
+                }
+                highPriorityIndexQueue.add(path);
+                count++;
+                logger.info("Re-queued orphaned anchor update file after restart: {}", path.getFileName());
+            }
+        } catch (IOException e) {
+            logger.error(e.getMessage(), e);
+        }
+        return count;
     }
 
     /**

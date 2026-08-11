@@ -130,6 +130,9 @@ public final class SolrIndexerDaemon {
             if (hotfolder.getSuccessFolder() == null || !Files.isDirectory(hotfolder.getSuccessFolder())) {
                 throw new FatalIndexerException("Configured path for 'successFolder' does not exist, exiting...");
             }
+            // Recover any anchor update (.UPDATED) files that were still queued in memory when the indexer was last stopped;
+            // the regular scan ignores them and the priority queue is not persisted, so they would otherwise be orphaned.
+            hotfolder.enqueueOrphanedAnchorUpdateFiles();
         }
 
         if (hotfolders.isEmpty()) {
