@@ -18,6 +18,7 @@ package io.goobi.viewer.indexer.model.writestrategy;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -55,6 +56,17 @@ public abstract class AbstractWriteStrategy implements ISolrWriteStrategy {
 
     /** Collected field values for further checks, etc. */
     protected Map<String, List<String>> collectedValues = new ConcurrentHashMap<>();
+
+    /**
+     * Records a field value for later duplicate checking. The backing list is a synchronized list so that concurrent callers (e.g.
+     * WorldViewsIndexer's parallel addPage) do not lose entries or corrupt the list.
+     *
+     * @param field collection key (e.g. {@link SolrConstants#URN})
+     * @param value value to record
+     */
+    protected void addCollectedValue(String field, String value) {
+        collectedValues.computeIfAbsent(field, k -> Collections.synchronizedList(new ArrayList<>())).add(value);
+    }
 
     /**
      * 
