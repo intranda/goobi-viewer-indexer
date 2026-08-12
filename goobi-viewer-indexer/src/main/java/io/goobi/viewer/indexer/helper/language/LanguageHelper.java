@@ -21,7 +21,7 @@ import org.apache.logging.log4j.Logger;
  * </p>
  *
  */
-public class LanguageHelper {
+public final class LanguageHelper {
 
     /** Logger for this class. */
     private static final Logger logger = LogManager.getLogger(LanguageHelper.class);
