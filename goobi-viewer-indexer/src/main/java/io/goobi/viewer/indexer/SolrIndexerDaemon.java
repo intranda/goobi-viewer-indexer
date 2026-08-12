@@ -50,7 +50,7 @@ public final class SolrIndexerDaemon {
     private static final int DEFAULT_SLEEP_INTERVAL = 1000;
 
     private static final Object LOCK = new Object();
-    private static SolrIndexerDaemon instance = null;
+    private static volatile SolrIndexerDaemon instance = null;
 
     private String confFileName = "src/main/resources/config_indexer.xml";
     private volatile boolean running = false;
@@ -91,6 +91,7 @@ public final class SolrIndexerDaemon {
      * @throws FatalIndexerException
      * @return this
      * @should throw FatalIndexerException if solr schema name could not be checked
+     * @should create configuration and search index
      */
     public SolrIndexerDaemon init() throws FatalIndexerException {
         if (logger.isInfoEnabled()) {
@@ -100,6 +101,21 @@ public final class SolrIndexerDaemon {
         // log uncaught exceptions
         Thread.setDefaultUncaughtExceptionHandler((t, e) ->
             logger.error("Uncaught exception in thread {}:", t.getName(), e));
+
+        // Create configuration and search index eagerly on the main thread, before any worker pool starts. This publishes them safely to
+        // pool threads (via the happens-before edge of pool submission) and prevents duplicate singletons from concurrent lazy init.
+        if (configuration == null) {
+            configuration = new Configuration(confFileName);
+        }
+        if (searchIndex == null) {
+            try {
+                searchIndex = new SolrSearchIndex(null);
+                searchIndex.setOptimize(configuration.isAutoOptimize());
+                logger.info("Auto-optimize: {}", searchIndex.isOptimize());
+            } catch (ConfigurationException e) {
+                throw new FatalIndexerException("Could not initialize Solr search index: " + e.getMessage());
+            }
+        }
 
         try {
             if (!checkSolrSchemaName(
@@ -311,15 +327,9 @@ public final class SolrIndexerDaemon {
      * </p>
      *
      * @return the configuration
-     * @throws FatalIndexerException
+     * @should return same instance on repeated calls
      */
     public Configuration getConfiguration() {
-        if (configuration == null) {
-            synchronized (LOCK) {
-                configuration = new Configuration(confFileName);
-            }
-        }
-
         return configuration;
     }
 
@@ -379,21 +389,9 @@ public final class SolrIndexerDaemon {
      * </p>
      *
      * @return the searchIndex
-     * @should create new instance if none exists
+     * @should return same instance on repeated calls
      */
     public SolrSearchIndex getSearchIndex() {
-        if (this.searchIndex == null) {
-            synchronized (LOCK) {
-                try {
-                    this.searchIndex = new SolrSearchIndex(null);
-                    this.searchIndex.setOptimize(configuration.isAutoOptimize());
-                    logger.info("Auto-optimize: {}", this.searchIndex.isOptimize());
-                } catch (ConfigurationException e) {
-                    logger.error(e.getMessage());
-                }
-            }
-        }
-
         return this.searchIndex;
     }
 
