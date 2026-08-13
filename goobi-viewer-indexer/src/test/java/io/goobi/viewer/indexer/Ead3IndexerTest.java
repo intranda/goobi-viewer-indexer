@@ -20,6 +20,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.solr.common.SolrDocumentList;
@@ -29,7 +30,9 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 import io.goobi.viewer.indexer.helper.Hotfolder;
+import io.goobi.viewer.indexer.model.IndexObject;
 import io.goobi.viewer.indexer.model.SolrConstants;
+import io.goobi.viewer.indexer.model.writestrategy.ISolrWriteStrategy;
 
 class Ead3IndexerTest extends AbstractSolrEnabledTest {
 
@@ -64,5 +67,32 @@ class Ead3IndexerTest extends AbstractSolrEnabledTest {
         Assertions.assertEquals("EAD3_example", result.get(0).getFieldValue(SolrConstants.PI));
         Assertions.assertNotNull(result.get(0).getFieldValue(SolrConstants.SEARCHTERMS_ARCHIVE));
         Assertions.assertTrue(Files.isRegularFile(eadFile)); // Original file didn't get deleted
+    }
+
+    /**
+     * @see EadIndexer#indexAllChildren(IndexObject,int,ISolrWriteStrategy,boolean)
+     * @verifies index ead3 namespace children correctly
+     */
+    @Test
+    void indexAllChildren_shouldIndexEad3NamespaceChildrenCorrectly(@TempDir Path tempDir) throws Exception {
+        Path eadFile = Paths.get("src/test/resources/EAD/EAD3_example.xml");
+        Assertions.assertTrue(Files.isRegularFile(eadFile));
+
+        Path eadFileCopy = Paths.get(tempDir.toAbsolutePath().toString(), "EAD3_example.xml");
+        Files.copy(eadFile, eadFileCopy, StandardCopyOption.REPLACE_EXISTING);
+
+        Indexer indexer = new Ead3Indexer(hotfolder);
+        List<String> identifiers = indexer.addToIndex(eadFileCopy, new HashMap<>());
+        Assertions.assertEquals(1, identifiers.size());
+
+        // The EAD3 record nests <ead:c> elements across several levels. Each must be resolved via the EAD3
+        // namespace (not left unresolved) and indexed as a child docstruct carrying the sibling order field.
+        String orderField = SolrConstants.PREFIX_SORTNUM + "ARCHIVE_ORDER";
+        SolrDocumentList children = SolrIndexerDaemon.getInstance()
+                .getSearchIndex()
+                .search(SolrConstants.PI_TOPSTRUCT + ":EAD3_example AND " + orderField + ":[* TO *]", null);
+        Assertions.assertNotNull(children);
+        // Non-empty proves top-level resolution; more than one proves recursion into nested EAD3-namespace children.
+        Assertions.assertTrue(children.size() >= 2, "expected nested EAD3 <ead:c> children to be indexed");
     }
 }

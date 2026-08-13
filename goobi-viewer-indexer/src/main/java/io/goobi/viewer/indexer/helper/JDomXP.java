@@ -21,7 +21,9 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.io.output.FileWriterWithEncoding;
 import org.apache.logging.log4j.LogManager;
@@ -108,6 +110,12 @@ public class JDomXP {
     private Document doc;
 
     /**
+     * Namespaces registered for this instance only. They are applied on top of (and override) the global configuration namespaces during XPath
+     * evaluation, so a prefix such as <code>ead</code> can resolve to a document-specific URI (e.g. EAD2 vs. EAD3) without mutating shared state.
+     */
+    private final Map<String, Namespace> localNamespaces = new HashMap<>();
+
+    /**
      * Constructor that reads a Document from the given file.
      *
      * @param file a {@link java.io.File} object.
@@ -130,6 +138,23 @@ public class JDomXP {
     }
 
     /**
+     * Registers a namespace for this instance only. It overrides the global configuration binding for the same prefix during XPath evaluation
+     * performed via the instance methods of this object. Use this to bind a prefix to a document-specific URI (e.g. the EAD2 or EAD3 namespace)
+     * instead of mutating the shared configuration namespace map.
+     *
+     * @param namespace {@link org.jdom2.Namespace} to register (keyed by its prefix); ignored if null
+     * @return this {@link io.goobi.viewer.indexer.helper.JDomXP} instance for chaining
+     * @should override global namespace for same prefix
+     * @should not affect global configuration
+     */
+    public JDomXP addNamespace(Namespace namespace) {
+        if (namespace != null) {
+            localNamespaces.put(namespace.getPrefix(), namespace);
+        }
+        return this;
+    }
+
+    /**
      *
      * Generic return type XPath evaluation.
      *
@@ -138,28 +163,35 @@ public class JDomXP {
      * @return {@link java.util.List}
      */
     public List<Object> evaluate(String expr, final Object parent) {
-        return evaluate(expr, parent != null ? parent : doc, Filters.fpassthrough());
+        return evaluate(expr, parent != null ? parent : doc, Filters.fpassthrough(), localNamespaces);
     }
 
     /**
      * XPath evaluation with a given return type filter.
-     * 
+     *
      * @param expr XPath expression to evaluate.
      * @param parent If not null, the expression is evaluated relative to this element.
      * @param filter Return type filter.
+     * @param localNamespaces Instance namespaces applied on top of (and overriding) the global configuration namespaces; may be null.
      * @return List<Object>
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    private static List<Object> evaluate(String expr, Object parent, Filter filter) {
+    private static List<Object> evaluate(String expr, Object parent, Filter filter, Map<String, Namespace> localNamespaces) {
         if (expr == null) {
             throw new IllegalArgumentException("expr may not be null");
         }
 
         XPathBuilder<Object> builder = new XPathBuilder<>(expr.trim().replace("\n", ""), filter);
-        // Add all namespaces
+        // Add all global namespaces
         for (String key : SolrIndexerDaemon.getInstance().getConfiguration().getNamespaces().keySet()) {
             Namespace value = SolrIndexerDaemon.getInstance().getConfiguration().getNamespaces().get(key);
             builder.setNamespace(value.getPrefix(), value.getURI());
+        }
+        // Apply instance namespaces last so they override the global ones for the same prefix
+        if (localNamespaces != null) {
+            for (Namespace value : localNamespaces.values()) {
+                builder.setNamespace(value.getPrefix(), value.getURI());
+            }
         }
         XPathExpression<Object> xpath = builder.compileWith(XPathFactory.instance());
         return xpath.evaluate(parent);
@@ -175,23 +207,32 @@ public class JDomXP {
      * @should return all values
      */
     public List<Element> evaluateToElements(String expr, final Object parent) {
-        return evaluateToElementsStatic(expr, parent != null ? parent : doc);
+        return toElementList(evaluate(expr, parent != null ? parent : doc, Filters.element(), localNamespaces));
     }
 
     /**
-     * Evaluates the given XPath expression to a list of elements.
+     * Evaluates the given XPath expression to a list of elements. Uses the global configuration namespaces only; for instance-specific namespace
+     * bindings use {@link #evaluateToElements(String, Object)}.
      *
      * @param expr XPath expression to evaluate.
      * @param parent The expression is evaluated relative to this element.
      * @return {@link java.util.ArrayList} or null
      */
     public static List<Element> evaluateToElementsStatic(String expr, Object parent) {
-        List<Element> retList = new ArrayList<>();
+        return toElementList(evaluate(expr, parent, Filters.element(), null));
+    }
 
-        List<Object> list = evaluate(expr, parent, Filters.element());
+    /**
+     * Collects the {@link org.jdom2.Element} instances from a generic XPath result list.
+     *
+     * @param list XPath result list; may be null
+     * @return {@link java.util.List} of elements, never null
+     */
+    private static List<Element> toElementList(List<Object> list) {
         if (list == null) {
             return Collections.emptyList();
         }
+        List<Element> retList = new ArrayList<>();
         for (Object object : list) {
             if (object instanceof Element element) {
                 retList.add(element);
@@ -211,7 +252,7 @@ public class JDomXP {
      */
     public List<Attribute> evaluateToAttributes(String expr, final Object parent) {
         List<Attribute> retList = new ArrayList<>();
-        List<Object> list = evaluate(expr, parent != null ? parent : doc, Filters.attribute());
+        List<Object> list = evaluate(expr, parent != null ? parent : doc, Filters.attribute(), localNamespaces);
         if (list == null) {
             return Collections.emptyList();
         }
@@ -233,7 +274,7 @@ public class JDomXP {
      * @should return value correctly
      */
     public String evaluateToAttributeStringValue(String expr, final Object parent) {
-        List<Object> list = evaluate(expr, parent != null ? parent : doc, Filters.attribute());
+        List<Object> list = evaluate(expr, parent != null ? parent : doc, Filters.attribute(), localNamespaces);
         if (list == null || list.isEmpty()) {
             return null;
         }
@@ -263,7 +304,7 @@ public class JDomXP {
         if (!expression.endsWith(XPATH_TEXT)) {
             expression += XPATH_TEXT;
         }
-        List<Object> list = evaluate(expression, parent != null ? parent : doc, Filters.text());
+        List<Object> list = evaluate(expression, parent != null ? parent : doc, Filters.text(), localNamespaces);
         if (list == null || list.isEmpty()) {
             return null;
         }
@@ -283,18 +324,28 @@ public class JDomXP {
      * @should convert strings to NFC
      */
     public List<String> evaluateToStringList(String expr, final Object parent) {
-        return evaluateToStringListStatic(expr, parent != null ? parent : doc);
+        return toStringList(evaluate(expr, parent != null ? parent : doc, Filters.fpassthrough(), localNamespaces));
     }
 
     /**
-     * Evaluates the given XPath expression to a list of strings.
+     * Evaluates the given XPath expression to a list of strings. Uses the global configuration namespaces only; for instance-specific namespace
+     * bindings use {@link #evaluateToStringList(String, Object)}.
      *
      * @param expr XPath expression to evaluate.
      * @param parent If not null, the expression is evaluated relative to this element.
      * @return {@link java.util.ArrayList} or null
      */
     public static List<String> evaluateToStringListStatic(String expr, Object parent) {
-        List<Object> list = evaluate(expr, parent, Filters.fpassthrough());
+        return toStringList(evaluate(expr, parent, Filters.fpassthrough(), null));
+    }
+
+    /**
+     * Converts a generic XPath result list to a list of string values.
+     *
+     * @param list XPath result list; may be null
+     * @return {@link java.util.List} of strings, never null
+     */
+    private static List<String> toStringList(List<Object> list) {
         if (list == null) {
             return Collections.emptyList();
         }
@@ -324,7 +375,7 @@ public class JDomXP {
         if (!useExpr.endsWith(XPATH_TEXT)) {
             useExpr += XPATH_TEXT;
         }
-        List<Object> list = evaluate(useExpr, parent != null ? parent : doc, Filters.cdata());
+        List<Object> list = evaluate(useExpr, parent != null ? parent : doc, Filters.cdata(), localNamespaces);
         if (list == null || list.isEmpty()) {
             return null;
         }

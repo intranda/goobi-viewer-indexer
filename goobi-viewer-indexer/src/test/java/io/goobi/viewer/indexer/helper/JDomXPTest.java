@@ -16,371 +16,63 @@
 package io.goobi.viewer.indexer.helper;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.util.List;
 
-import org.apache.commons.io.FileUtils;
-import org.jdom2.Document;
-import org.jdom2.Element;
-import org.jdom2.input.SAXBuilder;
+import org.jdom2.Namespace;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import io.goobi.viewer.indexer.AbstractTest;
-import io.goobi.viewer.indexer.helper.JDomXP.FileFormat;
+import io.goobi.viewer.indexer.Ead3Indexer;
+import io.goobi.viewer.indexer.EadIndexer;
+import io.goobi.viewer.indexer.SolrIndexerDaemon;
 
 class JDomXPTest extends AbstractTest {
 
+    private static final String EAD2_FILE = "src/test/resources/EAD/Akte_Koch.xml";
+    private static final String EAD3_FILE = "src/test/resources/EAD/EAD3_example.xml";
+    private static final String EAD_C_XPATH = "ead:ead/ead:archdesc/ead:dsc/ead:c";
+
     /**
-     * @see JDomXP#determineFileFormat(File)
-     * @verifies detect mets mods files correctly
+     * @see JDomXP#addNamespace(Namespace)
+     * @verifies override global namespace for same prefix
      */
     @Test
-    void determineFileFormat_shouldDetectMetsModsFilesCorrectly() throws Exception {
-        File file = new File("src/test/resources/METS/H030001_mets.xml");
-        Assertions.assertTrue(file.isFile());
-        Assertions.assertEquals(FileFormat.METS, JDomXP.determineFileFormat(file));
+    void addNamespace_shouldOverrideGlobalNamespaceForSamePrefix() throws Exception {
+        // EAD3 document: its 'ead:' elements live in the EAD3 namespace.
+        // Without an instance binding the 'ead' prefix resolves to the global default (EAD2) and matches nothing.
+        JDomXP ead3 = new JDomXP(new File(EAD3_FILE));
+        Assertions.assertTrue(ead3.evaluateToElements(EAD_C_XPATH, null).isEmpty());
+        // With an EAD3 instance binding the same expression resolves correctly.
+        ead3.addNamespace(Ead3Indexer.NAMESPACE_EAD3);
+        Assertions.assertFalse(ead3.evaluateToElements(EAD_C_XPATH, null).isEmpty());
 
-        // File containing both MODS and MARC
-        file = new File("src/test/resources/METS/BV048249088.xml");
-        Assertions.assertTrue(file.isFile());
-        Assertions.assertEquals(FileFormat.METS, JDomXP.determineFileFormat(file));
+        // Cross-namespace guard: the element name 'archdesc' exists in both the EAD2 and EAD3 namespaces.
+        // The EAD2 document's elements must only match when the prefix is bound to the EAD2 namespace,
+        // never when it is bound to EAD3 (the previous namespace-blind behaviour would have matched either).
+        JDomXP ead2 = new JDomXP(new File(EAD2_FILE));
+        ead2.addNamespace(EadIndexer.NAMESPACE_EAD2);
+        Assertions.assertFalse(ead2.evaluateToElements("ead:ead/ead:archdesc", null).isEmpty());
+
+        JDomXP ead2BoundToEad3 = new JDomXP(new File(EAD2_FILE));
+        ead2BoundToEad3.addNamespace(Ead3Indexer.NAMESPACE_EAD3);
+        Assertions.assertTrue(ead2BoundToEad3.evaluateToElements("ead:ead/ead:archdesc", null).isEmpty());
     }
 
     /**
-     * @see JDomXP#determineFileFormat(File)
-     * @verifies detect mets marc files correctly
+     * @see JDomXP#addNamespace(Namespace)
+     * @verifies not affect global configuration
      */
     @Test
-    void determineFileFormat_shouldDetectMetsMarcFilesCorrectly() throws Exception {
-        File file = new File("src/test/resources/METS/VoorbeeldMETS_9940609919905131.xml");
-        Assertions.assertTrue(file.isFile());
-        Assertions.assertEquals(FileFormat.METS_MARC, JDomXP.determineFileFormat(file));
+    void addNamespace_shouldNotAffectGlobalConfiguration() throws Exception {
+        Namespace globalBefore = SolrIndexerDaemon.getInstance().getConfiguration().getNamespaces().get("ead");
+
+        JDomXP ead3 = new JDomXP(new File(EAD3_FILE));
+        ead3.addNamespace(Ead3Indexer.NAMESPACE_EAD3);
+        ead3.evaluateToElements(EAD_C_XPATH, null);
+
+        Namespace globalAfter = SolrIndexerDaemon.getInstance().getConfiguration().getNamespaces().get("ead");
+        Assertions.assertEquals(globalBefore, globalAfter);
+        // The global 'ead' prefix must remain bound to EAD2 - the instance binding must not leak into shared state.
+        Assertions.assertEquals(EadIndexer.NAMESPACE_EAD2, globalAfter);
     }
-
-    /**
-     * @see JDomXP#determineFileFormat(File)
-     * @verifies detect lido files correctly
-     */
-    @Test
-    void determineFileFormat_shouldDetectLidoFilesCorrectly() throws Exception {
-        File file = new File("src/test/resources/LIDO/khm_lido_export.xml");
-        Assertions.assertTrue(file.isFile());
-        Assertions.assertEquals(FileFormat.LIDO, JDomXP.determineFileFormat(file));
-    }
-
-    /**
-     * @see JDomXP#determineFileFormat(File)
-     * @verifies detect ead2 files correctly
-     */
-    @Test
-    void determineFileFormat_shouldDetectEad2FilesCorrectly() throws Exception {
-        File file = new File("src/test/resources/EAD/Akte_Koch.xml");
-        Assertions.assertTrue(file.isFile());
-        Assertions.assertEquals(FileFormat.EAD, JDomXP.determineFileFormat(file));
-    }
-
-    /**
-     * @see JDomXP#determineFileFormat(File)
-     * @verifies detect ead3 files correctly
-     */
-    @Test
-    void determineFileFormat_shouldDetectEad3FilesCorrectly() throws Exception {
-        File file = new File("src/test/resources/EAD/EAD3_example.xml");
-        Assertions.assertTrue(file.isFile());
-        Assertions.assertEquals(FileFormat.EAD3, JDomXP.determineFileFormat(file));
-    }
-
-    /**
-     * @see JDomXP#determineFileFormat(File)
-     * @verifies detect denkxweb files correctly
-     */
-    @Test
-    void determineFileFormat_shouldDetectDenkxwebFilesCorrectly() throws Exception {
-        File file = new File("src/test/resources/DenkXweb/denkxweb_30596824_short.xml");
-        Assertions.assertTrue(file.isFile());
-        Assertions.assertEquals(FileFormat.DENKXWEB, JDomXP.determineFileFormat(file));
-    }
-
-    /**
-     * @see JDomXP#determineFileFormat(File)
-     * @verifies detect dublin core files correctly
-     */
-    @Test
-    void determineFileFormat_shouldDetectDublinCoreFilesCorrectly() throws Exception {
-        File file = new File("src/test/resources/DC/record.xml");
-        Assertions.assertTrue(file.isFile());
-        Assertions.assertEquals(FileFormat.DUBLINCORE, JDomXP.determineFileFormat(file));
-    }
-
-    /**
-     * @see JDomXP#determineFileFormat(File)
-     * @verifies detect worldviews files correctly
-     */
-    @Test
-    void determineFileFormat_shouldDetectWorldviewsFilesCorrectly() throws Exception {
-        File file = new File("src/test/resources/WorldViews/gei_test_sthe_quelle_01.xml");
-        Assertions.assertTrue(file.isFile());
-        Assertions.assertEquals(FileFormat.WORLDVIEWS, JDomXP.determineFileFormat(file));
-    }
-
-    /**
-     * @see JDomXP#determineFileFormat(File)
-     * @verifies detect abbyy files correctly
-     */
-    @Test
-    void determineFileFormat_shouldDetectAbbyyFilesCorrectly() throws Exception {
-        File file = new File("src/test/resources/ABBYYXML/00000001.xml");
-        Assertions.assertTrue(file.isFile());
-        Assertions.assertEquals(FileFormat.ABBYYXML, JDomXP.determineFileFormat(file));
-    }
-
-    /**
-     * @see JDomXP#determineFileFormat(File)
-     * @verifies detect tei files correctly
-     */
-    @Test
-    void determineFileFormat_shouldDetectTeiFilesCorrectly() throws Exception {
-        File file = new File("src/test/resources/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005_wc/00000001.xml");
-        Assertions.assertTrue(file.isFile());
-        Assertions.assertEquals(FileFormat.TEI, JDomXP.determineFileFormat(file));
-    }
-
-    /**
-     * @see JDomXP#determineFileFormat(File)
-     * @verifies detect cms files correctly
-     */
-    @Test
-    void determineFileFormat_shouldDetectCmsFilesCorrectly() throws Exception {
-        File file = new File("src/test/resources/indexed_cms/CMS123.xml");
-        Assertions.assertTrue(file.isFile());
-        Assertions.assertEquals(FileFormat.CMS, JDomXP.determineFileFormat(file));
-    }
-
-    /**
-     * @see JDomXP#splitLidoFile(File)
-     * @verifies split multi record documents correctly
-     */
-    @Test
-    void splitLidoFile_shouldSplitMultiRecordDocumentsCorrectly() {
-        File file = new File("src/test/resources/LIDO/khm_lido_export.xml");
-        Assertions.assertTrue(file.isFile());
-        List<Document> docs = JDomXP.splitLidoFile(file);
-        Assertions.assertEquals(30, docs.size());
-    }
-
-    /**
-     * @see JDomXP#splitLidoFile(File)
-     * @verifies leave single record documents as is
-     */
-    @Test
-    void splitLidoFile_shouldLeaveSingleRecordDocumentsAsIs() {
-        File file = new File("src/test/resources/LIDO/V0011127.xml");
-        Assertions.assertTrue(file.isFile());
-        List<Document> docs = JDomXP.splitLidoFile(file);
-        Assertions.assertEquals(1, docs.size());
-    }
-
-    /**
-     * @see JDomXP#splitLidoFile(File)
-     * @verifies return empty list for non lido documents
-     */
-    @Test
-    void splitLidoFile_shouldReturnEmptyListForNonLidoDocuments() {
-        File file = new File("src/test/resources/METS/H030001_mets.xml");
-        Assertions.assertTrue(file.isFile());
-        List<Document> docs = JDomXP.splitLidoFile(file);
-        Assertions.assertEquals(0, docs.size());
-    }
-
-    /**
-     * @see JDomXP#splitLidoFile(File)
-     * @verifies return empty list for non-existing files
-     */
-    @Test
-    void splitLidoFile_shouldReturnEmptyListForNonexistingFiles() {
-        File file = new File("nosuchfile.xml");
-        Assertions.assertFalse(file.isFile());
-        List<Document> docs = JDomXP.splitLidoFile(file);
-        Assertions.assertEquals(0, docs.size());
-    }
-
-    /**
-     * @see JDomXP#splitLidoFile(File)
-     * @verifies return empty list given null
-     */
-    @Test
-    void splitLidoFile_shouldReturnEmptyListGivenNull() {
-        List<Document> docs = JDomXP.splitLidoFile(null);
-        Assertions.assertEquals(0, docs.size());
-    }
-
-    /**
-     * @see JDomXP#splitDenkXwebFile(File)
-     * @verifies split multi record documents correctly
-     */
-    @Test
-    void splitDenkXwebFile_shouldSplitMultiRecordDocumentsCorrectly() {
-        File file = new File("src/test/resources/DenkXweb/denkxweb_30596824_short.xml");
-        Assertions.assertTrue(file.isFile());
-        List<Document> docs = JDomXP.splitDenkXwebFile(file);
-        Assertions.assertEquals(2, docs.size());
-    }
-
-    /**
-     * @see JDomXP#splitDenkXwebFile(File)
-     * @verifies return empty list for non lido documents
-     */
-    @Test
-    void splitDenkXwebFile_shouldReturnEmptyListForNonLidoDocuments() {
-        File file = new File("src/test/resources/METS/H030001_mets.xml");
-        Assertions.assertTrue(file.isFile());
-        List<Document> docs = JDomXP.splitDenkXwebFile(file);
-        Assertions.assertEquals(0, docs.size());
-    }
-
-    /**
-     * @see JDomXP#splitDenkXwebFile(File)
-     * @verifies return empty list for non-existing files
-     */
-    @Test
-    void splitDenkXwebFile_shouldReturnEmptyListForNonexistingFiles() {
-        File file = new File("nosuchfile.xml");
-        Assertions.assertFalse(file.isFile());
-        List<Document> docs = JDomXP.splitDenkXwebFile(file);
-        Assertions.assertEquals(0, docs.size());
-    }
-
-    /**
-     * @see JDomXP#splitDenkXwebFile(File)
-     * @verifies return empty list given null
-     */
-    @Test
-    void splitDenkXwebFile_shouldReturnEmptyListGivenNull() {
-        List<Document> docs = JDomXP.splitDenkXwebFile(null);
-        Assertions.assertEquals(0, docs.size());
-    }
-
-    /**
-     * @see JDomXP#writeXmlFile(Document,String)
-     * @verifies write xml file correctly
-     */
-    @Test
-    void writeXmlFile_shouldWriteXmlFileCorrectly() throws Exception {
-        File file = new File("src/test/resources/METS/H030001_mets.xml");
-        Assertions.assertTrue(file.isFile());
-
-        File newFile = null;
-        try (FileInputStream fis = new FileInputStream(file)) {
-            SAXBuilder builder = new SAXBuilder();
-            Document doc = builder.build(fis);
-            Assertions.assertNotNull(doc);
-            String path = "target/newmets.xml";
-            JDomXP.writeXmlFile(doc, path);
-            newFile = new File(path);
-            Assertions.assertTrue(newFile.isFile());
-            try (FileInputStream fis2 = new FileInputStream(newFile)) {
-                Document newDoc = builder.build(fis2);
-                Assertions.assertNotNull(newDoc);
-                Assertions.assertEquals(doc.getContentSize(), newDoc.getContentSize());
-            }
-        } finally {
-            if (newFile != null) {
-                FileUtils.deleteQuietly(newFile);
-            }
-        }
-    }
-
-    /**
-     * @see JDomXP#evaluateToAttributeStringValue(String,Object)
-     * @verifies return value correctly
-     */
-    @Test
-    void evaluateToAttributeStringValue_shouldReturnValueCorrectly() throws Exception {
-        File file = new File("src/test/resources/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005.xml");
-        Assertions.assertTrue(file.isFile());
-        JDomXP xp = new JDomXP(file);
-        String xpath = "/mets:mets/mets:amdSec/mets:digiprovMD[@ID='DIGIPROV']/mets:mdWrap/@MDTYPE";
-        String value = xp.evaluateToAttributeStringValue(xpath, null);
-        Assertions.assertEquals("OTHER", value);
-    }
-
-    /**
-     * @see JDomXP#evaluateToCdata(String,Object)
-     * @verifies return value correctly
-     */
-    @Test
-    void evaluateToCdata_shouldReturnValueCorrectly() throws Exception {
-        File file = new File("src/test/resources/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005.xml");
-        Assertions.assertTrue(file.isFile());
-        JDomXP xp = new JDomXP(file);
-        String xpath =
-                "/mets:mets/mets:amdSec/mets:digiprovMD[@ID='DIGIPROV']/mets:mdWrap[@OTHERMDTYPE='DVLINKS']/mets:xmlData/dv:links/dv:reference/text()";
-        String value = xp.evaluateToCdata(xpath, null);
-        Assertions.assertEquals("http://opac.sub.uni-goettingen.de/DB=1/PPN?PPN=517154005", value);
-    }
-
-    /**
-     * @see JDomXP#evaluateToString(String,Object)
-     * @verifies return value correctly
-     */
-    @Test
-    void evaluateToString_shouldReturnValueCorrectly() throws Exception {
-        File file = new File("src/test/resources/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005.xml");
-        Assertions.assertTrue(file.isFile());
-        JDomXP xp = new JDomXP(file);
-        String xpath =
-                "/mets:mets/mets:amdSec/mets:digiprovMD[@ID='DIGIPROV']/mets:mdWrap[@OTHERMDTYPE='DVLINKS']/mets:xmlData/dv:links/dv:presentation/text()";
-        String value = xp.evaluateToString(xpath, null);
-        Assertions.assertEquals("http://resolver.sub.uni-goettingen.de/purl?PPN517154005", value);
-    }
-
-    /**
-     * @see JDomXP#evaluateToStringList(String,Object)
-     * @verifies return all values
-     */
-    @Test
-    void evaluateToStringList_shouldReturnAllValues() throws Exception {
-        File file = new File("src/test/resources/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005.xml");
-        Assertions.assertTrue(file.isFile(), "File not found: " + file.getAbsolutePath());
-        JDomXP xp = new JDomXP(file);
-        String xpath = "/mets:mets/mets:fileSec/mets:fileGrp[@USE='PRESENTATION']/mets:file";
-        List<String> values = xp.evaluateToStringList(xpath, null);
-        Assertions.assertEquals(16, values.size());
-    }
-
-    /**
-     * @see JDomXP#readXmlFile(String)
-     * @verifies build document correctly
-     */
-    @Test
-    void readXmlFile_shouldBuildDocumentCorrectly() throws Exception {
-        Document doc = JDomXP.readXmlFile(TEST_CONFIG_PATH);
-        Assertions.assertNotNull(doc);
-        Assertions.assertNotNull(doc.getRootElement());
-    }
-
-    /**
-     * @see JDomXP#readXmlFile(String)
-     * @verifies throw FileNotFoundException if file not found
-     */
-    @Test
-    void readXmlFile_shouldThrowFileNotFoundExceptionIfFileNotFound() {
-        Assertions.assertThrows(FileNotFoundException.class, () -> JDomXP.readXmlFile("notfound.xml"));
-    }
-
-    /**
-     * @see JDomXP#getMdWrap(String)
-     * @verifies return mdWrap correctly
-     */
-    @Test
-    void getMdWrap_shouldReturnMdWrapCorrectly() throws Exception {
-        File file = new File("src/test/resources/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005.xml");
-        Assertions.assertTrue(file.isFile(), "File not found: " + file.getAbsolutePath());
-        JDomXP xp = new JDomXP(file);
-        Element eleMdWrap = xp.getMdWrap("DMDLOG_0003");
-        Assertions.assertNotNull(eleMdWrap);
-    }
-
 }

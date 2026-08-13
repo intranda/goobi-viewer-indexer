@@ -265,7 +265,7 @@ public final class MetadataHelper {
                                 // Grouped metadata
                                 Element eleMods = (Element) xpathAnswerObject;
                                 GroupedMetadata gmd = getGroupedMetadata(eleMods, configurationItem.getGroupEntity(), configurationItem,
-                                        configurationItem.getFieldname(), sbDefaultMetadataValues, ret);
+                                        configurationItem.getFieldname(), sbDefaultMetadataValues, ret, xp);
 
                                 // Add the relevant value as a non-grouped metadata value (for term browsing, etc.)
                                 if (StringUtils.isNotEmpty(gmd.getMainValue())) {
@@ -1221,7 +1221,7 @@ public final class MetadataHelper {
      * @should not lowercase certain fields
      */
     static GroupedMetadata getGroupedMetadata(Element ele, GroupEntity groupEntity, FieldConfig configurationItem, String groupLabel,
-            StringBuilder sbDefaultMetadataValues, List<LuceneField> luceneFields) throws FatalIndexerException {
+            StringBuilder sbDefaultMetadataValues, List<LuceneField> luceneFields, JDomXP jdomXP) throws FatalIndexerException {
         logger.trace("getGroupedMetadata: {}", groupLabel);
         GroupedMetadata ret = new GroupedMetadata();
         ret.setLabel(groupLabel);
@@ -1236,7 +1236,7 @@ public final class MetadataHelper {
         StringBuilder sbAuthorityDataTerms = new StringBuilder();
 
         Map<String, List<String>> collectedValues = new HashMap<>();
-        ret.collectGroupMetadataValues(collectedValues, groupEntity.getSubfields(), ele, authorityDataEnabled, null, configurationItem);
+        ret.collectGroupMetadataValues(collectedValues, groupEntity.getSubfields(), ele, authorityDataEnabled, null, configurationItem, jdomXP);
 
         if (!groupEntity.getSubfields().containsKey(SolrConstants.MD_VALUE)) {
             logger.warn("'{}' not configured for grouped metadata field '{}'.", SolrConstants.MD_VALUE, groupLabel);
@@ -1265,7 +1265,7 @@ public final class MetadataHelper {
         if (!additionalFieldsFromParent.isEmpty()) {
             logger.debug("Collecting source metadata for {}", configurationItem.getFieldname());
             ret.collectGroupMetadataValues(collectedValues, groupEntity.getSubfields(), ele.getParentElement(), authorityDataEnabled,
-                    additionalFieldsFromParent, configurationItem);
+                    additionalFieldsFromParent, configurationItem, jdomXP);
         }
         // if no MD_VALUE field exists, construct one
         if (mdValue == null) {
@@ -1471,14 +1471,14 @@ public final class MetadataHelper {
         if (!groupEntity.getChildren().isEmpty()) {
             for (GroupEntity childGroupEntity : groupEntity.getChildren()) {
                 logger.debug("Processing child config: {}", childGroupEntity.getName());
-                List<Element> eleChildList = JDomXP.evaluateToElementsStatic(childGroupEntity.getXpath(), ele);
+                List<Element> eleChildList = jdomXP.evaluateToElements(childGroupEntity.getXpath(), ele);
                 if (eleChildList == null) {
                     continue;
                 }
                 for (Element eleChild : eleChildList) {
                     GroupedMetadata child =
                             getGroupedMetadata(eleChild, childGroupEntity, configurationItem, childGroupEntity.getName(), sbDefaultMetadataValues,
-                                    luceneFields);
+                                    luceneFields, jdomXP);
                     ret.getChildren().add(child);
                     if (StringUtils.isNotEmpty(child.getMainValue())) {
                         logger.debug("added child: {}", child.getMainValue());

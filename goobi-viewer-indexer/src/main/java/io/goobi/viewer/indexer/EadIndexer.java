@@ -75,7 +75,7 @@ public class EadIndexer extends Indexer {
 
     private ForkJoinPool pool;
 
-    protected Namespace eadNamespace = SolrIndexerDaemon.getInstance().getConfiguration().getNamespaces().get("ead3");
+    protected Namespace eadNamespace = NAMESPACE_EAD2;
 
     /**
      * Constructor.
@@ -86,7 +86,6 @@ public class EadIndexer extends Indexer {
     public EadIndexer(Hotfolder hotfolder) {
         super();
         this.hotfolder = hotfolder;
-        SolrIndexerDaemon.getInstance().getConfiguration().getNamespaces().put("ead", NAMESPACE_EAD2);
     }
 
     /**
@@ -100,7 +99,6 @@ public class EadIndexer extends Indexer {
     public EadIndexer(Hotfolder hotfolder, HttpConnector httpConnector) {
         super(httpConnector);
         this.hotfolder = hotfolder;
-        SolrIndexerDaemon.getInstance().getConfiguration().getNamespaces().put("ead", NAMESPACE_EAD2);
     }
 
     /** {@inheritDoc} */
@@ -198,6 +196,9 @@ public class EadIndexer extends Indexer {
         ISolrWriteStrategy writeStrategy = inWriteStrategy;
         try {
             initJDomXP(eadFile);
+            // Bind the 'ead' prefix to this record's EAD namespace (EAD2 or EAD3) on this JDomXP instance only,
+            // so 'ead:' XPath expressions resolve correctly without mutating the shared configuration.
+            xp.addNamespace(eadNamespace);
             IndexObject indexObj = new IndexObject(getNextIddoc());
             logger.debug("IDDOC: {}", indexObj.getIddoc());
             Element structNode = findStructNode();
@@ -316,6 +317,7 @@ public class EadIndexer extends Indexer {
      * @throws java.io.IOException
      * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException
      * @should assign contiguous sibling order to all children in parallel
+     * @should index ead3 namespace children correctly
      */
     protected List<IndexObject> indexAllChildren(IndexObject parentIndexObject, int depth, ISolrWriteStrategy writeStrategy,
             boolean allowParallelProcessing) throws IOException, FatalIndexerException {
