@@ -48,12 +48,12 @@ import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
 
 import io.goobi.viewer.indexer.CmsPageIndexer;
+import io.goobi.viewer.indexer.Indexer;
 import io.goobi.viewer.indexer.DenkXwebIndexer;
 import io.goobi.viewer.indexer.DocUpdateIndexer;
 import io.goobi.viewer.indexer.DublinCoreIndexer;
 import io.goobi.viewer.indexer.Ead3Indexer;
 import io.goobi.viewer.indexer.EadIndexer;
-import io.goobi.viewer.indexer.Indexer;
 import io.goobi.viewer.indexer.LidoIndexer;
 import io.goobi.viewer.indexer.MetsIndexer;
 import io.goobi.viewer.indexer.MetsMarcIndexer;
@@ -124,7 +124,6 @@ public class Hotfolder {
     private Path origDenkxWeb;
     private Path successFolder;
 
-    private Indexer currentIndexer;
     private List<String> addVolumeCollectionsToAnchorFields = Collections.emptyList();
     private boolean deleteContentFilesOnFailure = true;
     private boolean prioritizeLargeImageFolders = false;
@@ -481,7 +480,7 @@ public class Hotfolder {
         } else {
             // Check for the shutdown trigger file first
             Path shutdownFile = Paths.get(hotfolderPath.toAbsolutePath().toString(), SHUTDOWN_FILE);
-            if (currentIndexer == null && Files.exists(shutdownFile)) {
+            if (Files.exists(shutdownFile)) {
                 logger.info("Shutdown trigger file detected, shutting down...");
                 try {
                     Files.delete(shutdownFile);
@@ -520,9 +519,6 @@ public class Hotfolder {
             List<Path> newFiles = new ArrayList<>();
             try (DirectoryStream<Path> stream = Files.newDirectoryStream(hotfolderPath, "*.{xml,json,delete,purge,docupdate,UPDATED}")) {
                 for (Path path : stream) {
-                    if (currentIndexer != null) {
-                        break;
-                    }
                     if (!path.getFileName().toString().endsWith(MetsIndexer.ANCHOR_UPDATE_EXTENSION) && !indexQueue.contains(path)) {
                         newFiles.add(path);
                     }
@@ -753,12 +749,7 @@ public class Hotfolder {
                 switch (fileType) {
                     case METS:
                         if (metsEnabled) {
-                            try {
-                                currentIndexer = new MetsIndexer(this);
-                                identifiers = currentIndexer.addToIndex(sourceFile, reindexSettings);
-                            } finally {
-                                currentIndexer = null;
-                            }
+                            identifiers = new MetsIndexer(this).addToIndex(sourceFile, reindexSettings);
                         } else {
                             logger.error("METS indexing is disabled - please make sure all folders are configured.");
                             Files.delete(sourceFile);
@@ -766,12 +757,7 @@ public class Hotfolder {
                         break;
                     case METS_MARC:
                         if (metsEnabled) {
-                            try {
-                                currentIndexer = new MetsMarcIndexer(this);
-                                identifiers = currentIndexer.addToIndex(sourceFile, reindexSettings);
-                            } finally {
-                                currentIndexer = null;
-                            }
+                            identifiers = new MetsMarcIndexer(this).addToIndex(sourceFile, reindexSettings);
                         } else {
                             logger.error("METS indexing is disabled - please make sure all folders are configured.");
                             Files.delete(sourceFile);
@@ -779,12 +765,7 @@ public class Hotfolder {
                         break;
                     case LIDO:
                         if (lidoEnabled) {
-                            try {
-                                currentIndexer = new LidoIndexer(this);
-                                identifiers = currentIndexer.addToIndex(sourceFile, reindexSettings);
-                            } finally {
-                                currentIndexer = null;
-                            }
+                            identifiers = new LidoIndexer(this).addToIndex(sourceFile, reindexSettings);
                         } else {
                             logger.error("LIDO indexing is disabled - please make sure all folders are configured.");
                             Files.delete(sourceFile);
@@ -792,12 +773,7 @@ public class Hotfolder {
                         break;
                     case EAD:
                         if (eadEnabled) {
-                            try {
-                                currentIndexer = new EadIndexer(this);
-                                identifiers = currentIndexer.addToIndex(sourceFile, reindexSettings);
-                            } finally {
-                                currentIndexer = null;
-                            }
+                            identifiers = new EadIndexer(this).addToIndex(sourceFile, reindexSettings);
                         } else {
                             logger.error("EAD indexing is disabled - please make sure all folders are configured.");
                             Files.delete(sourceFile);
@@ -805,12 +781,7 @@ public class Hotfolder {
                         break;
                     case EAD3:
                         if (eadEnabled) {
-                            try {
-                                currentIndexer = new Ead3Indexer(this);
-                                identifiers = currentIndexer.addToIndex(sourceFile, reindexSettings);
-                            } finally {
-                                currentIndexer = null;
-                            }
+                            identifiers = new Ead3Indexer(this).addToIndex(sourceFile, reindexSettings);
                         } else {
                             logger.error("EAD indexing is disabled - please make sure all folders are configured.");
                             Files.delete(sourceFile);
@@ -818,12 +789,7 @@ public class Hotfolder {
                         break;
                     case DENKXWEB:
                         if (denkxwebEnabled) {
-                            try {
-                                currentIndexer = new DenkXwebIndexer(this);
-                                identifiers = currentIndexer.addToIndex(sourceFile, reindexSettings);
-                            } finally {
-                                currentIndexer = null;
-                            }
+                            identifiers = new DenkXwebIndexer(this).addToIndex(sourceFile, reindexSettings);
                         } else {
                             logger.error("DenkXweb indexing is disabled - please make sure all folders are configured.");
                             Files.delete(sourceFile);
@@ -831,12 +797,7 @@ public class Hotfolder {
                         break;
                     case DUBLINCORE:
                         if (dcEnabled) {
-                            try {
-                                currentIndexer = new DublinCoreIndexer(this);
-                                identifiers = currentIndexer.addToIndex(sourceFile, reindexSettings);
-                            } finally {
-                                currentIndexer = null;
-                            }
+                            identifiers = new DublinCoreIndexer(this).addToIndex(sourceFile, reindexSettings);
                         } else {
                             logger.error("Dublin Core indexing is disabled - please make sure all folders are configured.");
                             Files.delete(sourceFile);
@@ -844,12 +805,7 @@ public class Hotfolder {
                         break;
                     case WORLDVIEWS:
                         if (worldviewsEnabled) {
-                            try {
-                                currentIndexer = new WorldViewsIndexer(this);
-                                identifiers = currentIndexer.addToIndex(sourceFile, reindexSettings);
-                            } finally {
-                                currentIndexer = null;
-                            }
+                            identifiers = new WorldViewsIndexer(this).addToIndex(sourceFile, reindexSettings);
                         } else {
                             logger.error("WorldViews indexing is disabled - please make sure all folders are configured.");
                             Files.delete(sourceFile);
@@ -857,12 +813,7 @@ public class Hotfolder {
                         break;
                     case CMS:
                         if (cmsEnabled) {
-                            try {
-                                currentIndexer = new CmsPageIndexer(this);
-                                identifiers = currentIndexer.addToIndex(sourceFile, reindexSettings);
-                            } finally {
-                                currentIndexer = null;
-                            }
+                            identifiers = new CmsPageIndexer(this).addToIndex(sourceFile, reindexSettings);
                         } else {
                             logger.error("CMS page indexing is disabled - please make sure all folders are configured.");
                             Files.delete(sourceFile);
@@ -877,12 +828,7 @@ public class Hotfolder {
             } else if (filename.endsWith(".json")) {
                 if (filename.startsWith(FILENAME_PREFIX_STATISTICS_USAGE)) {
                     if (usageStatisticsEnabled) {
-                        try {
-                            this.currentIndexer = new UsageStatisticsIndexer(this);
-                            currentIndexer.addToIndex(sourceFile, null);
-                        } finally {
-                            this.currentIndexer = null;
-                        }
+                        new UsageStatisticsIndexer(this).addToIndex(sourceFile, null);
                     } else {
                         logger.error("Usage statistics indexing is disabled - please make sure all folders are configured.");
                     }
@@ -908,13 +854,7 @@ public class Hotfolder {
                 Utils.submitDataToViewer(Collections.emptyList(), countRecordFiles()); // TODO submit any record identifiers here?
             } else if (filename.endsWith(DocUpdateIndexer.FILE_EXTENSION)) {
                 // Single Solr document update
-                List<String> identifiers = Collections.emptyList();
-                try {
-                    currentIndexer = new DocUpdateIndexer(this);
-                    identifiers = currentIndexer.addToIndex(sourceFile, null);
-                } finally {
-                    currentIndexer = null;
-                }
+                List<String> identifiers = new DocUpdateIndexer(this).addToIndex(sourceFile, null);
                 Utils.submitDataToViewer(identifiers, countRecordFiles());
             }
         } catch (IOException e) {

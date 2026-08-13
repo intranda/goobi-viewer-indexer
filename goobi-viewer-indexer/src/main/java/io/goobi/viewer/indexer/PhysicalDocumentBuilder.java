@@ -28,9 +28,9 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.ForkJoinTask;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
@@ -163,9 +163,9 @@ public class PhysicalDocumentBuilder {
         Collection<PhysicalElement> pages = Collections.synchronizedList(new ArrayList<PhysicalElement>());
         if (SolrIndexerDaemon.getInstance().getConfiguration().getThreads() > 1) {
             // Generate each page document in its own thread
-            ConcurrentHashMap<String, Boolean> usedIddocsMap = new ConcurrentHashMap<>();
+            ForkJoinTask<?> task = null;
             try (ForkJoinPool pool = new ForkJoinPool(SolrIndexerDaemon.getInstance().getConfiguration().getThreads())) {
-                pool.submit(() -> eleStructMapPhysicalList.parallelStream().forEach(eleStructMapPhysical -> {
+                task = pool.submit(() -> eleStructMapPhysicalList.parallelStream().forEach(eleStructMapPhysical -> {
                     try {
                         String iddoc = Indexer.getNextIddoc();
                         PhysicalElement page =
@@ -179,15 +179,18 @@ public class PhysicalDocumentBuilder {
                             }
                             page.getShapes().clear();
                         }
-                        usedIddocsMap.put(iddoc, true);
                     } catch (FatalIndexerException e) {
                         logger.error("Should be exiting here now...");
                     }
-                })).get(GENERATE_PAGE_DOCUMENT_TIMEOUT_HOURS, TimeUnit.HOURS);
+                }));
+                task.get(GENERATE_PAGE_DOCUMENT_TIMEOUT_HOURS, TimeUnit.HOURS);
             } catch (ExecutionException e) {
                 logger.error(e.getMessage(), e);
                 SolrIndexerDaemon.getInstance().stop();
             } catch (TimeoutException e) {
+                if (task != null) {
+                    task.cancel(true);
+                }
                 throw new InterruptedException("Generating page documents timed out for object " + pi);
             }
         } else {

@@ -27,7 +27,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.configuration2.ex.ConfigurationException;
@@ -72,8 +71,6 @@ public final class SolrSearchIndex {
     private static final String ERROR_SOLR_CONNECTION = "Solr connection error";
     private static final String ERROR_UPDATE_STATUS = "Update status: {}";
 
-    private static Map<String, Boolean> usedIddocs = new ConcurrentHashMap<>();
-
     private boolean optimize = false;
 
     private SolrClient client;
@@ -115,50 +112,6 @@ public final class SolrSearchIndex {
                 .withRequestWriter(new BinaryRequestWriter())
                 // .allowCompression(DataManager.getInstance().getConfiguration().isSolrCompressionEnabled())
                 .build();
-    }
-
-    /**
-     * <p>
-     * checkIddocAvailability.
-     * </p>
-     *
-     * @param iddoc a String
-     * @return a boolean.
-     * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException if any.
-     */
-    public synchronized boolean checkIddocAvailability(String iddoc) throws FatalIndexerException {
-        if (usedIddocs.get(iddoc) != null) {
-            return false;
-        }
-        SolrQuery query = new SolrQuery();
-        StringBuilder sbQuery = new StringBuilder();
-        sbQuery.append(SolrConstants.IDDOC).append(':').append(iddoc);
-        query.setQuery(sbQuery.toString());
-        query.setRows(1);
-
-        boolean success = false;
-        int tries = RETRY_ATTEMPTS;
-        while (!success && tries > 0) {
-            tries--;
-            try {
-                QueryResponse resp = client.query(query);
-                if (!resp.getResults().isEmpty()) {
-                    usedIddocs.put(iddoc, true);
-                    return false;
-                }
-                usedIddocs.put(iddoc, true);
-                success = true;
-            } catch (SolrServerException | NumberFormatException | IOException e) {
-                logger.error(e.getMessage(), e);
-            }
-        }
-        if (!success) {
-            logger.error("Could not veryify the next available IDDOC after {} attempts. Check the Solr server connection. Exiting...",
-                    RETRY_ATTEMPTS);
-            throw new FatalIndexerException(ERROR_SOLR_CONNECTION);
-        }
-
-        return true;
     }
 
     /**

@@ -477,7 +477,7 @@ public abstract class Indexer {
      *
      * @return Generated UUID as {@link String}
      */
-    protected static synchronized String getNextIddoc() {
+    protected static String getNextIddoc() {
         return UUID.randomUUID().toString();
     }
 
