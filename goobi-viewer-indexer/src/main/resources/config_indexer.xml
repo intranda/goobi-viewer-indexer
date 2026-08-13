@@ -550,6 +550,21 @@
 			</list>
 		</MD_ACCESSCONDITIONCOPYRIGHTURL>
 
+        <!-- This field is important; EVENTTYPE is a required fields for LIDO events. -->
+		<EVENTTYPE>
+			<list>
+				<item>
+					<xpath>lido:eventType/lido:term</xpath>
+					<xpath>lido:eventType/skos:Concept/skos:prefLabel[@xml:lang='en']</xpath>
+					<xpath>lido:eventType/lido:conceptID</xpath>
+					<getnode>first</getnode>
+					<addToDefault>false</addToDefault>
+					<onefield>false</onefield>
+					<addUntokenizedVersion>false</addUntokenizedVersion>
+				</item>
+			</list>
+		</EVENTTYPE>
+
 		<EVENTDATE>
 			<list>
 				<item>

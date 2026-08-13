@@ -719,6 +719,8 @@ public class LidoIndexer extends Indexer {
      * @param indexObj IndexObject of the parent docstruct (usually the top level docstruct).
      * @return List<SolrInputDocument>
      * @throws FatalIndexerException
+     * @should use conceptID as event type if no term
+     * @should skip events without event type
      */
     private List<SolrInputDocument> generateEvents(IndexObject indexObj) throws FatalIndexerException {
         String query = "/lido:lido/lido:descriptiveMetadata/lido:eventWrap/lido:eventSet/lido:event";
@@ -750,21 +752,6 @@ public class LidoIndexer extends Indexer {
                 eventDoc.setField(SolrConstants.DOCSTRCT_TOP, indexObj.getLuceneFieldWithName(SolrConstants.DOCSTRCT_TOP).getValue());
             }
 
-            // Find event type
-            query = "lido:eventType/lido:term/text()";
-            String type = xp.evaluateToString(query, eleEvent);
-            if (StringUtils.isBlank(type)) {
-                // LIDO 1.1 skos:Concept fallback
-                query = "lido:eventType/skos:Concept/skos:prefLabel[@xml:lang='en']/text()";
-                type = xp.evaluateToString(query, eleEvent);
-            }
-            if (StringUtils.isNotBlank(type)) {
-                eventDoc.addField(SolrConstants.EVENTTYPE, type);
-                indexObj.setDefaultValue(type);
-            } else {
-                logger.error("Event type not found.");
-            }
-
             // Copy access conditions
             for (String accessCondition : indexObj.getAccessConditions()) {
                 eventDoc.addField(SolrConstants.ACCESSCONDITION, accessCondition);
@@ -772,7 +759,29 @@ public class LidoIndexer extends Indexer {
 
             // Create a backup of the current grouped metadata list of the parent docstruct
             List<GroupedMetadata> groupedFieldsBackup = new ArrayList<>(indexObj.getGroupedMetadataFields());
+
+            // The event type (EVENTTYPE) is config-driven in config_indexer.xml with an ordered fallback:
+            // lido:term -> skos:Concept/skos:prefLabel[@xml:lang='en'] -> lido:conceptID (via <getnode>first</getnode>).
+            // Reset the default value collector so the event's DEFAULT field holds only this event's values, as before.
+            indexObj.setDefaultValue("");
             List<LuceneField> fields = MetadataHelper.retrieveElementMetadata(eleEvent, "", indexObj, xp);
+
+            // Determine the event type that was extracted; skip indexing this event entirely if none was found
+            String type = fields.stream()
+                    .filter(f -> SolrConstants.EVENTTYPE.equals(f.getField()))
+                    .map(LuceneField::getValue)
+                    .filter(StringUtils::isNotBlank)
+                    .findFirst()
+                    .orElse(null);
+            if (StringUtils.isBlank(type)) {
+                logger.warn("Event type not found; skipping event for record '{}'.", indexObj.getPi());
+                indexObj.setGroupedMetadataFields(groupedFieldsBackup);
+                indexObj.setDefaultValue(defaultFieldBackup);
+                continue;
+            }
+
+            // Seed the event document's DEFAULT field with the type, ahead of the other event metadata (as before)
+            indexObj.setDefaultValue(type + indexObj.getDefaultValue());
 
             // Add grouped metadata as separate documents
             if (indexObj.getGroupedMetadataFields().size() > groupedFieldsBackup.size()) {

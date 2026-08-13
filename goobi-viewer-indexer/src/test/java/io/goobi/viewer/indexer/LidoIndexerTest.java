@@ -19,8 +19,10 @@ import java.io.File;
 import java.nio.file.Path;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
@@ -300,6 +302,45 @@ class LidoIndexerTest extends AbstractSolrEnabledTest {
                 Assertions.assertEquals("Abzug", doc.getFieldValue(SolrConstants.DOCSTRCT_TOP));
             }
         }
+    }
+
+    /**
+     * @see LidoIndexer#generateEvents(io.goobi.viewer.indexer.model.IndexObject)
+     * @verifies use conceptID as event type if no term
+     * @verifies skip events without event type
+     */
+    @Test
+    void generateEvents_shouldUseConceptIDAndSkipTypelessEvents() throws Exception {
+        File file = new File("src/test/resources/LIDO/V0011127_events.xml");
+        Assertions.assertTrue(file.isFile());
+        List<Document> lidoDocs = JDomXP.splitLidoFile(file);
+        Assertions.assertEquals(1, lidoDocs.size());
+
+        Map<String, Path> dataFolders = new HashMap<>();
+        for (Document lidoDoc : lidoDocs) {
+            IndexingResult result = new LidoIndexer(hotfolder).index(lidoDoc, dataFolders, null, 1,
+                    SolrIndexerDaemon.getInstance().getConfiguration().getStringList("init.lido.imageXPath"), false, false);
+            Assertions.assertEquals(IndexingResultStatus.OK, result.getStatus());
+        }
+
+        // Top document (only the record docstruct carries PI; events use PI_TOPSTRUCT)
+        SolrDocumentList topList = SolrIndexerDaemon.getInstance().getSearchIndex().search(SolrConstants.PI + ":*", null);
+        Assertions.assertEquals(1, topList.size());
+        String iddoc = (String) topList.get(0).getFieldValue(SolrConstants.IDDOC);
+
+        SolrDocumentList eventDocs = SolrIndexerDaemon.getInstance()
+                .getSearchIndex()
+                .search(SolrConstants.IDDOC_OWNER + ":" + iddoc + " AND " + SolrConstants.DOCTYPE + ":" + DocType.EVENT, null);
+        // The term event and the conceptID event are indexed; the event with an empty eventType is skipped.
+        Assertions.assertEquals(2, eventDocs.size());
+
+        Set<String> eventTypes = new HashSet<>();
+        for (SolrDocument doc : eventDocs) {
+            eventTypes.add((String) doc.getFieldValue(SolrConstants.EVENTTYPE));
+        }
+        Assertions.assertTrue(eventTypes.contains("Production"), "term-based event type missing: " + eventTypes);
+        Assertions.assertTrue(eventTypes.contains("http://terminology.lido-schema.org/lido00012"),
+                "conceptID-based event type missing: " + eventTypes);
     }
 
     /**
