@@ -422,9 +422,10 @@ public class JDomXP {
      * Outputs the XML document contained in this object to a file.
      *
      * @param filename a {@link java.lang.String} object.
+     * @return true if the document was written successfully; false otherwise
      */
-    public void writeDocumentToFile(String filename) {
-        writeXmlFile(doc, filename);
+    public boolean writeDocumentToFile(String filename) {
+        return writeXmlFile(doc, filename);
     }
 
     /**

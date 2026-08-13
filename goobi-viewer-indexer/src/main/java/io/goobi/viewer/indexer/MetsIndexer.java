@@ -1463,9 +1463,17 @@ public class MetsIndexer extends Indexer {
         Path updatedAnchorFile =
                 Utils.getCollisionFreeDataFilePath(hotfolder.getHotfolderPath().toAbsolutePath().toString(), pi, "#", extension);
 
-        xp.writeDocumentToFile(updatedAnchorFile.toAbsolutePath().toString());
-        if (Files.exists(updatedAnchorFile)) {
+        // The path is already reserved (an empty file exists), so gate the enqueue on the actual write success
+        // rather than on Files.exists(), and clean up the empty reservation if writing failed.
+        boolean written = xp.writeDocumentToFile(updatedAnchorFile.toAbsolutePath().toString());
+        if (written) {
             hotfolder.getHighPriorityQueue().add(updatedAnchorFile);
+        } else {
+            try {
+                Files.deleteIfExists(updatedAnchorFile);
+            } catch (IOException e) {
+                logger.warn("Could not remove empty reserved anchor file '{}': {}", updatedAnchorFile, e.getMessage());
+            }
         }
     }
 

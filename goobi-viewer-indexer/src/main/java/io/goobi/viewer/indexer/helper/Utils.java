@@ -17,6 +17,7 @@ package io.goobi.viewer.indexer.helper;
 
 import java.io.IOException;
 import java.io.StringWriter;
+import java.io.UncheckedIOException;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -26,6 +27,7 @@ import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -721,14 +723,19 @@ public final class Utils {
     }
 
     /**
-     * Creates the file Path to the updated anchor file
+     * Atomically reserves and returns a collision-free file Path (e.g. for an updated anchor file).
+     * <p>
+     * The returned path is reserved by creating an empty file for it, so concurrent callers with the same {@code baseName} are guaranteed to
+     * receive distinct paths. Because the file already exists on return, callers must write to it in an <b>overwriting</b> (truncating) manner
+     * rather than expecting to create a new file.
      *
      * @param destFolderPath a {@link java.lang.String} object.
      * @param baseName a {@link java.lang.String} object.
-     * @param extension a {@link java.lang.String} object.
      * @param separator a {@link java.lang.String} object.
-     * @return a {@link java.nio.file.Path} object.
+     * @param extension a {@link java.lang.String} object.
+     * @return a {@link java.nio.file.Path} object whose (empty) file already exists.
      * @should construct path correctly and avoid collisions
+     * @should reserve unique paths under concurrent access
      */
     public static Path getCollisionFreeDataFilePath(String destFolderPath, String baseName, String separator, String extension) {
         if (destFolderPath == null) {
@@ -741,22 +748,22 @@ public final class Utils {
             throw new IllegalArgumentException("extension may not be null");
         }
 
-        StringBuilder sbFilePath = new StringBuilder(baseName);
-        Path path = Paths.get(destFolderPath, baseName + extension);
-        if (Files.exists(path)) {
-            // If an updated anchor file already exists, use a different file name
-            int iteration = 0;
-            while (Files.exists(Paths.get(destFolderPath, baseName + "#" + iteration + extension))) {
+        String sep = StringUtils.isNotEmpty(separator) ? separator : "";
+        Path candidate = Paths.get(destFolderPath, baseName + extension);
+        int iteration = 0;
+        while (true) {
+            try {
+                // Atomically create (reserve) the file; FileAlreadyExistsException is the loop-continue condition
+                Files.createFile(candidate);
+                return candidate;
+            } catch (FileAlreadyExistsException e) {
+                candidate = Paths.get(destFolderPath, baseName + sep + iteration + extension);
                 iteration++;
+            } catch (IOException e) {
+                // e.g. missing destination folder or insufficient permissions - do not swallow silently
+                throw new UncheckedIOException("Could not reserve data file path for " + baseName, e);
             }
-            if (StringUtils.isNotEmpty(separator)) {
-                sbFilePath.append(separator);
-            }
-            sbFilePath.append(iteration).append(extension);
-            path = Paths.get(destFolderPath, sbFilePath.toString());
         }
-
-        return path;
     }
 
     /**

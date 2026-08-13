@@ -23,10 +23,17 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 import io.goobi.viewer.indexer.AbstractTest;
 import io.goobi.viewer.indexer.Indexer;
@@ -39,39 +46,61 @@ class UtilsTest extends AbstractTest {
      * @verifies construct path correctly and avoid collisions
      */
     @Test
-    void getCollisionFreeDataFilePath_shouldConstructPathCorrectlyAndAvoidCollisions() throws Exception {
-        List<Path> paths = new ArrayList<>(2);
-        try {
-            {
-                // filename.xml
-                Path path = Utils.getCollisionFreeDataFilePath("target", "filename", "#", ".xml");
-                Assertions.assertNotNull(path);
-                assertEquals("filename.xml", path.getFileName().toString());
-                Files.createFile(path);
-                assertTrue(Files.exists(path));
-                paths.add(path);
-            }
-            {
-                // filename#1.xml
-                Path path = Utils.getCollisionFreeDataFilePath("target", "filename", "#", ".xml");
-                Assertions.assertNotNull(path);
-                assertEquals("filename#0.xml", path.getFileName().toString());
-                Files.createFile(path);
-                assertTrue(Files.exists(path));
-                paths.add(path);
-            }
-            {
-                // filename#2.xml
-                Path path = Utils.getCollisionFreeDataFilePath("target", "filename", "#", ".xml");
-                Assertions.assertNotNull(path);
-                assertEquals("filename#1.xml", path.getFileName().toString());
-            }
-        } finally {
-            for (Path path : paths) {
-                Files.delete(path);
-            }
+    void getCollisionFreeDataFilePath_shouldConstructPathCorrectlyAndAvoidCollisions(@TempDir Path tempDir) throws Exception {
+        String destFolderPath = tempDir.toString();
+        // The method reserves each path by creating the (empty) file, so no manual Files.createFile is needed.
+        {
+            // filename.xml
+            Path path = Utils.getCollisionFreeDataFilePath(destFolderPath, "filename", "#", ".xml");
+            Assertions.assertNotNull(path);
+            assertEquals("filename.xml", path.getFileName().toString());
+            assertTrue(Files.exists(path));
         }
+        {
+            // filename#0.xml
+            Path path = Utils.getCollisionFreeDataFilePath(destFolderPath, "filename", "#", ".xml");
+            Assertions.assertNotNull(path);
+            assertEquals("filename#0.xml", path.getFileName().toString());
+            assertTrue(Files.exists(path));
+        }
+        {
+            // filename#1.xml
+            Path path = Utils.getCollisionFreeDataFilePath(destFolderPath, "filename", "#", ".xml");
+            Assertions.assertNotNull(path);
+            assertEquals("filename#1.xml", path.getFileName().toString());
+            assertTrue(Files.exists(path));
+        }
+    }
 
+    /**
+     * @see Utils#getCollisionFreeDataFilePath(String,String,String,String)
+     * @verifies reserve unique paths under concurrent access
+     */
+    @Test
+    void getCollisionFreeDataFilePath_shouldReserveUniquePathsUnderConcurrentAccess(@TempDir Path tempDir) throws Exception {
+        int threadCount = 16;
+        ExecutorService pool = Executors.newFixedThreadPool(threadCount);
+        CountDownLatch ready = new CountDownLatch(threadCount);
+        CountDownLatch start = new CountDownLatch(1);
+        List<Future<Path>> futures = new ArrayList<>(threadCount);
+        try {
+            for (int i = 0; i < threadCount; i++) {
+                futures.add(pool.submit(() -> {
+                    ready.countDown();
+                    start.await(); // release all threads simultaneously
+                    return Utils.getCollisionFreeDataFilePath(tempDir.toString(), "filename", "#", ".xml");
+                }));
+            }
+            ready.await();
+            start.countDown();
+            Set<Path> results = new HashSet<>();
+            for (Future<Path> future : futures) {
+                results.add(future.get());
+            }
+            assertEquals(threadCount, results.size(), "All reserved paths must be pairwise distinct");
+        } finally {
+            pool.shutdownNow();
+        }
     }
 
     /**
