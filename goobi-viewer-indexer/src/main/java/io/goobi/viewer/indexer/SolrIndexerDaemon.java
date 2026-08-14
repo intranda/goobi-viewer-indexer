@@ -50,7 +50,9 @@ public final class SolrIndexerDaemon {
     private static final int DEFAULT_SLEEP_INTERVAL = 1000;
 
     private static final Object LOCK = new Object();
-    private static volatile SolrIndexerDaemon instance = null;
+    // Written only inside synchronized (LOCK) in getInstance(), never mutated in place; volatile is the JMM-mandated
+    // way to publish the singleton safely via double-checked locking, so no "thread-safe type" applies here.
+    private static volatile SolrIndexerDaemon instance = null; //NOSONAR java:S3077 double-checked locking
 
     private String confFileName = "src/main/resources/config_indexer.xml";
     private volatile boolean running = false;
