@@ -39,6 +39,15 @@ class SolrIndexerDaemonTest extends AbstractTest {
     }
 
     /**
+     * @see SolrIndexerDaemon#getInstance()
+     * @verifies return same instance on repeated calls
+     */
+    @Test
+    void getInstance_shouldReturnSameInstanceOnRepeatedCalls() {
+        Assertions.assertSame(SolrIndexerDaemon.getInstance(), SolrIndexerDaemon.getInstance());
+    }
+
+    /**
      * @see SolrIndexerDaemon#init()
      * @verifies throw FatalIndexerException if solr schema name could not be checked
      */
