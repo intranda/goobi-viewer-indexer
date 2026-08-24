@@ -8,7 +8,7 @@
 		<minStorageSpace>2048</minStorageSpace>
 
 		<!-- Main Solr index URL -->
-		<solrUrl>https://localhost:8983/solr/current</solrUrl>
+		<solrUrl>https://viewer-testing-index.goobi.io/solr/indexer-andrey</solrUrl>
 		<!-- Old Solr index URL (for migration purposes) -->
 		<!-- <oldSolrUrl></oldSolrUrl> -->
 		<viewerUrl>http://localhost:8080/viewer/</viewerUrl>
@@ -72,6 +72,14 @@
 
 		<!-- If true, all collection names from volumes will be added to their corresponding anchor record (default is false) -->
 		<addVolumeCollectionsToAnchor>false</addVolumeCollectionsToAnchor>
+
+		<!-- ALTO <LayoutTag> labels applied on a page are indexed per page into MD_LAYOUTTAG (facetable). Labels are
+		     collection-specific; list any labels that should be kept out of the facet (e.g. the printed-text label).
+		     No labels are excluded by default.
+		<layoutTagFacets>
+			<excludeLabel>gr_printed</excludeLabel>
+		</layoutTagFacets>
+		-->
 
 		<representativeImage>
 			<!-- If true, the first page of a document is set as the representative image if no other page is

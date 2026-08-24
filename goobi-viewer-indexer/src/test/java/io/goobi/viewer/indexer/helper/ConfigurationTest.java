@@ -442,4 +442,15 @@ class ConfigurationTest extends AbstractTest {
     void getOldSolrUrl_shouldReturnCorrectValue() {
         assertEquals("https://viewer-testing-index.goobi.io/solr/indexer-testing", SolrIndexerDaemon.getInstance().getConfiguration().getSolrUrl());
     }
+
+    /**
+     * @see Configuration#getLayoutTagFacetExcludeLabels()
+     * @verifies return configured exclude labels
+     */
+    @Test
+    void getLayoutTagFacetExcludeLabels_shouldReturnConfiguredExcludeLabels() {
+        List<String> excludeLabels = SolrIndexerDaemon.getInstance().getConfiguration().getLayoutTagFacetExcludeLabels();
+        assertEquals(1, excludeLabels.size());
+        assertEquals("gr_printed", excludeLabels.get(0));
+    }
 }
