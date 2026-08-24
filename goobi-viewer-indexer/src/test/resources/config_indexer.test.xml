@@ -72,7 +72,13 @@
 		<deleteContentFilesOnFailure>false</deleteContentFilesOnFailure>
 		<!-- If true, all collection names from volumes will be added to their 
 			corresponding anchor record (default is false) -->
-		<addVolumeCollectionsToAnchor>false</addVolumeCollectionsToAnchor>
+		<addVolumeCollectionsToAnchor enabled="false">
+			<field>DC</field>
+		</addVolumeCollectionsToAnchor>
+		<!-- ALTO layout-tag labels to keep out of the layout-annotation/markup facets (e.g. printed text) -->
+		<layoutTagFacets>
+			<excludeLabel>gr_printed</excludeLabel>
+		</layoutTagFacets>
 		<!-- If true, the PI will be split at the configured character, and the 
 			left part will be used as the partner ID. -->
 		<piContainsPartnerId>true</piContainsPartnerId>
@@ -386,6 +392,20 @@
 				</item>
 			</list>
 		</CURRENTNOSORT>
+
+		<EVENTTYPE>
+			<list>
+				<item>
+					<xpath>lido:eventType/lido:term</xpath>
+					<xpath>lido:eventType/skos:Concept/skos:prefLabel[@xml:lang='en']</xpath>
+					<xpath>lido:eventType/lido:conceptID</xpath>
+					<getnode>first</getnode>
+					<addToDefault>false</addToDefault>
+					<onefield>false</onefield>
+					<addUntokenizedVersion>false</addUntokenizedVersion>
+				</item>
+			</list>
+		</EVENTTYPE>
 
 		<EVENTDATE>
 			<list>

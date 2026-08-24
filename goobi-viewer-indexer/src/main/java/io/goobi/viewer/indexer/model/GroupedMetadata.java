@@ -145,9 +145,10 @@ public class GroupedMetadata {
      * @param authorityDataEnabled
      * @param xpathReplacements
      * @param configurationItem Master field configuration
+     * @param jdomXP {@link io.goobi.viewer.indexer.helper.JDomXP} of the document that owns <code>ele</code>; resolves XPath namespace prefixes
      */
     public void collectGroupMetadataValues(Map<String, List<String>> collectedValues, Map<String, SubfieldConfig> groupEntityFields, Element ele,
-            boolean authorityDataEnabled, Map<String, String> xpathReplacements, FieldConfig configurationItem) {
+            boolean authorityDataEnabled, Map<String, String> xpathReplacements, FieldConfig configurationItem, JDomXP jdomXP) {
         if (ele == null) {
             throw new IllegalArgumentException("element may not be null");
         }
@@ -181,7 +182,7 @@ public class GroupedMetadata {
                     }
                 }
                 logger.trace("XPath: {} (relative to {})", xpath, ele.getName());
-                List<String> values = JDomXP.evaluateToStringListStatic(xpath, ele);
+                List<String> values = jdomXP.evaluateToStringList(xpath, ele);
                 if (values == null || values.isEmpty()) {
                     // Use default value, if available
                     if (subfield.getDefaultValues().get(xpath) != null) {
@@ -261,7 +262,7 @@ public class GroupedMetadata {
                     .fetch()
                     .build();
             collectGroupMetadataValues(collectedValues, groupEntity.getSubfields(),
-                    xmlDoc.getXp().getRootElement(), MetadataHelper.isAuthorityDataEnabled(), null, configurationItem);
+                    xmlDoc.getXp().getRootElement(), MetadataHelper.isAuthorityDataEnabled(), null, configurationItem, xmlDoc.getXp());
         } catch (HTTPException | JDOMException | IOException | IllegalStateException e) {
             logger.error(e.getMessage(), e);
         }

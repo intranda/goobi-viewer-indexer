@@ -21,14 +21,39 @@ import org.apache.logging.log4j.Logger;
  * </p>
  *
  */
-public class LanguageHelper {
+public final class LanguageHelper {
 
     /** Logger for this class. */
     private static final Logger logger = LogManager.getLogger(LanguageHelper.class);
 
-    private ReloadingFileBasedConfigurationBuilder<XMLConfiguration> builder;
+    private final ReloadingFileBasedConfigurationBuilder<XMLConfiguration> builder;
 
-    private static LanguageHelper helper;
+    private LanguageHelper() {
+        ReloadingFileBasedConfigurationBuilder<XMLConfiguration> localBuilder = null;
+        try {
+            localBuilder =
+                    new ReloadingFileBasedConfigurationBuilder<XMLConfiguration>(XMLConfiguration.class)
+                            .configure(new Parameters().properties()
+                                    .setFileName("languages.xml")
+                                    .setListDelimiterHandler(new DefaultListDelimiterHandler('&')) // TODO Why '&'?
+                                    .setThrowExceptionOnMissing(false));
+            localBuilder.getConfiguration().setExpressionEngine(new XPathExpressionEngine());
+            PeriodicReloadingTrigger trigger = new PeriodicReloadingTrigger(localBuilder.getReloadingController(),
+                    null, 10, TimeUnit.SECONDS);
+            trigger.start();
+        } catch (ConfigurationException e) {
+            logger.error(e.getMessage());
+        }
+        this.builder = localBuilder;
+    }
+
+    /**
+     * Initialization-on-demand holder: the JVM guarantees the class is loaded (and INSTANCE constructed) lazily and thread-safely on
+     * first access, without any explicit synchronization.
+     */
+    private static final class Holder {
+        private static final LanguageHelper INSTANCE = new LanguageHelper();
+    }
 
     /**
      * <p>
@@ -38,25 +63,7 @@ public class LanguageHelper {
      * @return a {@link io.goobi.viewer.indexer.helper.language.LanguageHelper} object.
      */
     public static LanguageHelper getInstance() {
-        if (helper == null) {
-            helper = new LanguageHelper();
-            try {
-                helper.builder =
-                        new ReloadingFileBasedConfigurationBuilder<XMLConfiguration>(XMLConfiguration.class)
-                                .configure(new Parameters().properties()
-                                        .setFileName("languages.xml")
-                                        .setListDelimiterHandler(new DefaultListDelimiterHandler('&')) // TODO Why '&'?
-                                        .setThrowExceptionOnMissing(false));
-                helper.builder.getConfiguration().setExpressionEngine(new XPathExpressionEngine());
-                PeriodicReloadingTrigger trigger = new PeriodicReloadingTrigger(helper.builder.getReloadingController(),
-                        null, 10, TimeUnit.SECONDS);
-                trigger.start();
-            } catch (ConfigurationException e) {
-                logger.error(e.getMessage());
-            }
-        }
-
-        return helper;
+        return Holder.INSTANCE;
     }
 
     private XMLConfiguration getConfig() {

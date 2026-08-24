@@ -6,8 +6,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>io.goobi.viewer</groupId>
 	<artifactId>viewer-indexer</artifactId>
-	<version>26.06</version>
-
+	<version>26.07</version>
 
 	<name>Goobi viewer - Indexer</name>
 	<url>https://github.com/intranda/goobi-viewer-indexer</url>
@@ -42,7 +41,7 @@
 		<!-- intranda libraries -->
 		<alto.version>1.8.0</alto.version>
 		<iiif-api-model.version>3.2.1</iiif-api-model.version>
-		<normdataimporter.version>2.1.4</normdataimporter.version>
+		<normdataimporter.version>2.1.5</normdataimporter.version>
 
 		<!-- other libraries -->
 		<angus-mail.version>2.0.5</angus-mail.version>
@@ -58,15 +57,15 @@
 		<icu.version>78.3</icu.version>
 		<imageio-openjpeg.version>0.6.8</imageio-openjpeg.version>
 		<log4j.version>2.26.1</log4j.version>
-		<jackson.version>2.21.5</jackson.version>
+		<jackson.version>2.22.1</jackson.version>
 		<jaxen.version>2.0.6</jaxen.version>
 		<jai.version>1.4.0</jai.version>
 		<jakarta.mail-api.version>2.1.5</jakarta.mail-api.version>
 		<jdom2.version>2.0.6.1</jdom2.version>
-		<jsoup.version>1.22.2</jsoup.version>
-		<json.version>20260522</json.version>
-		<junit.version>6.1.2</junit.version>
-		<metadata-extractor.version>2.20.0</metadata-extractor.version>
+		<jsoup.version>1.23.1</jsoup.version>
+		<json.version>20260719</json.version>
+		<junit.version>6.1.3</junit.version>
+		<metadata-extractor.version>2.21.0</metadata-extractor.version>
 		<solr.version>9.10.1</solr.version>
 		<sf-geojson.version>3.3.3</sf-geojson.version>
 		<pdfbox.version>3.0.7</pdfbox.version>
@@ -540,7 +539,7 @@
 					<dependency>
 						<groupId>com.puppycrawl.tools</groupId>
 						<artifactId>checkstyle</artifactId>
-						<version>13.8.0</version>
+						<version>13.10.0</version>
 					</dependency>
 				</dependencies>
 				<executions>

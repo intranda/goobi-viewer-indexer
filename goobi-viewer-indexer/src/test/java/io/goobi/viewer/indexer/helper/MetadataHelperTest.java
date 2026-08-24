@@ -120,7 +120,7 @@ class MetadataHelperTest extends AbstractTest {
     }
 
     /**
-     * @see MetadataHelper#getGroupedMetadata(Element,GroupEntity,String)
+     * @see MetadataHelper#getGroupedMetadata(Element,GroupEntity,FieldConfig,String,StringBuilder,List,JDomXP)
      * @verifies group correctly
      */
     @Test
@@ -139,7 +139,7 @@ class MetadataHelperTest extends AbstractTest {
         Element eleName = docMods.getRootElement().getChild("name", SolrIndexerDaemon.getInstance().getConfiguration().getNamespaces().get("mods"));
         assertNotNull(eleName);
         GroupedMetadata gmd = MetadataHelper.getGroupedMetadata(eleName, fieldConfig.getGroupEntity(), fieldConfig, "MD_AUTHOR", new StringBuilder(),
-                new ArrayList<>());
+                new ArrayList<>(), new JDomXP(docMods));
         Assertions.assertFalse(gmd.getFields().isEmpty());
         assertEquals("Display_Form", gmd.getMainValue());
         String label = null;
@@ -203,7 +203,7 @@ class MetadataHelperTest extends AbstractTest {
     }
 
     /**
-     * @see MetadataHelper#getGroupedMetadata(Element,GroupEntity,FieldConfig,String,StringBuilder,List)
+     * @see MetadataHelper#getGroupedMetadata(Element,GroupEntity,FieldConfig,String,StringBuilder,List,JDomXP)
      * @verifies not lowercase certain fields
      */
     @Test
@@ -223,7 +223,7 @@ class MetadataHelperTest extends AbstractTest {
         Element eleName = docMods.getRootElement().getChild("name", SolrIndexerDaemon.getInstance().getConfiguration().getNamespaces().get("mods"));
         assertNotNull(eleName);
         GroupedMetadata gmd = MetadataHelper.getGroupedMetadata(eleName, fieldConfig.getGroupEntity(), fieldConfig, "MD_AUTHOR", new StringBuilder(),
-                new ArrayList<>());
+                new ArrayList<>(), new JDomXP(docMods));
         Assertions.assertFalse(gmd.getFields().isEmpty());
         assertEquals("display_form", gmd.getMainValue());
         String label = null;
@@ -287,7 +287,7 @@ class MetadataHelperTest extends AbstractTest {
     }
 
     /**
-     * @see MetadataHelper#getGroupedMetadata(Element,GroupEntity,FieldConfig,String,StringBuilder,List)
+     * @see MetadataHelper#getGroupedMetadata(Element,GroupEntity,FieldConfig,String,StringBuilder,List,JDomXP)
      * @verifies resolve authority data field references correctly
      */
     @Test
@@ -311,7 +311,7 @@ class MetadataHelperTest extends AbstractTest {
             elePlace.setText("Berlin");
 
             GroupedMetadata gmd = MetadataHelper.getGroupedMetadata(elePlace, fieldConfig.getGroupEntity(), fieldConfig, "MD_PLACEPUBLISH",
-                    new StringBuilder(), new ArrayList<>());
+                    new StringBuilder(), new ArrayList<>(), new JDomXP(new Document()));
             String mainName = null;
             for (LuceneField field : gmd.getFields()) {
                 if ("MD_MAINNAME".equals(field.getField())) {

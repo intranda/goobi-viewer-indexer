@@ -33,6 +33,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.ForkJoinTask;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
@@ -704,8 +705,9 @@ public class WorldViewsIndexer extends Indexer {
             // Generate each page document in its own thread
 
             ConcurrentHashMap<String, Boolean> map = new ConcurrentHashMap<>();
+            ForkJoinTask<?> task = null;
             try (ForkJoinPool pool = new ForkJoinPool(SolrIndexerDaemon.getInstance().getConfiguration().getThreads())) {
-                pool.submit(() -> eleListImages.parallelStream().forEach(eleImage -> {
+                task = pool.submit(() -> eleListImages.parallelStream().forEach(eleImage -> {
                     String iddoc = getNextIddoc();
                     if (map.containsKey(iddoc)) {
                         logger.error("Duplicate IDDOC: {}", iddoc);
@@ -715,11 +717,15 @@ public class WorldViewsIndexer extends Indexer {
                         writeStrategy.addPage(page);
                         map.put(iddoc, true);
                     }
-                })).get(GENERATE_PAGE_DOCUMENT_TIMEOUT_HOURS, TimeUnit.HOURS);
+                }));
+                task.get(GENERATE_PAGE_DOCUMENT_TIMEOUT_HOURS, TimeUnit.HOURS);
             } catch (ExecutionException e) {
                 logger.error(e.getMessage(), e);
                 SolrIndexerDaemon.getInstance().stop();
             } catch (TimeoutException e) {
+                if (task != null) {
+                    task.cancel(true);
+                }
                 throw new InterruptedException("Generating page documents timed out for object " + pi);
             }
         } else {

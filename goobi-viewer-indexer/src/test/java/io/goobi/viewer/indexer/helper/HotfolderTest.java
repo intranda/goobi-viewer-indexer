@@ -178,6 +178,29 @@ class HotfolderTest extends AbstractSolrEnabledTest {
     }
 
     /**
+     * @see Hotfolder#enqueueOrphanedAnchorUpdateFiles()
+     * @verifies enqueue orphaned UPDATED files
+     */
+    @Test
+    void enqueueOrphanedAnchorUpdateFiles_shouldEnqueueOrphanedUpdatedFiles() throws Exception {
+        hotfolder = new Hotfolder(SolrIndexerDaemon.getInstance().getConfiguration().getHotfolderPath());
+        assertTrue(hotfolder.getHighPriorityQueue().isEmpty());
+
+        Path updatedFile = Paths.get(hotfolder.getHotfolderPath().toAbsolutePath().toString(), "PPN123.UPDATED");
+        Files.createFile(updatedFile);
+        Assertions.assertTrue(Files.isRegularFile(updatedFile));
+
+        // Startup scan must move the orphaned file into the priority queue
+        Assertions.assertEquals(1, hotfolder.enqueueOrphanedAnchorUpdateFiles());
+        Assertions.assertEquals(1, hotfolder.getHighPriorityQueue().size());
+        Assertions.assertEquals("PPN123.UPDATED", hotfolder.getHighPriorityQueue().peek().getFileName().toString());
+
+        // Calling again must not enqueue the same file twice
+        Assertions.assertEquals(0, hotfolder.enqueueOrphanedAnchorUpdateFiles());
+        Assertions.assertEquals(1, hotfolder.getHighPriorityQueue().size());
+    }
+
+    /**
      * @see Hotfolder#checkAndSendErrorReport(String,String)
      * @verifies return false if body contains no error
      */

@@ -101,8 +101,7 @@ public class SerializingSolrWriteStrategy extends AbstractWriteStrategy {
             if (doc.getField(SolrConstants.URN) != null) {
                 String urn = (String) doc.getFieldValue(SolrConstants.URN);
                 if (StringUtils.isNotEmpty(urn)) {
-                    List<String> urns = collectedValues.computeIfAbsent(SolrConstants.URN, k -> new ArrayList<>());
-                    urns.add(urn);
+                    addCollectedValue(SolrConstants.URN, urn);
                 }
             }
         }
@@ -127,8 +126,7 @@ public class SerializingSolrWriteStrategy extends AbstractWriteStrategy {
                 if (doc.getField(SolrConstants.URN) != null) {
                     String urn = (String) doc.getFieldValue(SolrConstants.URN);
                     if (StringUtils.isNotEmpty(urn)) {
-                        List<String> urns = collectedValues.computeIfAbsent(SolrConstants.URN, k -> new ArrayList<>());
-                        urns.add(urn);
+                        addCollectedValue(SolrConstants.URN, urn);
                     }
                 }
             }
@@ -165,8 +163,7 @@ public class SerializingSolrWriteStrategy extends AbstractWriteStrategy {
             if (page.getDoc().getField(SolrConstants.IMAGEURN) != null) {
                 String urn = (String) page.getDoc().getFieldValue(SolrConstants.IMAGEURN);
                 if (StringUtils.isNotEmpty(urn)) {
-                    List<String> urns = collectedValues.computeIfAbsent(SolrConstants.URN, k -> new ArrayList<>());
-                    urns.add(urn);
+                    addCollectedValue(SolrConstants.URN, urn);
                 }
             }
 
@@ -323,10 +320,7 @@ public class SerializingSolrWriteStrategy extends AbstractWriteStrategy {
                     };
                     executor.execute(r);
                 }
-                executor.shutdown();
-                while (!executor.isTerminated()) {
-                    logger.trace("Waiting for executor to terminate...");
-                }
+                // try-with-resources close() performs shutdown() and awaits termination
             }
         } else {
             for (final int order : orderList) {

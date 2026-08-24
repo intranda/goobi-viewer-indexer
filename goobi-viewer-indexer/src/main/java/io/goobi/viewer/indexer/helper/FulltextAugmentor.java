@@ -419,6 +419,8 @@ public class FulltextAugmentor {
         if (altoData.get(SolrConstants.NAMEDENTITIES) != null) {
             addNamedEntitiesFields(altoData, doc);
         }
+        // Layout-annotation / markup facet fields (page level, analogous to named entities)
+        addLayoutTagFields(altoData, doc);
 
         return ret;
     }
@@ -451,6 +453,33 @@ public class FulltextAugmentor {
                 String identifier = de.intranda.digiverso.normdataimporter.Utils.getIdentifierFromURI(splitString[2]);
                 doc.addField("NORM_IDENTIFIER", identifier);
             }
+        }
+    }
+
+    /**
+     * Adds the ALTO layout-tag facet field (page level) from the given data map to the given SolrInputDocument as a
+     * multivalued {@link SolrConstants#MD_LAYOUTTAG}, skipping any labels configured to be excluded (e.g. the
+     * printed-text label). The facetable {@code FACET_LAYOUTTAG} twin is produced from this field by the Solr schema's
+     * {@code MD_* -> FACET_*} copyField, so no untokenized twin is written here.
+     *
+     * @param altoData a {@link java.util.Map} object.
+     * @param doc a {@link org.apache.solr.common.SolrInputDocument} object.
+     * @should add layout tag fields
+     * @should skip excluded labels
+     */
+    static void addLayoutTagFields(Map<String, Object> altoData, SolrInputDocument doc) {
+        Object values = altoData.get(SolrConstants.MD_LAYOUTTAG);
+        // Nothing to do for OCR formats that carry no layout tags (e.g. converted ABBYY/TEI); avoid touching config.
+        if (!(values instanceof List)) {
+            return;
+        }
+        List<String> excludeLabels = SolrIndexerDaemon.getInstance().getConfiguration().getLayoutTagFacetExcludeLabels();
+        for (Object value : (List<?>) values) {
+            String label = (String) value;
+            if (StringUtils.isEmpty(label) || excludeLabels.contains(label)) {
+                continue;
+            }
+            doc.addField(SolrConstants.MD_LAYOUTTAG, label);
         }
     }
 

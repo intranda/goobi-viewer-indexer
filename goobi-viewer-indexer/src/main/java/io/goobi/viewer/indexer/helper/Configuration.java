@@ -389,13 +389,34 @@ public final class Configuration {
 
     /**
      * <p>
-     * isAddVolumeCollectionsToAnchor.
+     * Returns the list of Solr field names whose values are copied from volumes up into their anchor record. Configured via the
+     * {@code <addVolumeCollectionsToAnchor>} element in the {@code <init>} block, e.g.
+     * {@code <addVolumeCollectionsToAnchor enabled="true"><field>DC</field><field>MD_FOO</field></addVolumeCollectionsToAnchor>}. The feature is
+     * only active when the {@code enabled} attribute is {@code true}; otherwise an empty list is returned regardless of the configured fields.
      * </p>
      *
-     * @return a boolean.
+     * @return list of configured field names when the feature is enabled; an empty list (feature disabled) when the {@code enabled} attribute is
+     *         absent or not {@code true}
      */
-    public boolean isAddVolumeCollectionsToAnchor() {
-        return getBoolean("init.addVolumeCollectionsToAnchor", false);
+    public List<String> getAddVolumeCollectionsToAnchorFields() {
+        if (!getBoolean("init.addVolumeCollectionsToAnchor[@enabled]", false)) {
+            return Collections.emptyList();
+        }
+
+        return getStringList("init.addVolumeCollectionsToAnchor.field");
+    }
+
+    /**
+     * <p>
+     * ALTO layout-tag LABELs to exclude from the layout-annotation/markup facet fields (e.g. the printed-text label).
+     * Collection-specific, so there is no default; deployments list the labels they want kept out of the facets.
+     * </p>
+     *
+     * @return list of layout-tag labels to exclude; empty if none configured
+     * @should return configured exclude labels
+     */
+    public List<String> getLayoutTagFacetExcludeLabels() {
+        return getStringList("init.layoutTagFacets.excludeLabel");
     }
 
     /**

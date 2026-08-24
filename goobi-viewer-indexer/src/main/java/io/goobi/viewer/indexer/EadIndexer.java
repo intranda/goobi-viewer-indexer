@@ -28,6 +28,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.stream.IntStream;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -74,7 +75,7 @@ public class EadIndexer extends Indexer {
 
     private ForkJoinPool pool;
 
-    protected Namespace eadNamespace = SolrIndexerDaemon.getInstance().getConfiguration().getNamespaces().get("ead3");
+    protected Namespace eadNamespace = NAMESPACE_EAD2;
 
     /**
      * Constructor.
@@ -85,7 +86,6 @@ public class EadIndexer extends Indexer {
     public EadIndexer(Hotfolder hotfolder) {
         super();
         this.hotfolder = hotfolder;
-        SolrIndexerDaemon.getInstance().getConfiguration().getNamespaces().put("ead", NAMESPACE_EAD2);
     }
 
     /**
@@ -99,7 +99,6 @@ public class EadIndexer extends Indexer {
     public EadIndexer(Hotfolder hotfolder, HttpConnector httpConnector) {
         super(httpConnector);
         this.hotfolder = hotfolder;
-        SolrIndexerDaemon.getInstance().getConfiguration().getNamespaces().put("ead", NAMESPACE_EAD2);
     }
 
     /** {@inheritDoc} */
@@ -197,6 +196,9 @@ public class EadIndexer extends Indexer {
         ISolrWriteStrategy writeStrategy = inWriteStrategy;
         try {
             initJDomXP(eadFile);
+            // Bind the 'ead' prefix to this record's EAD namespace (EAD2 or EAD3) on this JDomXP instance only,
+            // so 'ead:' XPath expressions resolve correctly without mutating the shared configuration.
+            xp.addNamespace(eadNamespace);
             IndexObject indexObj = new IndexObject(getNextIddoc());
             logger.debug("IDDOC: {}", indexObj.getIddoc());
             Element structNode = findStructNode();
@@ -314,11 +316,14 @@ public class EadIndexer extends Indexer {
      * @return List of <code>LuceneField</code>s to inherit up the hierarchy.
      * @throws java.io.IOException
      * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException
+     * @should assign contiguous sibling order to all children in parallel
+     * @should index ead3 namespace children correctly
      */
     protected List<IndexObject> indexAllChildren(IndexObject parentIndexObject, int depth, ISolrWriteStrategy writeStrategy,
             boolean allowParallelProcessing) throws IOException, FatalIndexerException {
         logger.debug("indexAllChildren: {}", depth);
-        List<IndexObject> ret = new ArrayList<>();
+        // Thread-safe because the parallel branch below adds from multiple worker threads; order of ret is irrelevant to callers
+        List<IndexObject> ret = Collections.synchronizedList(new ArrayList<>());
 
         List<Element> childrenNodeList;
         if ("c".equals(parentIndexObject.getRootStructNode().getName())) {
@@ -343,9 +348,11 @@ public class EadIndexer extends Indexer {
             logger.info("Processing {} nodes in parallel in {} threads (node depth={})...", childrenNodeList.size(),
                     SolrIndexerDaemon.getInstance().getConfiguration().getThreads(), depth);
             pool = new ForkJoinPool(SolrIndexerDaemon.getInstance().getConfiguration().getThreads());
+            // Snapshot into an ArrayList so get(order) is O(1); JDOM2's filtered child list has O(n) random access
+            final List<Element> children = new ArrayList<>(childrenNodeList);
             try {
-                pool.submit(() -> childrenNodeList.parallelStream().forEachOrdered(node -> {
-                    int order = childrenNodeList.indexOf(node); // TODO This is expensive (O(n))
+                pool.submit(() -> IntStream.range(0, children.size()).parallel().forEach(order -> {
+                    Element node = children.get(order);
                     try {
                         // Do not use parallel processing in recursion
                         IndexObject obj = indexChild(node, parentIndexObject, depth, order, writeStrategy, false);

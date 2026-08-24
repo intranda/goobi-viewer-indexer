@@ -40,8 +40,7 @@ public class Ead3Indexer extends EadIndexer {
      */
     public Ead3Indexer(Hotfolder hotfolder) {
         super(hotfolder);
-        eadNamespace = SolrIndexerDaemon.getInstance().getConfiguration().getNamespaces().get("ead3");
-        SolrIndexerDaemon.getInstance().getConfiguration().getNamespaces().put("ead", NAMESPACE_EAD3);
+        eadNamespace = NAMESPACE_EAD3;
     }
 
     /**
@@ -51,7 +50,6 @@ public class Ead3Indexer extends EadIndexer {
      */
     public Ead3Indexer(Hotfolder hotfolder, HttpConnector httpConnector) {
         super(hotfolder, httpConnector);
-        eadNamespace = SolrIndexerDaemon.getInstance().getConfiguration().getNamespaces().get("ead3");
-        SolrIndexerDaemon.getInstance().getConfiguration().getNamespaces().put("ead", NAMESPACE_EAD3);
+        eadNamespace = NAMESPACE_EAD3;
     }
 }

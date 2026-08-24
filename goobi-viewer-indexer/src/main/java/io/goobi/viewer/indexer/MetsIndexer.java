@@ -34,12 +34,15 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -115,6 +118,10 @@ public class MetsIndexer extends Indexer {
 
     protected static final String XPATH_DMDSEC = "/mets:mets/mets:dmdSec[@ID='"; //NOSONAR XPath, not URI
     public static final String XPATH_FILE = "mets:file";
+    /** Leading path (relative to the mets:mdWrap) of a MODS collection XPath; only such XPaths can be bootstrapped into new elements. */
+    private static final String MODS_COLLECTION_XPATH_PREFIX = "mets:xmlData/mods:mods/";
+    /** Matches a simple literal attribute predicate such as {@code @authority="ivdcc"} or {@code @authority='GDZ'} inside a collection XPath. */
+    private static final Pattern COLLECTION_ATTRIBUTE_PREDICATE_PATTERN = Pattern.compile("@([\\w.-]+)\\s*=\\s*['\"]([^'\"]*)['\"]");
     protected static final String XPATH_FILEGRP = "/mets:mets/mets:fileSec/mets:fileGrp[@USE=\""; //NOSONAR XPath, not URI
     private static final String XPATH_ANCHOR_PI_PART =
             "/mets:mdWrap[@MDTYPE='MODS']/mets:xmlData/mods:mods/mods:relatedItem[@type='host']"
@@ -541,8 +548,11 @@ public class MetsIndexer extends Indexer {
             // If this is a NEW volume, its anchor gained a volume: flag the anchor for deferred, coalesced
             // reconciliation of NUMVOLUMES + METS. Pure metadata updates (unchanged volume count) do not flag it,
             // and a bulk import of many volumes re-indexes the anchor once per batch instead of once per volume.
-            if (indexObj.isVolume() && !indexObj.isUpdate() && indexObj.getParent() != null) {
-                logger.info("New volume of anchor '{}' - flagging anchor for reconciliation.", indexObj.getParent().getPi());
+            // When volume collections are copied up into anchors, volume metadata updates must flag the anchor too, since a
+            // changed collection does not change the volume count but still requires the anchor to be re-merged.
+            if (indexObj.isVolume() && indexObj.getParent() != null
+                    && (!indexObj.isUpdate() || hotfolder.isAddVolumeCollectionsToAnchor())) {
+                logger.info("Volume of anchor '{}' - flagging anchor for reconciliation.", indexObj.getParent().getPi());
                 hotfolder.flagAnchorForReconciliation(indexObj.getParent().getPi());
             }
 
@@ -1202,12 +1212,12 @@ public class MetsIndexer extends Indexer {
         Map<String, String> urnInfo = new HashMap<>();
         Map<String, String> typeInfo = new HashMap<>();
         List<String> childrenInfoUnsorted = new ArrayList<>();
-        List<String> collections = new ArrayList<>();
+        Map<String, List<String>> collectionsByField = new LinkedHashMap<>();
         boolean labelSort = false;
         // Collect volume info
         for (SolrDocument doc : hits) {
-            if (collectVolumeInfo(doc, orderInfo, urnInfo, typeInfo, labelInfo, childrenInfo, collections, childrenInfoUnsorted,
-                    hotfolder.isAddVolumeCollectionsToAnchor())) {
+            if (collectVolumeInfo(doc, orderInfo, urnInfo, typeInfo, labelInfo, childrenInfo, collectionsByField, childrenInfoUnsorted,
+                    hotfolder.getAddVolumeCollectionsToAnchorFields())) {
                 labelSort = true;
             }
         }
@@ -1236,7 +1246,7 @@ public class MetsIndexer extends Indexer {
         // Merge anchor and volume collections and add them all to the anchor
         boolean newAnchorCollections = false;
         if (hotfolder.isAddVolumeCollectionsToAnchor()) {
-            newAnchorCollections = addVolumeCollectionsToAnchor(indexObj, collections);
+            newAnchorCollections = addVolumeCollectionsToAnchor(indexObj, collectionsByField);
         }
 
         // Generate volume elements
@@ -1265,15 +1275,15 @@ public class MetsIndexer extends Indexer {
      * @param typeInfo
      * @param labelInfo
      * @param childrenInfo
-     * @param collections
+     * @param collectionsByField collected volume collection values, keyed by Solr field name (populated for each field in collectionFields)
      * @param childrenInfoUnsorted
-     * @param addVolumeCollectionsToAnchor
+     * @param collectionFields Solr field names whose values are collected from the volume for merging into the anchor; may be empty
      * @return true if volumes are sorted by label; false otherwise
      * @throws IndexerException
      */
     private static boolean collectVolumeInfo(SolrDocument doc, Map<String, Long> orderInfo, Map<String, String> urnInfo, Map<String, String> typeInfo,
-            Map<String, String> labelInfo, Map<Long, String> childrenInfo, List<String> collections, List<String> childrenInfoUnsorted,
-            boolean addVolumeCollectionsToAnchor) throws IndexerException {
+            Map<String, String> labelInfo, Map<Long, String> childrenInfo, Map<String, List<String>> collectionsByField,
+            List<String> childrenInfoUnsorted, List<String> collectionFields) throws IndexerException {
         boolean ret = false;
 
         String pi = null;
@@ -1324,19 +1334,54 @@ public class MetsIndexer extends Indexer {
             ret = true;
         }
 
-        // Collect all volume collections
-        if (addVolumeCollectionsToAnchor && doc.getFieldValues(SolrConstants.DC) != null) {
-            for (Object obj : doc.getFieldValues(SolrConstants.DC)) {
-                String dc = (String) obj;
-                dc = dc.replace(".", "#");
-                if (!collections.contains(dc)) {
-                    logger.debug("Found volume colletion: {}", dc);
-                    collections.add(dc);
+        // Collect all configured volume collection fields (e.g. DC), keeping each field's values separate so they are merged back
+        // into the matching anchor elements only.
+        if (collectionFields != null) {
+            for (String field : collectionFields) {
+                Collection<Object> values = doc.getFieldValues(field);
+                if (values == null) {
+                    continue;
+                }
+                String splittingChar = getSplittingCharacter(field);
+                List<String> fieldCollections = collectionsByField.computeIfAbsent(field, k -> new ArrayList<>());
+                for (Object obj : values) {
+                    String value = (String) obj;
+                    if (StringUtils.isNotEmpty(splittingChar)) {
+                        // Convert the indexed hierarchy separator "." back to the field's splitting character so the value round-trips
+                        // to "." again when the rebuilt anchor is re-indexed (see MetadataHelper.toOneToken).
+                        value = value.replace(".", splittingChar);
+                    }
+                    if (!fieldCollections.contains(value)) {
+                        logger.debug("Found volume collection for field {}: {}", field, value);
+                        fieldCollections.add(value);
+                    }
                 }
             }
         }
 
         return ret;
+    }
+
+    /**
+     * Returns the configured splitting character for the given metadata field, or null if none is configured.
+     *
+     * @param field Solr field name
+     * @return the splitting character; null if the field is not configured or has no splitting character
+     */
+    private static String getSplittingCharacter(String field) {
+        List<FieldConfig> configs = SolrIndexerDaemon.getInstance()
+                .getConfiguration()
+                .getMetadataConfigurationManager()
+                .getConfigurationListForField(field);
+        if (configs != null) {
+            for (FieldConfig config : configs) {
+                if (StringUtils.isNotEmpty(config.getSplittingCharacter())) {
+                    return config.getSplittingCharacter();
+                }
+            }
+        }
+
+        return null;
     }
 
     /**
@@ -1418,83 +1463,195 @@ public class MetsIndexer extends Indexer {
         Path updatedAnchorFile =
                 Utils.getCollisionFreeDataFilePath(hotfolder.getHotfolderPath().toAbsolutePath().toString(), pi, "#", extension);
 
-        xp.writeDocumentToFile(updatedAnchorFile.toAbsolutePath().toString());
-        if (Files.exists(updatedAnchorFile)) {
+        // The path is already reserved (an empty file exists), so gate the enqueue on the actual write success
+        // rather than on Files.exists(), and clean up the empty reservation if writing failed.
+        boolean written = xp.writeDocumentToFile(updatedAnchorFile.toAbsolutePath().toString());
+        if (written) {
             hotfolder.getHighPriorityQueue().add(updatedAnchorFile);
+        } else {
+            try {
+                Files.deleteIfExists(updatedAnchorFile);
+            } catch (IOException e) {
+                logger.warn("Could not remove empty reserved anchor file '{}': {}", updatedAnchorFile, e.getMessage());
+            }
         }
     }
 
     /**
-     * 
-     * @param indexObj
-     * @param collections
+     * Merges the collected volume collection values into the anchor's MODS section, one configured field at a time. If the anchor already
+     * contains matching collection elements for a field they are used as a template; otherwise a new element is synthesized from the field's
+     * configured XPath so an anchor that has no collection of its own still receives its volumes' collections.
+     *
+     * @param indexObj the anchor {@link IndexObject}
+     * @param collectionsByField collected volume collection values keyed by Solr field name
      * @return true if new collections were added; false otherwise
      */
-    protected boolean addVolumeCollectionsToAnchor(IndexObject indexObj, List<String> collections) {
-        boolean ret = false;
+    protected boolean addVolumeCollectionsToAnchor(IndexObject indexObj, Map<String, List<String>> collectionsByField) {
         List<Element> eleDmdSecList =
                 xp.evaluateToElements(XPATH_DMDSEC + indexObj.getDmdid() + "']/mets:mdWrap[@MDTYPE='MODS' or @MDTYPE='MARC']", null);
-        if (eleDmdSecList != null && !eleDmdSecList.isEmpty()) {
-            Element eleDmdSec = eleDmdSecList.get(0);
-            List<Element> eleModsList = xp.evaluateToElements("mets:xmlData/mods:mods", eleDmdSec); // TODO MARC
-            if (eleModsList != null && !eleModsList.isEmpty()) {
-                Element eleMods = eleModsList.get(0);
-                List<FieldConfig> collectionConfigFields =
-                        SolrIndexerDaemon.getInstance()
-                                .getConfiguration()
-                                .getMetadataConfigurationManager()
-                                .getConfigurationListForField(SolrConstants.DC);
-                if (collectionConfigFields != null) {
-                    logger.debug("Found {} config items for DC", collectionConfigFields.size());
-                    for (FieldConfig item : collectionConfigFields) {
-                        for (XPathConfig xPathConfig : item.getxPathConfigurations()) {
-                            List<Element> eleCollectionList = xp.evaluateToElements(xPathConfig.getxPath(), eleDmdSec);
-                            if (eleCollectionList != null && !eleCollectionList.isEmpty()) {
-                                logger.debug("XPath used for collections in this document: {}", xPathConfig.getxPath());
-                                for (Element eleCollection : eleCollectionList) {
-                                    String oldCollection = eleCollection.getTextTrim();
-                                    oldCollection = oldCollection.toLowerCase();
-                                    if (StringUtils.isNotEmpty(xPathConfig.getPrefix())) {
-                                        oldCollection = xPathConfig.getPrefix() + oldCollection;
-                                    }
-                                    if (StringUtils.isNotEmpty(xPathConfig.getSuffix())) {
-                                        oldCollection = oldCollection + xPathConfig.getSuffix();
-                                    }
-                                    if (!collections.contains(oldCollection)) {
-                                        collections.add(oldCollection);
-                                        logger.debug("Found anchor collection: {}", oldCollection);
-                                    }
-                                }
-                                Collections.sort(collections);
-                                if (collections.size() > eleCollectionList.size()) {
-                                    ret = true;
-                                }
-                                Element eleCollectionTemplate = eleCollectionList.get(0);
-                                // Remove old collection elements
-                                for (Element eleOldCollection : eleCollectionList) {
-                                    eleMods.removeContent(eleOldCollection);
-                                    logger.debug("Removing collection from the anchor: {}", eleOldCollection.getText());
-                                }
-                                // Add new collection elements
-                                for (String collection : collections) {
-                                    Element eleNewCollection = eleCollectionTemplate.clone();
-                                    eleNewCollection.setText(collection);
-                                    eleMods.addContent(eleNewCollection);
-                                    logger.debug("Adding collection to the anchor: {}", collection);
-                                }
-                                break;
-                            }
-                        }
-                    }
-                }
-            } else {
-                logger.error("Could not find the MODS section for '{}'", indexObj.getDmdid());
-            }
-        } else {
+        if (eleDmdSecList == null || eleDmdSecList.isEmpty()) {
             logger.error("Could not find the MODS section for '{}'", indexObj.getDmdid());
+            return false;
+        }
+        Element eleDmdSec = eleDmdSecList.get(0);
+        List<Element> eleModsList = xp.evaluateToElements("mets:xmlData/mods:mods", eleDmdSec); // TODO MARC
+        if (eleModsList == null || eleModsList.isEmpty()) {
+            logger.error("Could not find the MODS section for '{}'", indexObj.getDmdid());
+            return false;
+        }
+        Element eleMods = eleModsList.get(0);
+
+        boolean ret = false;
+        for (Map.Entry<String, List<String>> entry : collectionsByField.entrySet()) {
+            if (mergeFieldCollectionsIntoAnchor(entry.getKey(), entry.getValue(), eleDmdSec, eleMods)) {
+                ret = true;
+            }
         }
 
         return ret;
+    }
+
+    /**
+     * Merges the given collection values for a single field into the anchor's MODS section, using existing collection elements as a template
+     * when present or synthesizing a new element otherwise.
+     *
+     * @param field Solr field name
+     * @param collections collection values gathered from the volumes for this field; anchor values are merged in and the list is sorted
+     * @param eleDmdSec the anchor's mets:mdWrap element (XPath evaluation context)
+     * @param eleMods the anchor's mods:mods element to add/remove collection elements from
+     * @return true if new collection values were added to the anchor; false otherwise
+     */
+    private boolean mergeFieldCollectionsIntoAnchor(String field, List<String> collections, Element eleDmdSec, Element eleMods) {
+        List<FieldConfig> collectionConfigFields = SolrIndexerDaemon.getInstance()
+                .getConfiguration()
+                .getMetadataConfigurationManager()
+                .getConfigurationListForField(field);
+        if (collectionConfigFields == null) {
+            return false;
+        }
+        logger.debug("Found {} config items for {}", collectionConfigFields.size(), field);
+        for (FieldConfig item : collectionConfigFields) {
+            for (XPathConfig xPathConfig : item.getxPathConfigurations()) {
+                List<Element> eleCollectionList = xp.evaluateToElements(xPathConfig.getxPath(), eleDmdSec);
+                if (eleCollectionList != null && !eleCollectionList.isEmpty()) {
+                    logger.debug("XPath used for collections in this document: {}", xPathConfig.getxPath());
+                    for (Element eleCollection : eleCollectionList) {
+                        String oldCollection = eleCollection.getTextTrim().toLowerCase();
+                        if (StringUtils.isNotEmpty(xPathConfig.getPrefix())) {
+                            oldCollection = xPathConfig.getPrefix() + oldCollection;
+                        }
+                        if (StringUtils.isNotEmpty(xPathConfig.getSuffix())) {
+                            oldCollection = oldCollection + xPathConfig.getSuffix();
+                        }
+                        if (!collections.contains(oldCollection)) {
+                            collections.add(oldCollection);
+                            logger.debug("Found anchor collection: {}", oldCollection);
+                        }
+                    }
+                    Collections.sort(collections);
+                    boolean added = collections.size() > eleCollectionList.size();
+                    Element eleCollectionTemplate = eleCollectionList.get(0);
+                    // Remove old collection elements
+                    for (Element eleOldCollection : eleCollectionList) {
+                        eleMods.removeContent(eleOldCollection);
+                        logger.debug("Removing collection from the anchor: {}", eleOldCollection.getText());
+                    }
+                    // Add new collection elements
+                    for (String collection : collections) {
+                        Element eleNewCollection = eleCollectionTemplate.clone();
+                        eleNewCollection.setText(collection);
+                        eleMods.addContent(eleNewCollection);
+                        logger.debug("Adding collection to the anchor: {}", collection);
+                    }
+                    return added;
+                }
+            }
+        }
+
+        // The anchor has no existing collection element for this field: synthesize one so its volumes' collections are still added.
+        return bootstrapFieldCollections(field, collections, collectionConfigFields, eleMods);
+    }
+
+    /**
+     * Creates new collection elements in the anchor's MODS section for a field that has no existing collection element, synthesizing the
+     * element from the field's first usable configured XPath.
+     *
+     * @param field Solr field name (for logging)
+     * @param collections collection values to add
+     * @param collectionConfigFields the field's configuration
+     * @param eleMods the anchor's mods:mods element
+     * @return true if elements were created; false if no suitable XPath could be used
+     */
+    private boolean bootstrapFieldCollections(String field, List<String> collections, List<FieldConfig> collectionConfigFields, Element eleMods) {
+        if (collections.isEmpty()) {
+            return false;
+        }
+        for (FieldConfig item : collectionConfigFields) {
+            for (XPathConfig xPathConfig : item.getxPathConfigurations()) {
+                Element template = buildCollectionElement(xPathConfig.getxPath());
+                if (template != null) {
+                    Collections.sort(collections);
+                    for (String collection : collections) {
+                        Element eleNewCollection = template.clone();
+                        eleNewCollection.setText(collection);
+                        eleMods.addContent(eleNewCollection);
+                        logger.debug("Bootstrapping collection element for field {} in the anchor: {}", field, collection);
+                    }
+                    return true;
+                }
+            }
+        }
+        logger.warn("Cannot add volume collections for field '{}' to the anchor: no configured XPath can be used to create a collection "
+                + "element (the anchor has no existing collection element to use as a template).", field);
+        return false;
+    }
+
+    /**
+     * Builds an empty JDOM element matching the last location step of the given MODS collection XPath, so a value placed in it is re-matched by
+     * the same XPath when the anchor is re-indexed. Only single mods-subtree element steps are supported; attribute steps (e.g.
+     * {@code .../@valueURI}), deeper paths and non-mods or unknown namespace prefixes yield null.
+     *
+     * @param xpath configured metadata XPath
+     * @return a new element with the resolved namespace and any literal attribute predicate set; null if the step cannot be represented as an
+     *         element under mods:mods
+     */
+    Element buildCollectionElement(String xpath) {
+        if (StringUtils.isEmpty(xpath) || !xpath.startsWith(MODS_COLLECTION_XPATH_PREFIX)) {
+            return null;
+        }
+        String step = xpath.substring(MODS_COLLECTION_XPATH_PREFIX.length());
+        // Only a single element step (no further navigation, no attribute selection) can be synthesized under mods:mods
+        if (step.isEmpty() || step.startsWith("@") || step.contains("/")) {
+            return null;
+        }
+        String qName = step;
+        String predicate = null;
+        int bracket = step.indexOf('[');
+        if (bracket >= 0) {
+            qName = step.substring(0, bracket);
+            predicate = step.substring(bracket);
+        }
+        int colon = qName.indexOf(':');
+        if (colon < 0) {
+            return null;
+        }
+        String prefix = qName.substring(0, colon);
+        String localName = qName.substring(colon + 1);
+        Namespace ns = SolrIndexerDaemon.getInstance().getConfiguration().getNamespaces().get(prefix);
+        if (ns == null || localName.isEmpty()) {
+            return null;
+        }
+        Element element = new Element(localName, ns);
+        // Apply a simple literal attribute predicate (e.g. [@authority="ivdcc"]) so the created element is re-matched by the XPath. For an
+        // or-joined list the first literal is used; a non-attribute predicate such as [not(@*)] leaves the element without attributes.
+        if (predicate != null) {
+            Matcher matcher = COLLECTION_ATTRIBUTE_PREDICATE_PATTERN.matcher(predicate);
+            if (matcher.find()) {
+                element.setAttribute(matcher.group(1), matcher.group(2));
+            }
+        }
+
+        return element;
     }
 
     /**
