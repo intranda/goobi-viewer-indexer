@@ -182,6 +182,9 @@ public final class SolrConstants {
     public static final String MONTHDAY = "MONTHDAY";
     /** Constant <code>NAMEDENTITIES="NAMEDENTITIES"</code> */
     public static final String NAMEDENTITIES = "NAMEDENTITIES";
+    /** Solr field for the distinct ALTO {@code <LayoutTag>} labels applied on a page (facetable). Also used as the
+     * transport map key between TextHelper and FulltextAugmentor (1:1 with the field). */
+    public static final String MD_LAYOUTTAG = "MD_LAYOUTTAG";
     /** Constant <code>NORMDATATERMS="NORMDATATERMS"</code> */
     public static final String NORMDATATERMS = "NORMDATATERMS";
     /** Constant <code>NUMPAGES="NUMPAGES"</code> */

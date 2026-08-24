@@ -408,6 +408,19 @@ public final class Configuration {
 
     /**
      * <p>
+     * ALTO layout-tag LABELs to exclude from the layout-annotation/markup facet fields (e.g. the printed-text label).
+     * Collection-specific, so there is no default; deployments list the labels they want kept out of the facets.
+     * </p>
+     *
+     * @return list of layout-tag labels to exclude; empty if none configured
+     * @should return configured exclude labels
+     */
+    public List<String> getLayoutTagFacetExcludeLabels() {
+        return getStringList("init.layoutTagFacets.excludeLabel");
+    }
+
+    /**
+     * <p>
      * isAddLabelToChildren.
      * </p>
      *

@@ -16,6 +16,7 @@
 package io.goobi.viewer.indexer.helper;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -23,6 +24,7 @@ import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -31,11 +33,12 @@ import org.apache.solr.common.SolrInputDocument;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import io.goobi.viewer.indexer.AbstractTest;
 import io.goobi.viewer.indexer.Indexer;
 import io.goobi.viewer.indexer.model.SolrConstants;
 import io.goobi.viewer.indexer.model.datarepository.DataRepository;
 
-class FulltextAugmentorTest {
+class FulltextAugmentorTest extends AbstractTest {
 
     /**
      * @see Indexer#addIndexFieldsFromAltoData(SolrInputDocument,Map,Map,String,String,String,int,boolean)
@@ -248,6 +251,27 @@ class FulltextAugmentorTest {
     @Test
     void cleanUpNamedEntityValue_shouldThrowIllegalArgumentExceptionGivenNull() {
         Assertions.assertThrows(IllegalArgumentException.class, () -> FulltextAugmentor.cleanUpNamedEntityValue(null));
+    }
+
+    /**
+     * @see FulltextAugmentor#addLayoutTagFields(Map,SolrInputDocument)
+     * @verifies add layout tag fields
+     * @verifies skip excluded labels
+     */
+    @Test
+    void addLayoutTagFields_shouldWriteLayoutTagField() throws Exception {
+        Map<String, Object> altoData = TextHelper.readAltoFile(new File("src/test/resources/ALTO/layoutTags.xml"));
+        SolrInputDocument doc = new SolrInputDocument(new HashMap<>());
+
+        FulltextAugmentor.addLayoutTagFields(altoData, doc);
+
+        Collection<Object> labels = doc.getFieldValues(SolrConstants.MD_LAYOUTTAG);
+        assertNotNull(labels);
+        assertTrue(labels.contains("gr_jacob_grimm"));
+        assertTrue(labels.contains("gr_wilhelm_grimm"));
+        assertTrue(labels.contains("gr_unterstrichen"));
+        // gr_printed is configured as an excluded label in config_indexer.test.xml
+        assertFalse(labels.contains("gr_printed"));
     }
 
 }
