@@ -228,6 +228,12 @@ public final class MetadataHelper {
                         logger.error("An XPath expression for {} is null.", configurationItem.getFieldname());
                         continue;
                     }
+                    // A single field configuration may bundle expressions for several source formats. Evaluating a foreign format's expression
+                    // never yields a value, but an absolute one ('//foo:bar') is rescanned from the document root for every element, which is
+                    // prohibitively expensive on large records.
+                    if (!xpathConfig.appliesTo(indexObj.getSourceDocFormat())) {
+                        continue;
+                    }
                     String xpath = xpathConfig.getxPath();
                     String fieldValue = "";
                     String query;
