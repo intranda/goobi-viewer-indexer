@@ -33,7 +33,7 @@
 
 		<!-- Checkstyle -->
 		<checkstyle.max.violations>0</checkstyle.max.violations>
-		<skipCheckstyle>true</skipCheckstyle>
+		<checkstyle.skip>true</checkstyle.skip>
 
 		<!-- Manifest information -->
 		<maven.build.timestamp.format>yyyy-MM-dd HH:mm</maven.build.timestamp.format>
@@ -41,7 +41,7 @@
 
 		<!-- intranda libraries -->
 		<alto.version>1.8.0</alto.version>
-		<iiif-api-model.version>3.2.1</iiif-api-model.version>
+		<iiif-api-model.version>3.3.0</iiif-api-model.version>
 		<normdataimporter.version>2.1.5</normdataimporter.version>
 
 		<!-- other libraries -->
@@ -328,7 +328,7 @@
 			</plugin>
 			<plugin>
 				<artifactId>maven-compiler-plugin</artifactId>
-				<version>3.15.0</version>
+				<version>3.16.0</version>
 				<configuration>
 					<compilerArgs>
 						<!-- Explicitly enable annotation processing -->
@@ -484,7 +484,7 @@
 			<plugin>
 				<groupId>org.jacoco</groupId>
 				<artifactId>jacoco-maven-plugin</artifactId>
-				<version>0.8.14</version>
+				<version>0.8.15</version>
 				<executions>
 					<execution>
 						<goals>
@@ -548,7 +548,6 @@
 						<id>checkstyle-check</id>
 						<phase>verify</phase>
 						<configuration>
-							<skip>${skipCheckstyle}</skip>
 							<failOnViolation>true</failOnViolation>
 							<failsOnError>false</failsOnError>
 							<logViolationsToConsole>true</logViolationsToConsole>
