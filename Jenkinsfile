@@ -34,7 +34,7 @@ pipeline {
       }
       steps {
         sh 'git clean -fdx'
-        sh 'mvn -f goobi-viewer-indexer/pom.xml -DskipTests=false -DskipDependencyCheck=false -DskipCheckstyle=false clean verify -U'
+        sh 'mvn -f goobi-viewer-indexer/pom.xml -DskipTests=false -DskipDependencyCheck=false -Dcheckstyle.skip=false clean verify -U'
         dependencyCheckPublisher pattern: '**/target/dependency-check-report.xml'
         stash includes: '**/target/*.jar, */src/main/resources/*.xml, */src/main/resources/other/schema.xml', name:  'app'
       }
@@ -58,7 +58,7 @@ pipeline {
       }
       steps {
         sh 'git clean -fdx'
-        sh 'mvn -f goobi-viewer-indexer/pom.xml -DskipTests=false -DskipDependencyCheck=false -DskipCheckstyle=false -DfailOnSnapshot=true clean verify -U'
+        sh 'mvn -f goobi-viewer-indexer/pom.xml -DskipTests=false -DskipDependencyCheck=false -Dcheckstyle.skip=false -DfailOnSnapshot=true clean verify -U'
         dependencyCheckPublisher pattern: '**/target/dependency-check-report.xml'
         stash includes: '**/target/*.jar, */src/main/resources/*.xml, */src/main/resources/other/schema.xml', name:  'app'
       }

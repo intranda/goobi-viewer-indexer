@@ -124,7 +124,7 @@ public final class MetadataConfigurationManager {
                         }
                         String prefix = sub.getString(XML_PATH_ATTRIBUTE_PREFIX);
                         String suffix = sub.getString(XML_PATH_ATTRIBUTE_SUFFIX);
-                        fieldConfig.getxPathConfigurations().add(new XPathConfig(xpath, prefix, suffix));
+                        fieldConfig.getxPathConfigurations().add(new XPathConfig(xpath, prefix, suffix, fieldname));
                         fieldConfig.checkXpathSupportedFormats(xpath);
                     }
                 }
