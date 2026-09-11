@@ -1209,6 +1209,8 @@
 						<field name="MD_TERMSOFADDRESS">mods:namePart[@type="termsOfAddress"]</field>
                         <field name="NORM_URI">@identifier</field>
 					</groupEntity>
+					<!-- MARC name subfields end on a comma ("Suchten, Alexander von,") -->
+					<replace regex=", ?$"></replace>
 				</item>
 			</list>
 		</MD_AUTHOR>

@@ -122,6 +122,30 @@ class MetadataHelperTest extends AbstractTest {
 
     /**
      * @see MetadataHelper#getGroupedMetadata(Element,GroupEntity,FieldConfig,String,StringBuilder,List,JDomXP)
+     * @verifies strip the trailing comma from marc name subfields
+     */
+    @Test
+    void getGroupedMetadata_shouldStripTheTrailingCommaFromMarcNameSubfields() throws Exception {
+        Configuration shippedConfig = new Configuration(new File("src/main/resources/config_indexer.xml").getAbsolutePath());
+        List<FieldConfig> fieldConfigurations = shippedConfig.getMetadataConfigurationManager().getConfigurationListForField("MD_AUTHOR");
+        assertNotNull(fieldConfigurations);
+        FieldConfig fieldConfig = fieldConfigurations.get(0);
+
+        Document docMarc = JDomXP.readXmlFile("src/test/resources/METS/VoorbeeldMETS_9940609919905131.xml");
+        assertNotNull(docMarc);
+        List<Element> dataFields = JDomXP.evaluateToElementsStatic("//datafield[@tag='100']", docMarc);
+        assertNotNull(dataFields);
+        assertEquals(1, dataFields.size());
+
+        GroupedMetadata gmd = MetadataHelper.getGroupedMetadata(dataFields.get(0), fieldConfig.getGroupEntity(), fieldConfig, "MD_AUTHOR",
+                new StringBuilder(), new ArrayList<>(), new JDomXP(docMarc));
+
+        // MARC name subfields carry a trailing comma ("Suchten, Alexander von,") that must not reach the index
+        assertEquals("Suchten, Alexander von", gmd.getMainValue());
+    }
+
+    /**
+     * @see MetadataHelper#getGroupedMetadata(Element,GroupEntity,FieldConfig,String,StringBuilder,List,JDomXP)
      * @verifies not add values from expressions of other formats
      */
     @Test
