@@ -19,6 +19,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -117,6 +118,43 @@ class MetadataHelperTest extends AbstractTest {
     @Test
     void applyIdentifierModifications_shouldApplyReplaceRules() {
         assertEquals("ID_10t", MetadataHelper.applyIdentifierModifications("replaceme/ID,10t/replacemetoo"));
+    }
+
+    /**
+     * @see MetadataHelper#getGroupedMetadata(Element,GroupEntity,FieldConfig,String,StringBuilder,List,JDomXP)
+     * @verifies not add values from expressions of other formats
+     */
+    @Test
+    void getGroupedMetadata_shouldNotAddValuesFromExpressionsOfOtherFormats() throws Exception {
+        // Deliberately the shipped configuration rather than a test configuration: the person group
+        // entities only there map MD_VALUE from MODS, MARC and EAD expressions side by side, and the
+        // test configurations cover neither that combination nor MD_ADDRESSEE at all.
+        Configuration shippedConfig = new Configuration(new File("src/main/resources/config_indexer.xml").getAbsolutePath());
+        List<FieldConfig> fieldConfigurations = shippedConfig.getMetadataConfigurationManager().getConfigurationListForField("MD_AUTHOR");
+        assertNotNull(fieldConfigurations);
+        assertEquals(1, fieldConfigurations.size());
+        FieldConfig fieldConfig = fieldConfigurations.get(0);
+        assertNotNull(fieldConfig.getGroupEntity());
+
+        Document docMods = JDomXP.readXmlFile("src/test/resources/METS/aggregation_mods_test.xml");
+        assertNotNull(docMods);
+        Element eleName = docMods.getRootElement().getChild("name", SolrIndexerDaemon.getInstance().getConfiguration().getNamespaces().get("mods"));
+        assertNotNull(eleName);
+
+        GroupedMetadata gmd = MetadataHelper.getGroupedMetadata(eleName, fieldConfig.getGroupEntity(), fieldConfig, "MD_AUTHOR",
+                new StringBuilder(), new ArrayList<>(), new JDomXP(docMods));
+
+        List<String> valueList = new ArrayList<>(1);
+        for (LuceneField field : gmd.getFields()) {
+            if (SolrConstants.MD_VALUE.equals(field.getField())) {
+                valueList.add(field.getValue());
+            }
+        }
+        // The EAD expression must not contribute anything to a MODS record
+        assertEquals(List.of("Display_Form"), valueList);
+        // The main value decides both the displayed value and, via equals(), the identity of the
+        // group entity - a value shared by all persons of a record collapses them into one
+        assertEquals("Display_Form", gmd.getMainValue());
     }
 
     /**
