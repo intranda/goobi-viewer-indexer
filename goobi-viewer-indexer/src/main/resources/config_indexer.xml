@@ -2938,7 +2938,7 @@
 					<addToDefault>true</addToDefault>
 					<onefield>false</onefield>
 					<groupEntity type="LOCATION">
-						<field name="MD_VALUE">concat(intranda:longitude/text(), " / ", intranda:latitude/text())</field>
+						<field name="MD_VALUE">concat(intranda:longitude/text(), substring(" / ",1,3*boolean(intranda:longitude|intranda:latitude)), intranda:latitude/text())</field>
 					</groupEntity>
 				</item>
 			</list>
@@ -2958,7 +2958,7 @@
 					<onefield>false</onefield>
 					<geoJSONSource separator=" / " addSearchField="true">mods:coordinates/point</geoJSONSource>
 					<groupEntity type="LOCATION">
-						<field name="MD_VALUE">concat(intranda:longitude/text(), " / ", intranda:latitude/text())</field>
+						<field name="MD_VALUE">concat(intranda:longitude/text(), substring(" / ",1,3*boolean(intranda:longitude|intranda:latitude)), intranda:latitude/text())</field>
 					</groupEntity>
 				</item>
 			</list>
@@ -3391,7 +3391,7 @@
                     <xpath>mets:xmlData/mix:mix/mix:BasicImageInformation/mix:BasicImageCharacteristics</xpath>
                     <addToDefault>false</addToDefault>
                     <groupEntity type="OTHER">
-                        <field name="MD_VALUE">concat(mix:imageWidth, ' x ', mix:imageHeight)</field>
+                        <field name="MD_VALUE">concat(mix:imageWidth, substring(' x ',1,3*boolean(mix:imageWidth|mix:imageHeight)), mix:imageHeight)</field>
                         <field name="MD_TECH_IMAGE_WIDTH">mix:imageWidth</field>
                         <field name="MD_TECH_IMAGE_HEIGHT">mix:imageHeight</field>
                         <field name="MD_TECH_IMAGE_COLOR_SPACE">mix:PhotometricInterpretation/mix:colorSpace</field>
@@ -3930,7 +3930,7 @@
 					<xpath>mets:xmlData/mix:mix/mix:BasicImageInformation/mix:BasicImageCharacteristics</xpath>
 					<addToDefault>false</addToDefault>
 					<groupEntity type="OTHER">
-						<field name="MD_VALUE">concat(mix:imageWidth, ' x ', mix:imageHeight)</field>
+						<field name="MD_VALUE">concat(mix:imageWidth, substring(' x ',1,3*boolean(mix:imageWidth|mix:imageHeight)), mix:imageHeight)</field>
 						<field name="MD_TECH_IMAGE_WIDTH">mix:imageWidth</field>
 						<field name="MD_TECH_IMAGE_HEIGHT">mix:imageHeight</field>
 						<field name="MD_TECH_IMAGE_COLOR_SPACE">mix:PhotometricInterpretation/mix:colorSpace</field>

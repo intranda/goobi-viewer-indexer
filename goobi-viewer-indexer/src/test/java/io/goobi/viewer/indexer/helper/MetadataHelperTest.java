@@ -24,6 +24,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -31,8 +32,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
+import org.apache.commons.lang3.StringUtils;
 import org.jdom2.Document;
 import org.jdom2.Element;
+import org.jdom2.Namespace;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -41,6 +44,7 @@ import de.intranda.digiverso.normdataimporter.model.NormData;
 import de.intranda.digiverso.normdataimporter.model.NormDataValue;
 import io.goobi.viewer.indexer.AbstractTest;
 import io.goobi.viewer.indexer.SolrIndexerDaemon;
+import io.goobi.viewer.indexer.helper.JDomXP.FileFormat;
 import io.goobi.viewer.indexer.model.GroupedMetadata;
 import io.goobi.viewer.indexer.model.IndexObject;
 import io.goobi.viewer.indexer.model.LuceneField;
@@ -48,6 +52,7 @@ import io.goobi.viewer.indexer.model.SolrConstants;
 import io.goobi.viewer.indexer.model.SolrConstants.MetadataGroupType;
 import io.goobi.viewer.indexer.model.config.FieldConfig;
 import io.goobi.viewer.indexer.model.config.GroupEntity;
+import io.goobi.viewer.indexer.model.config.SubfieldConfig;
 
 class MetadataHelperTest extends AbstractTest {
 
@@ -142,6 +147,66 @@ class MetadataHelperTest extends AbstractTest {
 
         // MARC name subfields carry a trailing comma ("Suchten, Alexander von,") that must not reach the index
         assertEquals("Suchten, Alexander von", gmd.getMainValue());
+    }
+
+    /**
+     * @see MetadataHelper#getGroupedMetadata(Element,GroupEntity,FieldConfig,String,StringBuilder,List,JDomXP)
+     * @verifies not yield values for empty elements in any shipped group entity expression
+     */
+    @Test
+    void shippedConfig_groupEntityExpressionsShouldNotYieldValuesForEmptyElements() throws Exception {
+        // A group entity bundles the expressions of every supported metadata format. An expression that
+        // does not match must contribute nothing - which holds for a node-set selection but not for an
+        // XPath string function such as concat(), which returns its separators even when every operand
+        // is empty. Such a value is indexed verbatim and, being identical for every entity of a record,
+        // makes them equal to one another via GroupedMetadata.equals().
+        Configuration shippedConfig = new Configuration(new File("src/main/resources/config_indexer.xml").getAbsolutePath());
+        Element emptyElement = new Element("empty");
+        JDomXP jdomXP = new JDomXP(new Document(emptyElement));
+        // The shipped configuration declares prefixes the test configuration does not, and XPath
+        // evaluation resolves prefixes against the injected configuration
+        for (Namespace namespace : shippedConfig.getNamespaces().values()) {
+            jdomXP.addNamespace(namespace);
+        }
+
+        Set<String> fieldNames = new HashSet<>();
+        for (FileFormat format : FileFormat.values()) {
+            fieldNames.addAll(shippedConfig.getMetadataConfigurationManager().getListWithAllFieldNames(format));
+        }
+        assertTrue(fieldNames.size() > 100, "sanity check: the shipped configuration should describe many fields");
+
+        List<String> offenders = new ArrayList<>();
+        for (String fieldName : fieldNames) {
+            for (FieldConfig fieldConfig : shippedConfig.getMetadataConfigurationManager().getConfigurationListForField(fieldName)) {
+                collectNonBlankResultsForEmptyElement(fieldConfig.getGroupEntity(), fieldName, jdomXP, emptyElement, offenders);
+            }
+        }
+        Collections.sort(offenders);
+        assertEquals(Collections.emptyList(), offenders);
+    }
+
+    /**
+     * Evaluates every subfield expression of the given group entity, and of its children, against an empty
+     * element and records those that still return something.
+     */
+    private static void collectNonBlankResultsForEmptyElement(GroupEntity groupEntity, String fieldName, JDomXP jdomXP, Element emptyElement,
+            List<String> offenders) {
+        if (groupEntity == null) {
+            return;
+        }
+        for (SubfieldConfig subfield : groupEntity.getSubfields().values()) {
+            for (String xpath : subfield.getXpaths()) {
+                // Not evaluateToString(), which appends '/text()' and so cannot evaluate a function
+                for (Object result : jdomXP.evaluate(xpath, emptyElement)) {
+                    if (result instanceof String value && StringUtils.isNotBlank(value)) {
+                        offenders.add(fieldName + "/" + subfield.getFieldname() + " -> \"" + value + "\"");
+                    }
+                }
+            }
+        }
+        for (GroupEntity child : groupEntity.getChildren()) {
+            collectNonBlankResultsForEmptyElement(child, fieldName, jdomXP, emptyElement, offenders);
+        }
     }
 
     /**
