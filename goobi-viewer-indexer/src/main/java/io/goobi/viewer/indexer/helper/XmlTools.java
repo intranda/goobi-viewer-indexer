@@ -25,7 +25,10 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
@@ -221,17 +224,53 @@ public final class XmlTools {
      * @param namespaces a {@link java.util.List} object.
      * @return a {@link java.util.List} object.
      */
-    @SuppressWarnings({ "rawtypes", "unchecked" })
+    /**
+     * Per-thread cache of compiled XPath expressions, keyed by return-type filter, namespace signature and the
+     * (normalized) expression string. JDOM {@link XPathExpression} instances are reusable but not thread-safe, so the
+     * cache is held per thread. See {@link JDomXP} for the rationale (compilation is the dominant per-record XPath cost).
+     */
+    private static final ThreadLocal<Map<String, XPathExpression<Object>>> XPATH_CACHE = ThreadLocal.withInitial(HashMap::new);
+
+    @SuppressWarnings({ "rawtypes" })
     public static List<Object> evaluate(String expr, Object parent, Filter filter, List<Namespace> namespaces) {
-        XPathBuilder<Object> builder = new XPathBuilder<>(expr.trim().replace("\n", ""), filter);
+        return getCompiledExpression(expr, filter, namespaces).evaluate(parent);
+    }
 
+    /**
+     * Returns a compiled {@link XPathExpression}, reusing a per-thread cached instance when possible. Only the
+     * compilation (XPath parsing and namespace binding) is cached; evaluation against a context node still happens per
+     * call.
+     *
+     * @param expr XPath expression to compile
+     * @param filter return type filter
+     * @param namespaces namespaces to bind; may be null or empty
+     * @return compiled, reusable {@link XPathExpression}
+     */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
+    private static XPathExpression<Object> getCompiledExpression(String expr, Filter filter, List<Namespace> namespaces) {
+        String normalizedExpr = expr.trim().replace("\n", "");
+        StringBuilder keyBuilder = new StringBuilder(filter.getClass().getName()).append(' ');
         if (namespaces != null && !namespaces.isEmpty()) {
-            builder.setNamespaces(namespaces);
+            Map<String, String> sorted = new TreeMap<>();
+            for (Namespace namespace : namespaces) {
+                sorted.put(namespace.getPrefix(), namespace.getURI());
+            }
+            for (Map.Entry<String, String> entry : sorted.entrySet()) {
+                keyBuilder.append(entry.getKey()).append('=').append(entry.getValue()).append(';');
+            }
         }
-
-        XPathExpression<Object> xpath = builder.compileWith(XPathFactory.instance());
-        return xpath.evaluate(parent);
-
+        String cacheKey = keyBuilder.append(' ').append(normalizedExpr).toString();
+        Map<String, XPathExpression<Object>> cache = XPATH_CACHE.get();
+        XPathExpression<Object> xpath = cache.get(cacheKey);
+        if (xpath == null) {
+            XPathBuilder<Object> builder = new XPathBuilder<>(normalizedExpr, filter);
+            if (namespaces != null && !namespaces.isEmpty()) {
+                builder.setNamespaces(namespaces);
+            }
+            xpath = builder.compileWith(XPathFactory.instance());
+            cache.put(cacheKey, xpath);
+        }
+        return xpath;
     }
 
     /**

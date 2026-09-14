@@ -26,6 +26,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
@@ -39,8 +40,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.solr.common.SolrInputDocument;
-import org.jdom2.Attribute;
 import org.jdom2.Element;
+import org.jdom2.Namespace;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
@@ -91,8 +92,6 @@ public class PhysicalDocumentBuilder {
 
     private static final String ATTRIBUTE_CONTENTIDS = "CONTENTIDS";
 
-    private static final String XPATH_FILE = "mets:file";
-
     private final List<String> useFileGroups;
     private final JDomXP xp;
     private final HttpConnector httpConnector;
@@ -101,6 +100,19 @@ public class PhysicalDocumentBuilder {
 
     private final Map<String, String> fileIdToFileGrpMap;
     private final List<Element> eleListAllFileGroups;
+
+    /**
+     * Per-record index of the {@code mets:file} elements of each file group, precomputed once so that per-page lookups of
+     * MIMETYPE, FLocat href, ADMID and WIDTH/HEIGHT no longer re-run (and re-compile) absolute/relative XPath expressions
+     * once per page × per file group. The {@code mets:file} structure of a record is constant across its pages. Keyed by
+     * file-group {@link Element} identity; populated in the constructor (single-threaded) and only read afterwards, so it
+     * is safe for the concurrent page threads of {@link #generatePageDocuments}.
+     */
+    private final Map<Element, List<Element>> fileGrpToFiles = new HashMap<>();
+    private final Map<Element, Map<String, Element>> fileGrpToFilesById = new HashMap<>();
+    private final Namespace metsNamespace;
+    private final Namespace xlinkNamespace;
+
     private boolean hasImages = false;
     private boolean hasFulltext = false;
 
@@ -125,6 +137,60 @@ public class PhysicalDocumentBuilder {
         this.httpConnector = httpConnector;
         this.dataRepository = dataRepository;
         this.docType = docType;
+
+        this.metsNamespace = SolrIndexerDaemon.getInstance().getConfiguration().getNamespaces().get("mets");
+        this.xlinkNamespace = SolrIndexerDaemon.getInstance().getConfiguration().getNamespaces().get("xlink");
+        // Precompute, per file group, the mets:file children and an id->element lookup so per-page reads avoid XPath.
+        if (eleListAllFileGroups != null) {
+            for (Element eleFileGrp : eleListAllFileGroups) {
+                List<Element> files = eleFileGrp.getChildren("file", metsNamespace);
+                Map<String, Element> filesById = new HashMap<>();
+                for (Element file : files) {
+                    String fileId = file.getAttributeValue("ID");
+                    if (fileId != null) {
+                        filesById.put(fileId, file);
+                    }
+                }
+                fileGrpToFiles.put(eleFileGrp, files);
+                fileGrpToFilesById.put(eleFileGrp, filesById);
+            }
+        }
+    }
+
+    /**
+     * Returns the {@code mets:file} element for the given file id within the given file group, or the group's first file
+     * if no id is given. This mirrors the previous XPath lookups {@code mets:file[@ID="&lt;id&gt;"]} and {@code mets:file}
+     * (which took the first hit), but reads from the precomputed per-group index instead of evaluating XPath per page.
+     *
+     * @param eleFileGrp file group element
+     * @param fileId file id to resolve; may be null to fall back to the first file in the group
+     * @return the matching {@code mets:file} element, or null if none
+     */
+    private Element resolveFileElement(Element eleFileGrp, String fileId) {
+        if (fileId != null) {
+            return fileGrpToFilesById.getOrDefault(eleFileGrp, Collections.emptyMap()).get(fileId);
+        }
+        List<Element> files = fileGrpToFiles.getOrDefault(eleFileGrp, Collections.emptyList());
+        return files.isEmpty() ? null : files.get(0);
+    }
+
+    /**
+     * Extracts the FLocat href of a {@code mets:file} element, mirroring the previous XPath
+     * {@code mets:file[...]/mets:FLocat/@xlink:href}.
+     *
+     * @param fileElement the {@code mets:file} element; may be null
+     * @return the href, or null if absent or empty
+     */
+    private String getFilepathFromElement(Element fileElement) {
+        if (fileElement == null) {
+            return null;
+        }
+        Element eleFLocat = fileElement.getChild("FLocat", metsNamespace);
+        if (eleFLocat == null) {
+            return null;
+        }
+        String href = eleFLocat.getAttributeValue("href", xlinkNamespace);
+        return StringUtils.isEmpty(href) ? null : href;
     }
 
     public boolean isFileGroupExists() {
@@ -318,18 +384,14 @@ public class PhysicalDocumentBuilder {
         // For each mets:fileGroup in the mets:fileSec
         for (Element eleFileGrp : eleListAllFileGroups) {
             String fileGrpUse = eleFileGrp.getAttributeValue("USE");
-            String fileGrpId = eleFileGrp.getAttributeValue("ID"); // TODO This is probably always null
             logger.debug("Found file group: {}", fileGrpUse);
-            logger.debug("fileId: {}", fileGrpId);
 
             String fileID = getFileId(eleFptrList, eleListAllFileGroups, fileGrpUse);
 
-            // If fileId is not null, use an XPath expression for the appropriate file element,
-            // otherwise get all file elements and get the one with the index of the page order
-            String fileIdXPathCondition = getXPathCondition(fileID);
-            int attrListIndex = useFileID != null ? 0 : order - 1;
-
-            String filePath = getFilepath(eleFileGrp, fileIdXPathCondition, attrListIndex);
+            // Resolve the mets:file element for this page from the precomputed per-group index (falls back to the
+            // group's first file when the page has no fptr for this group, mirroring the previous XPath behaviour).
+            Element fileElement = resolveFileElement(eleFileGrp, fileID);
+            String filePath = getFilepathFromElement(fileElement);
             if (filePath == null) {
                 if (useFileGroup.equals(fileGrpUse)) {
                     logger.warn("Skipping selected file group {} - nothing found.", fileGrpUse);
@@ -349,14 +411,11 @@ public class PhysicalDocumentBuilder {
             String fileName = getFilename(filePath);
 
             // Mime type
-            String xpath = XPATH_FILE + fileIdXPathCondition + "/@MIMETYPE";
-            List<Attribute> mimetypeAttrList = xp.evaluateToAttributes(xpath, eleFileGrp);
-            if (mimetypeAttrList == null || mimetypeAttrList.isEmpty()) {
+            String mimetype = fileElement.getAttributeValue("MIMETYPE");
+            if (mimetype == null) {
                 logger.error("{}: mime type not found in file group '{}'.", useFileID, fileGrpUse);
                 break;
             }
-
-            String mimetype = mimetypeAttrList.get(attrListIndex).getValue();
             if (StringUtils.isEmpty(mimetype)) {
                 logger.error("{}: mime type is blank in file group '{}'.", useFileID, fileGrpUse);
                 break;
@@ -464,12 +523,9 @@ public class PhysicalDocumentBuilder {
 
             // Width + height (from techMD)
             if (ret.getDoc().getField(SolrConstants.WIDTH) == null && ret.getDoc().getField(SolrConstants.HEIGHT) == null) {
-                // Width + height (from techMD)
-                xpath = XPATH_FILE + fileIdXPathCondition + "/@ADMID";
-                List<Attribute> amdIdAttrList = xp.evaluateToAttributes(xpath, eleFileGrp);
-                if (amdIdAttrList != null && !amdIdAttrList.isEmpty() && StringUtils.isNotBlank(amdIdAttrList.get(0).getValue())) {
-                    String amdId = amdIdAttrList.get(0).getValue();
-                    xpath = "/mets:mets/mets:amdSec/mets:techMD[@ID='" + amdId
+                String amdId = fileElement.getAttributeValue("ADMID");
+                if (StringUtils.isNotBlank(amdId)) {
+                    String xpath = "/mets:mets/mets:amdSec/mets:techMD[@ID='" + amdId
                             + "']/mets:mdWrap[@MDTYPE='OTHER']/mets:xmlData/pbcoreInstantiation/formatFrameSize/text()";
                     String frameSize = xp.evaluateToString(xpath, null);
                     if (StringUtils.isNotEmpty(frameSize)) {
@@ -488,18 +544,16 @@ public class PhysicalDocumentBuilder {
 
             // Width + height (invalid)
             if (ret.getDoc().getField(SolrConstants.WIDTH) == null && ret.getDoc().getField(SolrConstants.HEIGHT) == null) {
-                xpath = XPATH_FILE + fileIdXPathCondition + "/@WIDTH";
-                List<Attribute> widthAttrList = xp.evaluateToAttributes(xpath, eleFileGrp);
                 Integer width = null;
                 Integer height = null;
-                if (widthAttrList != null && !widthAttrList.isEmpty() && StringUtils.isNotBlank(widthAttrList.get(0).getValue())) {
-                    width = Integer.valueOf(widthAttrList.get(0).getValue());
+                String widthValue = fileElement.getAttributeValue("WIDTH");
+                if (StringUtils.isNotBlank(widthValue)) {
+                    width = Integer.valueOf(widthValue);
                     logger.warn("mets:file[@ID='{}'] contains illegal WIDTH attribute. It will still be used, though.", useFileID);
                 }
-                xpath = XPATH_FILE + fileIdXPathCondition + "/@HEIGHT";
-                List<Attribute> heightAttrList = xp.evaluateToAttributes(xpath, eleFileGrp);
-                if (heightAttrList != null && !heightAttrList.isEmpty() && StringUtils.isNotBlank(heightAttrList.get(0).getValue())) {
-                    height = Integer.valueOf(heightAttrList.get(0).getValue());
+                String heightValue = fileElement.getAttributeValue("HEIGHT");
+                if (StringUtils.isNotBlank(heightValue)) {
+                    height = Integer.valueOf(heightValue);
                     logger.warn("mets:file[@ID='{}'] contains illegal HEIGHT attribute. It will still be used, though.", useFileID);
                 }
                 if (width != null && height != null) {
@@ -576,45 +630,6 @@ public class PhysicalDocumentBuilder {
             fileName = FilenameUtils.getName(filePath);
         }
         return fileName;
-    }
-
-    /**
-     * 
-     * @param eleFileGrp
-     * @param fileIdXPathCondition
-     * @param attrListIndex
-     * @return File path; null if none found
-     */
-    protected String getFilepath(Element eleFileGrp, String fileIdXPathCondition, int attrListIndex) {
-        String xpath;
-        // Check whether the fileId_fileGroup pattern applies for this file group, otherwise just use the fileId
-        xpath = XPATH_FILE + fileIdXPathCondition + "/mets:FLocat/@xlink:href";
-        logger.debug(xpath);
-        List<Attribute> filepathAttrList = xp.evaluateToAttributes(xpath, eleFileGrp);
-        if (filepathAttrList == null || filepathAttrList.size() <= attrListIndex) {
-            return null;
-        }
-
-        String filePath = filepathAttrList.get(attrListIndex).getValue();
-        logger.trace("filePath: {}", filePath);
-        if (StringUtils.isEmpty(filePath)) {
-            return null;
-        }
-        return filePath;
-    }
-
-    /**
-     * 
-     * @param useFileID
-     * @return Generated condition XPath
-     */
-    protected String getXPathCondition(String useFileID) {
-        String fileIdXPathCondition = "";
-        if (useFileID != null) {
-            fileIdXPathCondition = "[@ID=\"" + useFileID + "\"]";
-        }
-
-        return fileIdXPathCondition;
     }
 
     /**

@@ -24,6 +24,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 
 import org.apache.commons.io.output.FileWriterWithEncoding;
 import org.apache.logging.log4j.LogManager;
@@ -107,6 +108,15 @@ public class JDomXP {
 
     private static final String XPATH_TEXT = "/text()"; //NOSONAR XPath expression, not URI
 
+    /**
+     * Per-thread cache of compiled XPath expressions, keyed by return-type filter, instance-namespace signature and the
+     * (normalized) expression string. Compiling an expression re-parses the XPath and re-binds all ~18 configuration
+     * namespaces on every call, which dominates the per-record cost on metadata-rich records; caching removes nearly all
+     * of it. JDOM {@link XPathExpression} instances are reusable across evaluations but are <b>not</b> thread-safe, and
+     * page-document generation runs on a {@link java.util.concurrent.ForkJoinPool}, so the cache is held per thread.
+     */
+    private static final ThreadLocal<Map<String, XPathExpression<Object>>> XPATH_CACHE = ThreadLocal.withInitial(HashMap::new);
+
     private Document doc;
 
     /**
@@ -175,27 +185,71 @@ public class JDomXP {
      * @param localNamespaces Instance namespaces applied on top of (and overriding) the global configuration namespaces; may be null.
      * @return List<Object>
      */
-    @SuppressWarnings({ "rawtypes", "unchecked" })
+    @SuppressWarnings({ "rawtypes" })
     private static List<Object> evaluate(String expr, Object parent, Filter filter, Map<String, Namespace> localNamespaces) {
         if (expr == null) {
             throw new IllegalArgumentException("expr may not be null");
         }
 
-        XPathBuilder<Object> builder = new XPathBuilder<>(expr.trim().replace("\n", ""), filter);
-        // Add all global namespaces
-        for (String key : SolrIndexerDaemon.getInstance().getConfiguration().getNamespaces().keySet()) {
-            Namespace value = SolrIndexerDaemon.getInstance().getConfiguration().getNamespaces().get(key);
-            builder.setNamespace(value.getPrefix(), value.getURI());
-        }
-        // Apply instance namespaces last so they override the global ones for the same prefix
-        if (localNamespaces != null) {
-            for (Namespace value : localNamespaces.values()) {
+        return getCompiledExpression(expr, filter, localNamespaces).evaluate(parent);
+    }
+
+    /**
+     * Returns a compiled {@link XPathExpression} for the given expression, return-type filter and instance namespaces,
+     * reusing a per-thread cached instance when possible. Only the compilation (XPath parsing and namespace binding) is
+     * cached; evaluation against a concrete context node still happens on every call. The global configuration namespaces
+     * are effectively constant for the lifetime of the process, so they do not need to be part of the cache key.
+     *
+     * @param expr XPath expression to compile; may not be null
+     * @param filter return type filter
+     * @param localNamespaces instance namespaces applied on top of (and overriding) the global configuration namespaces; may be null
+     * @return compiled, reusable {@link XPathExpression}
+     */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
+    private static XPathExpression<Object> getCompiledExpression(String expr, Filter filter, Map<String, Namespace> localNamespaces) {
+        String normalizedExpr = expr.trim().replace("\n", "");
+        String cacheKey = buildCacheKey(normalizedExpr, filter, localNamespaces);
+        Map<String, XPathExpression<Object>> cache = XPATH_CACHE.get();
+        XPathExpression<Object> xpath = cache.get(cacheKey);
+        if (xpath == null) {
+            XPathBuilder<Object> builder = new XPathBuilder<>(normalizedExpr, filter);
+            // Add all global namespaces
+            for (Namespace value : SolrIndexerDaemon.getInstance().getConfiguration().getNamespaces().values()) {
                 builder.setNamespace(value.getPrefix(), value.getURI());
             }
+            // Apply instance namespaces last so they override the global ones for the same prefix
+            if (localNamespaces != null) {
+                for (Namespace value : localNamespaces.values()) {
+                    builder.setNamespace(value.getPrefix(), value.getURI());
+                }
+            }
+            xpath = builder.compileWith(XPathFactory.instance());
+            cache.put(cacheKey, xpath);
         }
-        XPathExpression<Object> xpath = builder.compileWith(XPathFactory.instance());
-        return xpath.evaluate(parent);
+        return xpath;
+    }
 
+    /**
+     * Builds a stable cache key from the return-type filter, the instance namespaces and the normalized expression. The
+     * filter is distinguished by its class (all filters used here are parameterless), and the instance namespaces are
+     * emitted sorted by prefix so that iteration order does not affect the key.
+     *
+     * @param normalizedExpr expression with surrounding whitespace and newlines already stripped
+     * @param filter return type filter
+     * @param localNamespaces instance namespaces; may be null or empty
+     * @return cache key
+     */
+    @SuppressWarnings({ "rawtypes" })
+    private static String buildCacheKey(String normalizedExpr, Filter filter, Map<String, Namespace> localNamespaces) {
+        StringBuilder sb = new StringBuilder(filter.getClass().getName());
+        sb.append(' ');
+        if (localNamespaces != null && !localNamespaces.isEmpty()) {
+            for (Map.Entry<String, Namespace> entry : new TreeMap<>(localNamespaces).entrySet()) {
+                sb.append(entry.getKey()).append('=').append(entry.getValue().getURI()).append(';');
+            }
+        }
+        sb.append(' ').append(normalizedExpr);
+        return sb.toString();
     }
 
     /**
