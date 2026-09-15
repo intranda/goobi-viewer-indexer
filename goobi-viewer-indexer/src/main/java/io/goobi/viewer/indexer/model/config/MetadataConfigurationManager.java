@@ -366,7 +366,7 @@ public final class MetadataConfigurationManager {
         }
 
         SubfieldConfig ret = new SubfieldConfig(fieldName, multivalued, addSortField);
-        ret.getXpaths().add(xpathExp);
+        ret.getXpaths().add(new XPathConfig(xpathExp, null, null, fieldName));
         ret.getDefaultValues().put(xpathExp, defaultValue);
         logger.debug("Loaded group entity field: {} - {}", fieldName, xpathExp);
 

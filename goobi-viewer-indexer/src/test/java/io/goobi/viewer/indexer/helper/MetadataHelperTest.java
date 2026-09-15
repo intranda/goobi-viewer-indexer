@@ -16,6 +16,7 @@
 package io.goobi.viewer.indexer.helper;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -53,6 +54,7 @@ import io.goobi.viewer.indexer.model.SolrConstants.MetadataGroupType;
 import io.goobi.viewer.indexer.model.config.FieldConfig;
 import io.goobi.viewer.indexer.model.config.GroupEntity;
 import io.goobi.viewer.indexer.model.config.SubfieldConfig;
+import io.goobi.viewer.indexer.model.config.XPathConfig;
 
 class MetadataHelperTest extends AbstractTest {
 
@@ -195,7 +197,8 @@ class MetadataHelperTest extends AbstractTest {
             return;
         }
         for (SubfieldConfig subfield : groupEntity.getSubfields().values()) {
-            for (String xpath : subfield.getXpaths()) {
+            for (XPathConfig xpc : subfield.getXpaths()) {
+                String xpath = xpc.getxPath();
                 // Not evaluateToString(), which appends '/text()' and so cannot evaluate a function
                 for (Object result : jdomXP.evaluate(xpath, emptyElement)) {
                     if (result instanceof String value && StringUtils.isNotBlank(value)) {
@@ -244,6 +247,43 @@ class MetadataHelperTest extends AbstractTest {
         // The main value decides both the displayed value and, via equals(), the identity of the
         // group entity - a value shared by all persons of a record collapses them into one
         assertEquals("Display_Form", gmd.getMainValue());
+    }
+
+    /**
+     * @see GroupedMetadata#collectGroupMetadataValues(java.util.Map,java.util.Map,Element,boolean,java.util.Map,FieldConfig,JDomXP,FileFormat)
+     * @verifies skip xpath expressions not matching source format
+     */
+    @Test
+    void collectGroupMetadataValues_shouldSkipXpathExpressionsNotMatchingSourceFormat() throws Exception {
+        // Shipped configuration for realistic MD_AUTHOR modifications, under which the bare separator is known to survive.
+        Configuration shippedConfig = new Configuration(new File("src/main/resources/config_indexer.xml").getAbsolutePath());
+        FieldConfig fieldConfig = shippedConfig.getMetadataConfigurationManager().getConfigurationListForField("MD_AUTHOR").get(0);
+        assertNotNull(fieldConfig);
+
+        Document docMods = JDomXP.readXmlFile("src/test/resources/METS/aggregation_mods_test.xml");
+        assertNotNull(docMods);
+        Element eleName = docMods.getRootElement().getChild("name", SolrIndexerDaemon.getInstance().getConfiguration().getNamespaces().get("mods"));
+        assertNotNull(eleName);
+        JDomXP jdomXP = new JDomXP(docMods);
+
+        // An ead:-prefixed expression built around a string function (concat): it returns a value even when the ead:part operand is absent,
+        // unlike a node-set selection - the very class of expression that leaked into non-EAD records before 90ca730d. The literal marker
+        // keeps the produced value stable and non-blank regardless of field modifications.
+        SubfieldConfig subfield = new SubfieldConfig(SolrConstants.MD_VALUE, true, false);
+        subfield.getXpaths().add(new XPathConfig("concat('markervalue', ead:part[@localtype=\"surname\"])", null, null, SolrConstants.MD_VALUE));
+        Map<String, SubfieldConfig> groupEntityFields = Map.of(SolrConstants.MD_VALUE, subfield);
+
+        // METS record: the ead: expression belongs to another format and must be skipped entirely
+        Map<String, List<String>> collectedMets = new HashMap<>();
+        new GroupedMetadata().collectGroupMetadataValues(collectedMets, groupEntityFields, eleName, false, null, fieldConfig, jdomXP,
+                FileFormat.METS);
+        assertFalse(collectedMets.containsKey(SolrConstants.MD_VALUE));
+
+        // EAD record: the same expression applies and is evaluated, so the concat marker value is produced
+        Map<String, List<String>> collectedEad = new HashMap<>();
+        new GroupedMetadata().collectGroupMetadataValues(collectedEad, groupEntityFields, eleName, false, null, fieldConfig, jdomXP,
+                FileFormat.EAD);
+        assertEquals(List.of("markervalue"), collectedEad.get(SolrConstants.MD_VALUE));
     }
 
     /**

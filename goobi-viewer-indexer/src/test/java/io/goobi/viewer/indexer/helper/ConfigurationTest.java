@@ -107,8 +107,8 @@ class ConfigurationTest extends AbstractTest {
             SubfieldConfig fieldSubconfig = groupEntity.getSubfields().get("field1");
             Assertions.assertNotNull(fieldSubconfig);
             assertEquals(2, fieldSubconfig.getXpaths().size());
-            assertEquals("xpath1", fieldSubconfig.getXpaths().get(0));
-            assertEquals("xpath2", fieldSubconfig.getXpaths().get(1));
+            assertEquals("xpath1", fieldSubconfig.getXpaths().get(0).getxPath());
+            assertEquals("xpath2", fieldSubconfig.getXpaths().get(1).getxPath());
             assertTrue(fieldSubconfig.isMultivalued());
             assertTrue(fieldSubconfig.isAddSortField());
             assertEquals("def", fieldSubconfig.getDefaultValues().get("xpath2"));
@@ -117,7 +117,7 @@ class ConfigurationTest extends AbstractTest {
             SubfieldConfig fieldSubconfig = groupEntity.getSubfields().get("field2");
             Assertions.assertNotNull(fieldSubconfig);
             assertEquals(1, fieldSubconfig.getXpaths().size());
-            assertEquals("xpath3", fieldSubconfig.getXpaths().get(0));
+            assertEquals("xpath3", fieldSubconfig.getXpaths().get(0).getxPath());
             assertFalse(fieldSubconfig.isMultivalued());
         }
 

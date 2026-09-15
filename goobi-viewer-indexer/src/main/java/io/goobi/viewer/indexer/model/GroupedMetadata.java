@@ -31,11 +31,13 @@ import org.jdom2.JDOMException;
 import de.intranda.digiverso.normdataimporter.NormDataImporter;
 import io.goobi.viewer.indexer.exceptions.HTTPException;
 import io.goobi.viewer.indexer.helper.JDomXP;
+import io.goobi.viewer.indexer.helper.JDomXP.FileFormat;
 import io.goobi.viewer.indexer.helper.MetadataHelper;
 import io.goobi.viewer.indexer.helper.Utils;
 import io.goobi.viewer.indexer.model.config.FieldConfig;
 import io.goobi.viewer.indexer.model.config.GroupEntity;
 import io.goobi.viewer.indexer.model.config.SubfieldConfig;
+import io.goobi.viewer.indexer.model.config.XPathConfig;
 
 /**
  * <p>
@@ -146,9 +148,13 @@ public class GroupedMetadata {
      * @param xpathReplacements
      * @param configurationItem Master field configuration
      * @param jdomXP {@link io.goobi.viewer.indexer.helper.JDomXP} of the document that owns <code>ele</code>; resolves XPath namespace prefixes
+     * @param sourceDocFormat {@link io.goobi.viewer.indexer.helper.JDomXP.FileFormat} of the indexed document; subfield expressions whose namespace
+     *            prefix belongs to a different format are skipped. May be null to disable format filtering.
+     * @should skip xpath expressions not matching source format
      */
     public void collectGroupMetadataValues(Map<String, List<String>> collectedValues, Map<String, SubfieldConfig> groupEntityFields, Element ele,
-            boolean authorityDataEnabled, Map<String, String> xpathReplacements, FieldConfig configurationItem, JDomXP jdomXP) {
+            boolean authorityDataEnabled, Map<String, String> xpathReplacements, FieldConfig configurationItem, JDomXP jdomXP,
+            FileFormat sourceDocFormat) {
         if (ele == null) {
             throw new IllegalArgumentException("element may not be null");
         }
@@ -162,9 +168,16 @@ public class GroupedMetadata {
             }
 
             SubfieldConfig subfield = entry.getValue();
-            for (final String xp : subfield.getXpaths()) {
+            for (final XPathConfig xpc : subfield.getXpaths()) {
+                final String xp = xpc.getxPath();
                 if (xp.startsWith(AUTHORITY_DATA_FIELD_PREFIX)) {
                     // Resolved later, once authority data has been retrieved - not a real XPath expression
+                    continue;
+                }
+                // Skip expressions whose namespace prefix belongs to a different source format (e.g. an ead: expression on a METS record).
+                // Evaluating a foreign format's expression may still yield a value via XPath string functions, and absolute expressions
+                // ('//foo:bar') are rescanned from the document root per element - both avoided here, mirroring MetadataHelper's top-level filter.
+                if (!xpc.appliesTo(sourceDocFormat)) {
                     continue;
                 }
                 String xpath = xp;
@@ -261,8 +274,9 @@ public class GroupedMetadata {
                     .prepareURL(collectedValues)
                     .fetch()
                     .build();
+            // Pass null as source format: the fetched citation document is a foreign resource without a reliable FileFormat, so no filtering.
             collectGroupMetadataValues(collectedValues, groupEntity.getSubfields(),
-                    xmlDoc.getXp().getRootElement(), MetadataHelper.isAuthorityDataEnabled(), null, configurationItem, xmlDoc.getXp());
+                    xmlDoc.getXp().getRootElement(), MetadataHelper.isAuthorityDataEnabled(), null, configurationItem, xmlDoc.getXp(), null);
         } catch (HTTPException | JDOMException | IOException | IllegalStateException e) {
             logger.error(e.getMessage(), e);
         }
