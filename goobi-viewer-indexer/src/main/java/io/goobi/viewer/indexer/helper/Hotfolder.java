@@ -48,12 +48,12 @@ import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
 
 import io.goobi.viewer.indexer.CmsPageIndexer;
+import io.goobi.viewer.indexer.Indexer;
 import io.goobi.viewer.indexer.DenkXwebIndexer;
 import io.goobi.viewer.indexer.DocUpdateIndexer;
 import io.goobi.viewer.indexer.DublinCoreIndexer;
 import io.goobi.viewer.indexer.Ead3Indexer;
 import io.goobi.viewer.indexer.EadIndexer;
-import io.goobi.viewer.indexer.Indexer;
 import io.goobi.viewer.indexer.LidoIndexer;
 import io.goobi.viewer.indexer.MetsIndexer;
 import io.goobi.viewer.indexer.MetsMarcIndexer;
@@ -124,8 +124,7 @@ public class Hotfolder {
     private Path origDenkxWeb;
     private Path successFolder;
 
-    private Indexer currentIndexer;
-    private boolean addVolumeCollectionsToAnchor = false;
+    private List<String> addVolumeCollectionsToAnchorFields = Collections.emptyList();
     private boolean deleteContentFilesOnFailure = true;
     private boolean prioritizeLargeImageFolders = false;
     private boolean emailConfigurationComplete = false;
@@ -137,7 +136,14 @@ public class Hotfolder {
     private final Queue<Path> indexQueue = new LinkedBlockingQueue<>(queueCapacity);
     /** High priority index queue for volume re-indexing, etc. */
     private final Queue<Path> highPriorityIndexQueue = new LinkedList<>();
-    /** PIs of anchor records whose volume count changed and that must be reconciled (NUMVOLUMES + METS) once queues drain. */
+    /**
+     * PIs of anchor records whose volume count changed and that must be reconciled (NUMVOLUMES + METS) once queues drain.
+     * <p>
+     * This set is in-memory only and is not persisted across restarts. If the indexer is stopped between a volume import and the deferred
+     * anchor reconciliation, the affected anchor's NUMVOLUMES may remain stale until the next volume of that anchor is imported (which
+     * re-triggers {@link #flagAnchorForReconciliation(String)}). Since {@link #reconcileAnchor(String)} always validates the stored count
+     * against Solr, this causes only a delayed count refresh, never data corruption.
+     */
     private final Set<String> anchorPisPendingReconciliation = new HashSet<>();
 
     /**
@@ -167,9 +173,9 @@ public class Hotfolder {
         metsFileSizeThreshold = SolrIndexerDaemon.getInstance().getConfiguration().getInt("performance.metsFileSizeThreshold", 10485760);
         dataFolderSizeThreshold = SolrIndexerDaemon.getInstance().getConfiguration().getInt("performance.dataFolderSizeThreshold", 157286400);
 
-        addVolumeCollectionsToAnchor = SolrIndexerDaemon.getInstance().getConfiguration().isAddVolumeCollectionsToAnchor();
-        if (addVolumeCollectionsToAnchor) {
-            logger.info("Volume collections WILL BE ADDED to anchors.");
+        addVolumeCollectionsToAnchorFields = SolrIndexerDaemon.getInstance().getConfiguration().getAddVolumeCollectionsToAnchorFields();
+        if (!addVolumeCollectionsToAnchorFields.isEmpty()) {
+            logger.info("Volume collections WILL BE ADDED to anchors for fields: {}", addVolumeCollectionsToAnchorFields);
         } else {
             logger.info("Volume collections WILL NOT BE ADDED to anchors.");
         }
@@ -425,6 +431,36 @@ public class Hotfolder {
     }
 
     /**
+     * Enqueues any pre-existing {@code *.UPDATED} (anchor-update) files found in the hotfolder into the high priority queue. Meant to be called
+     * once at startup to recover files that were still queued in memory when the indexer was last stopped: the regular scan (see {@link #scan()})
+     * deliberately ignores {@code .UPDATED} files, and the high priority queue is not persisted, so such files would otherwise never be processed
+     * and their anchor records would remain stale forever.
+     *
+     * @return number of files enqueued
+     * @should enqueue orphaned UPDATED files
+     */
+    public int enqueueOrphanedAnchorUpdateFiles() {
+        if (!Files.isDirectory(hotfolderPath)) {
+            logger.error("Hotfolder not found in file system: {}", hotfolderPath);
+            return 0;
+        }
+        int count = 0;
+        try (DirectoryStream<Path> stream = Files.newDirectoryStream(hotfolderPath, "*" + MetsIndexer.ANCHOR_UPDATE_EXTENSION)) {
+            for (Path path : stream) {
+                if (Files.isDirectory(path) || highPriorityIndexQueue.contains(path)) {
+                    continue;
+                }
+                highPriorityIndexQueue.add(path);
+                count++;
+                logger.info("Re-queued orphaned anchor update file after restart: {}", path.getFileName());
+            }
+        } catch (IOException e) {
+            logger.error(e.getMessage(), e);
+        }
+        return count;
+    }
+
+    /**
      * Scans the hotfolder for new files and executes appropriate actions.
      *
      * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException
@@ -444,7 +480,7 @@ public class Hotfolder {
         } else {
             // Check for the shutdown trigger file first
             Path shutdownFile = Paths.get(hotfolderPath.toAbsolutePath().toString(), SHUTDOWN_FILE);
-            if (currentIndexer == null && Files.exists(shutdownFile)) {
+            if (Files.exists(shutdownFile)) {
                 logger.info("Shutdown trigger file detected, shutting down...");
                 try {
                     Files.delete(shutdownFile);
@@ -483,9 +519,6 @@ public class Hotfolder {
             List<Path> newFiles = new ArrayList<>();
             try (DirectoryStream<Path> stream = Files.newDirectoryStream(hotfolderPath, "*.{xml,json,delete,purge,docupdate,UPDATED}")) {
                 for (Path path : stream) {
-                    if (currentIndexer != null) {
-                        break;
-                    }
                     if (!path.getFileName().toString().endsWith(MetsIndexer.ANCHOR_UPDATE_EXTENSION) && !indexQueue.contains(path)) {
                         newFiles.add(path);
                     }
@@ -571,7 +604,9 @@ public class Hotfolder {
                     .append(SolrConstants.ISWORK)
                     .append(SolrConstants.SOLR_QUERY_TRUE)
                     .toString());
-            if (storedNumVolumes == actualNumVolumes) {
+            // When volume collections are copied up into anchors, a volume metadata change may alter the anchor's collections without
+            // changing the volume count, so the anchor must still be re-indexed even if NUMVOLUMES is unchanged.
+            if (storedNumVolumes == actualNumVolumes && addVolumeCollectionsToAnchorFields.isEmpty()) {
                 logger.debug("Anchor '{}' is up to date (NUMVOLUMES={}), no re-index needed.", anchorPi, actualNumVolumes);
                 return;
             }
@@ -714,12 +749,7 @@ public class Hotfolder {
                 switch (fileType) {
                     case METS:
                         if (metsEnabled) {
-                            try {
-                                currentIndexer = new MetsIndexer(this);
-                                identifiers = currentIndexer.addToIndex(sourceFile, reindexSettings);
-                            } finally {
-                                currentIndexer = null;
-                            }
+                            identifiers = new MetsIndexer(this).addToIndex(sourceFile, reindexSettings);
                         } else {
                             logger.error("METS indexing is disabled - please make sure all folders are configured.");
                             Files.delete(sourceFile);
@@ -727,12 +757,7 @@ public class Hotfolder {
                         break;
                     case METS_MARC:
                         if (metsEnabled) {
-                            try {
-                                currentIndexer = new MetsMarcIndexer(this);
-                                identifiers = currentIndexer.addToIndex(sourceFile, reindexSettings);
-                            } finally {
-                                currentIndexer = null;
-                            }
+                            identifiers = new MetsMarcIndexer(this).addToIndex(sourceFile, reindexSettings);
                         } else {
                             logger.error("METS indexing is disabled - please make sure all folders are configured.");
                             Files.delete(sourceFile);
@@ -740,12 +765,7 @@ public class Hotfolder {
                         break;
                     case LIDO:
                         if (lidoEnabled) {
-                            try {
-                                currentIndexer = new LidoIndexer(this);
-                                identifiers = currentIndexer.addToIndex(sourceFile, reindexSettings);
-                            } finally {
-                                currentIndexer = null;
-                            }
+                            identifiers = new LidoIndexer(this).addToIndex(sourceFile, reindexSettings);
                         } else {
                             logger.error("LIDO indexing is disabled - please make sure all folders are configured.");
                             Files.delete(sourceFile);
@@ -753,12 +773,7 @@ public class Hotfolder {
                         break;
                     case EAD:
                         if (eadEnabled) {
-                            try {
-                                currentIndexer = new EadIndexer(this);
-                                identifiers = currentIndexer.addToIndex(sourceFile, reindexSettings);
-                            } finally {
-                                currentIndexer = null;
-                            }
+                            identifiers = new EadIndexer(this).addToIndex(sourceFile, reindexSettings);
                         } else {
                             logger.error("EAD indexing is disabled - please make sure all folders are configured.");
                             Files.delete(sourceFile);
@@ -766,12 +781,7 @@ public class Hotfolder {
                         break;
                     case EAD3:
                         if (eadEnabled) {
-                            try {
-                                currentIndexer = new Ead3Indexer(this);
-                                identifiers = currentIndexer.addToIndex(sourceFile, reindexSettings);
-                            } finally {
-                                currentIndexer = null;
-                            }
+                            identifiers = new Ead3Indexer(this).addToIndex(sourceFile, reindexSettings);
                         } else {
                             logger.error("EAD indexing is disabled - please make sure all folders are configured.");
                             Files.delete(sourceFile);
@@ -779,12 +789,7 @@ public class Hotfolder {
                         break;
                     case DENKXWEB:
                         if (denkxwebEnabled) {
-                            try {
-                                currentIndexer = new DenkXwebIndexer(this);
-                                identifiers = currentIndexer.addToIndex(sourceFile, reindexSettings);
-                            } finally {
-                                currentIndexer = null;
-                            }
+                            identifiers = new DenkXwebIndexer(this).addToIndex(sourceFile, reindexSettings);
                         } else {
                             logger.error("DenkXweb indexing is disabled - please make sure all folders are configured.");
                             Files.delete(sourceFile);
@@ -792,12 +797,7 @@ public class Hotfolder {
                         break;
                     case DUBLINCORE:
                         if (dcEnabled) {
-                            try {
-                                currentIndexer = new DublinCoreIndexer(this);
-                                identifiers = currentIndexer.addToIndex(sourceFile, reindexSettings);
-                            } finally {
-                                currentIndexer = null;
-                            }
+                            identifiers = new DublinCoreIndexer(this).addToIndex(sourceFile, reindexSettings);
                         } else {
                             logger.error("Dublin Core indexing is disabled - please make sure all folders are configured.");
                             Files.delete(sourceFile);
@@ -805,12 +805,7 @@ public class Hotfolder {
                         break;
                     case WORLDVIEWS:
                         if (worldviewsEnabled) {
-                            try {
-                                currentIndexer = new WorldViewsIndexer(this);
-                                identifiers = currentIndexer.addToIndex(sourceFile, reindexSettings);
-                            } finally {
-                                currentIndexer = null;
-                            }
+                            identifiers = new WorldViewsIndexer(this).addToIndex(sourceFile, reindexSettings);
                         } else {
                             logger.error("WorldViews indexing is disabled - please make sure all folders are configured.");
                             Files.delete(sourceFile);
@@ -818,12 +813,7 @@ public class Hotfolder {
                         break;
                     case CMS:
                         if (cmsEnabled) {
-                            try {
-                                currentIndexer = new CmsPageIndexer(this);
-                                identifiers = currentIndexer.addToIndex(sourceFile, reindexSettings);
-                            } finally {
-                                currentIndexer = null;
-                            }
+                            identifiers = new CmsPageIndexer(this).addToIndex(sourceFile, reindexSettings);
                         } else {
                             logger.error("CMS page indexing is disabled - please make sure all folders are configured.");
                             Files.delete(sourceFile);
@@ -838,12 +828,7 @@ public class Hotfolder {
             } else if (filename.endsWith(".json")) {
                 if (filename.startsWith(FILENAME_PREFIX_STATISTICS_USAGE)) {
                     if (usageStatisticsEnabled) {
-                        try {
-                            this.currentIndexer = new UsageStatisticsIndexer(this);
-                            currentIndexer.addToIndex(sourceFile, null);
-                        } finally {
-                            this.currentIndexer = null;
-                        }
+                        new UsageStatisticsIndexer(this).addToIndex(sourceFile, null);
                     } else {
                         logger.error("Usage statistics indexing is disabled - please make sure all folders are configured.");
                     }
@@ -869,13 +854,7 @@ public class Hotfolder {
                 Utils.submitDataToViewer(Collections.emptyList(), countRecordFiles()); // TODO submit any record identifiers here?
             } else if (filename.endsWith(DocUpdateIndexer.FILE_EXTENSION)) {
                 // Single Solr document update
-                List<String> identifiers = Collections.emptyList();
-                try {
-                    currentIndexer = new DocUpdateIndexer(this);
-                    identifiers = currentIndexer.addToIndex(sourceFile, null);
-                } finally {
-                    currentIndexer = null;
-                }
+                List<String> identifiers = new DocUpdateIndexer(this).addToIndex(sourceFile, null);
                 Utils.submitDataToViewer(identifiers, countRecordFiles());
             }
         } catch (IOException e) {
@@ -1233,7 +1212,18 @@ public class Hotfolder {
      * @return the addVolumeCollectionsToAnchor
      */
     public boolean isAddVolumeCollectionsToAnchor() {
-        return addVolumeCollectionsToAnchor;
+        return !addVolumeCollectionsToAnchorFields.isEmpty();
+    }
+
+    /**
+     * <p>
+     * Returns the list of Solr field names whose values are copied from volumes up into their anchor record.
+     * </p>
+     *
+     * @return the configured field names; an empty list if the feature is disabled
+     */
+    public List<String> getAddVolumeCollectionsToAnchorFields() {
+        return addVolumeCollectionsToAnchorFields;
     }
 
     /**

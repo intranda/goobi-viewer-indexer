@@ -39,6 +39,15 @@ class SolrIndexerDaemonTest extends AbstractTest {
     }
 
     /**
+     * @see SolrIndexerDaemon#getInstance()
+     * @verifies return same instance on repeated calls
+     */
+    @Test
+    void getInstance_shouldReturnSameInstanceOnRepeatedCalls() {
+        Assertions.assertSame(SolrIndexerDaemon.getInstance(), SolrIndexerDaemon.getInstance());
+    }
+
+    /**
      * @see SolrIndexerDaemon#init()
      * @verifies throw FatalIndexerException if solr schema name could not be checked
      */
@@ -92,13 +101,23 @@ class SolrIndexerDaemonTest extends AbstractTest {
     }
 
     /**
-     * @see SolrIndexerDaemon#getSearchIndex()
-     * @verifies create new instance if none exists
+     * @see SolrIndexerDaemon#getConfiguration()
+     * @verifies return same instance on repeated calls
      */
     @Test
-    void getSearchIndex_shouldCreateNewInstanceIfNoneExists() {
+    void getConfiguration_shouldReturnSameInstanceOnRepeatedCalls() {
         SolrIndexerDaemon instance = SolrIndexerDaemon.getInstance();
-        instance.injectSearchIndex(null);
-        Assertions.assertNotNull(instance.getSearchIndex());
+        Assertions.assertSame(instance.getConfiguration(), instance.getConfiguration());
+    }
+
+    /**
+     * @see SolrIndexerDaemon#getSearchIndex()
+     * @verifies return same instance on repeated calls
+     */
+    @Test
+    void getSearchIndex_shouldReturnSameInstanceOnRepeatedCalls() throws Exception {
+        SolrIndexerDaemon instance = SolrIndexerDaemon.getInstance();
+        instance.injectSearchIndex(new SolrSearchIndex(null));
+        Assertions.assertSame(instance.getSearchIndex(), instance.getSearchIndex());
     }
 }

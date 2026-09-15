@@ -532,13 +532,14 @@ class MetsIndexerTest extends AbstractSolrEnabledTest {
     }
 
     /**
-     * Copies the test anchor METS file into the data repository location where {@link Hotfolder} reconciliation expects
-     * it. The low-level {@code index()} used by these tests does not populate indexed_mets (the daemon's addToIndex()
-     * does that in production), so we stage it explicitly here.
+     * Copies the test anchor METS file into the data repository location where {@link Hotfolder} reconciliation expects it. The low-level
+     * {@code index()} used by these tests does not populate indexed_mets (the daemon's addToIndex() does that in production), so we stage it
+     * explicitly here.
      */
     private void placeIndexedAnchorFile(String piAnchor) throws Exception {
-        DataRepository[] repositories = hotfolder.getDataRepositoryStrategy().selectDataRepository(piAnchor, null, null,
-                SolrIndexerDaemon.getInstance().getSearchIndex(), SolrIndexerDaemon.getInstance().getOldSearchIndex());
+        DataRepository[] repositories = hotfolder.getDataRepositoryStrategy()
+                .selectDataRepository(piAnchor, null, null,
+                        SolrIndexerDaemon.getInstance().getSearchIndex(), SolrIndexerDaemon.getInstance().getOldSearchIndex());
         DataRepository repository = repositories[1] != null ? repositories[1] : repositories[0];
         Files.copy(metsFileAnchor1, repository.getDir(DataRepository.PARAM_INDEXED_METS).resolve(piAnchor + ".xml"),
                 StandardCopyOption.REPLACE_EXISTING);
@@ -1513,6 +1514,54 @@ class MetsIndexerTest extends AbstractSolrEnabledTest {
         Assertions.assertTrue(mimetypeMap.get("image/tiff").stream().allMatch(doc -> doc.getFieldValue("FILENAME").toString().matches("\\w+\\.tif")));
         Assertions.assertTrue(mimetypeMap.get("audio/ogg").stream().allMatch(doc -> doc.getFieldValue("FILENAME").toString().matches("\\w+\\.ogg")));
 
+    }
+
+    @Test
+    void index_shouldIndexWebarchives() throws Exception {
+        Map<String, Path> dataFolders = new HashMap<>();
+        Path metPath = Paths.get("src/test/resources/METS/webarchive/12345__26070802.xml").toAbsolutePath();
+        MetsIndexer indexer = new MetsIndexer(hotfolder, List.of("WEBARCHIVE"));
+        IndexingResult result = indexer.index(metPath, dataFolders, null, 1, false);
+        assertEquals("12345__26070802.xml", result.getRecordFileName());
+        Assertions.assertNull(result.getError());
+
+        SolrDocumentList docList = SolrIndexerDaemon.getInstance()
+                .getSearchIndex()
+                .search("+%s:%s".formatted(SolrConstants.PI, "12345__26070802"),
+                        List.of("MIMETYPE", "FILENAME*", "THUMBNAIL"));
+        Assertions.assertEquals(1, docList.size());
+        Assertions.assertEquals("tag-der-clubkultur-default.jpg", docList.get(0).getFieldValue(SolrConstants.THUMBNAIL).toString());
+
+        // No PAGE document should be created for the TEASER file group
+        Assertions.assertEquals(0, SolrIndexerDaemon.getInstance()
+                .getSearchIndex()
+                .search("+%s:%s +%s:%s".formatted(SolrConstants.PI_TOPSTRUCT, "12345__26070802", SolrConstants.DOCTYPE, "PAGE"), null)
+                .stream()
+                .filter(doc -> "tag-der-clubkultur-default.jpg".equals(doc.getFieldValue(SolrConstants.FILENAME)))
+                .count());
+    }
+
+    @Test
+    void index_shouldIndexWebarchivesWithTeaserOnly() throws Exception {
+        Map<String, Path> dataFolders = new HashMap<>();
+        Path metPath = Paths.get("src/test/resources/METS/webarchive/35423530_2024.xml").toAbsolutePath();
+        MetsIndexer indexer = new MetsIndexer(hotfolder, List.of("WEBARCHIVE"));
+        IndexingResult result = indexer.index(metPath, dataFolders, null, 1, false);
+        assertEquals("35423530_2024.xml", result.getRecordFileName());
+        Assertions.assertNull(result.getError());
+
+        SolrDocumentList docList = SolrIndexerDaemon.getInstance()
+                .getSearchIndex()
+                .search("+%s:%s".formatted(SolrConstants.PI, "35423530_2024"),
+                        List.of("MIMETYPE", "FILENAME*", "THUMBNAIL"));
+        Assertions.assertEquals(1, docList.size());
+        Assertions.assertEquals("tag-der-clubkultur-default.jpg", docList.get(0).getFieldValue(SolrConstants.THUMBNAIL).toString());
+
+        // No PAGE document should be created for the TEASER file group, since there is no other file group present
+        Assertions.assertEquals(0, SolrIndexerDaemon.getInstance()
+                .getSearchIndex()
+                .search("+%s:%s +%s:%s".formatted(SolrConstants.PI_TOPSTRUCT, "35423530_2024", SolrConstants.DOCTYPE, "PAGE"), null)
+                .size());
     }
 
     @Test

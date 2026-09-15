@@ -26,7 +26,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import io.goobi.viewer.indexer.helper.JDomXP.FileFormat;
-import io.goobi.viewer.indexer.model.SolrConstants;
 
 /**
  * Configuration object for a single metadata field configuration.
@@ -82,33 +81,15 @@ public class FieldConfig {
     }
 
     /**
-     * 
+     * Adds the formats the given XPath expression can produce values for to this field's set of supported formats.
+     *
      * @param xpath XPath exression to check
      * @should add FileFormats correctly
      */
     public void checkXpathSupportedFormats(String xpath) {
-        if (xpath.contains("mets:xmlData") || xpath.startsWith("@OBJID")) {
-            getSupportedFormats().add(FileFormat.METS);
-            getSupportedFormats().add(FileFormat.METS_MARC);
-            logger.debug("Field {} has METS/MODS and METS/MARC config.", fieldname);
-            
-            if (xpath.contains("mix:")) {
-                getSupportedFormats().add(FileFormat.MIX);
-                logger.debug("Field {} has MIX config.", fieldname);
-            }
-        } else if (SolrConstants.EAD_NODE_ID.equals(fieldname) || xpath.contains("ead:") || xpath.equals("@otherlevel")) {
-            getSupportedFormats().add(FileFormat.EAD);
-            logger.debug("Field {} has EAD config.", fieldname);
-        } else if (xpath.contains("lido:")) {
-            getSupportedFormats().add(FileFormat.LIDO);
-            logger.debug("Field {} has LIDO config.", fieldname);
-        } else if (xpath.contains("dc:")) {
-            getSupportedFormats().add(FileFormat.DUBLINCORE);
-            logger.debug("Field {} has Dublin Core config.", fieldname);
-        } else if (xpath.contains("denkxweb:")) {
-            getSupportedFormats().add(FileFormat.DENKXWEB);
-            logger.debug("Field {} has DenkXWeb config.", fieldname);
-        }
+        Set<FileFormat> formats = XPathConfig.determineSupportedFormats(xpath, fieldname);
+        logger.debug("Field {} has {} config.", fieldname, formats);
+        getSupportedFormats().addAll(formats);
     }
 
     /**

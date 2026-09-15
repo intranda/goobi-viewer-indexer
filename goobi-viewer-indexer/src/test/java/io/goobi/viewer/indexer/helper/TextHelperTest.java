@@ -63,6 +63,27 @@ class TextHelperTest extends AbstractTest {
     }
 
     /**
+     * @see TextHelper#addLayoutTagLabels(AltoDocument,Map)
+     * @verifies collect labels of referenced layout tags
+     * @verifies ignore unreferenced layout tags
+     */
+    @SuppressWarnings("unchecked")
+    @Test
+    void readAltoFile_shouldCollectLayoutTagLabels() throws Exception {
+        Map<String, Object> result = TextHelper.readAltoFile(new File("src/test/resources/ALTO/layoutTags.xml"));
+        List<String> labels = (List<String>) result.get(SolrConstants.MD_LAYOUTTAG);
+        Assertions.assertNotNull(labels);
+        // Distinct labels of all referenced LayoutTags, regardless of the referencing element level
+        Assertions.assertTrue(labels.contains("gr_jacob_grimm"));
+        Assertions.assertTrue(labels.contains("gr_wilhelm_grimm"));
+        Assertions.assertTrue(labels.contains("gr_jacob_oder_wilhelm_grimm"));
+        Assertions.assertTrue(labels.contains("gr_unterstrichen"));
+        Assertions.assertTrue(labels.contains("gr_printed"));
+        // gr_durchgestrichen (RT-3) is defined in <Tags> but not referenced on the page -> not collected
+        Assertions.assertFalse(labels.contains("gr_durchgestrichen"));
+    }
+
+    /**
      * @see TextHelper#readAltoFile(String,File)
      * @verifies extract fulltext correctly
      */

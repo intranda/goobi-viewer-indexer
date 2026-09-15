@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mets:mets OBJID="159470" xsi:schemaLocation="http://www.loc.gov/standards/premis/ http://www.loc.gov/standards/premis/v2/premis-v2-0.xsd http://www.loc.gov/mods/v3 http://www.loc.gov/standards/mods/v3/mods-3-7.xsd http://www.loc.gov/METS/ http://www.loc.gov/standards/mets/mets.xsd http://zvdd.gdz-cms.de/ 
+	  http://pfad/zu/schema/xsd/zvdd.xsd
+	   http://www.loc.gov/standards/mix/ http://www.loc.gov/standards/mix/mix.xsd" xmlns:mets="http://www.loc.gov/METS/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:mods="http://www.loc.gov/mods/v3" xmlns:dv="http://dfg-viewer.de/" xmlns:xlink="http://www.w3.org/1999/xlink">
+   <mets:metsHdr CREATEDATE="2026-07-15T11:15:59Z">
+      <mets:agent OTHERTYPE="SOFTWARE" ROLE="CREATOR" TYPE="OTHER">
+         <mets:name>Goobi - d01b7 - 2026-04-23T13:10:32Z</mets:name>
+      </mets:agent>
+   </mets:metsHdr>
+   <mets:dmdSec ID="DMDLOG_0001">
+      <mets:mdWrap MDTYPE="MODS">
+         <mets:xmlData>
+            <mods:mods>
+               <mods:titleInfo>
+                  <mods:title>Tag der Clubkultur (automatisiert + händischer Crawl)</mods:title>
+               </mods:titleInfo>
+               <mods:typeOfResource>text</mods:typeOfResource>
+               <mods:genre authority="marcgt">book</mods:genre>
+               <mods:originInfo>
+                  <mods:dateIssued encoding="w3cdtf" keyDate="yes">2026</mods:dateIssued>
+                  <mods:dateIssued displayLabel="displayDate">2026</mods:dateIssued>
+                  <mods:dateCaptured encoding="w3cdtf">2026-07-02</mods:dateCaptured>
+               </mods:originInfo>
+               <mods:physicalDescription>
+                  <mods:digitalOrigin>born digital</mods:digitalOrigin>
+               </mods:physicalDescription>
+               <mods:classification authority="ivdcc" displayLabel="zlb_collections">Testsammlung</mods:classification>
+               <mods:relatedItem type="host">
+                  <mods:recordInfo>
+                     <mods:recordIdentifier source="DE-609">12345</mods:recordIdentifier>
+                  </mods:recordInfo>
+               </mods:relatedItem>
+               <mods:recordInfo>
+                  <mods:recordIdentifier source="DE-609">12345__26070802</mods:recordIdentifier>
+               </mods:recordInfo>
+               <mods:identifier type="urn">urn:nbn:de:kobv:109-1-15532479</mods:identifier>
+               <mods:part order="202622300" type="host">
+                  <mods:detail type="volume">
+                     <mods:number>2026,23</mods:number>
+                  </mods:detail>
+               </mods:part>
+               <mods:accessCondition type="dz">Freier Zugang</mods:accessCondition>
+               <mods:accessCondition type="use and reproduction">Rights reserved</mods:accessCondition>
+            </mods:mods>
+         </mets:xmlData>
+      </mets:mdWrap>
+   </mets:dmdSec>
+   <mets:amdSec ID="AMD">
+      <mets:rightsMD ID="RIGHTS">
+         <mets:mdWrap MDTYPE="OTHER" MIMETYPE="text/xml" OTHERMDTYPE="DVRIGHTS">
+            <mets:xmlData>
+               <dv:rights>
+                  <dv:owner>Zentral- und Landesbibliothek Berlin</dv:owner>
+                  <dv:ownerLogo>https://digital.zlb.de/viewer/resources/themes/zlb/images/zlbdfgviewerlogo.jpg</dv:ownerLogo>
+                  <dv:ownerSiteURL>http://www.zlb.de</dv:ownerSiteURL>
+                  <dv:ownerContact>landesbibliothek-digital@zlb.de</dv:ownerContact>
+               </dv:rights>
+            </mets:xmlData>
+         </mets:mdWrap>
+      </mets:rightsMD>
+      <mets:digiprovMD ID="DIGIPROV">
+         <mets:mdWrap MDTYPE="OTHER" MIMETYPE="text/xml" OTHERMDTYPE="DVLINKS">
+            <mets:xmlData>
+               <dv:links>
+                  <dv:reference>https://www.voebb.de/aDISWeb/app?service=direct/0/Home/$DirectLink&amp;sp=SPROD00&amp;sp=SAK12345__26070802</dv:reference>
+                  <dv:presentation>https://digital.zlb.de/viewer/ppnresolver?id=12345__26070802</dv:presentation>
+               </dv:links>
+            </mets:xmlData>
+         </mets:mdWrap>
+      </mets:digiprovMD>
+   </mets:amdSec>
+   <mets:fileSec>
+      <mets:fileGrp USE="TEASER">
+         <mets:file ID="FILE_0001_TEASER" MIMETYPE="image/jpeg">
+            <mets:FLocat LOCTYPE="URL" xlink:href="file:///opt/digiverso/viewer/media/12345__26070802/tag-der-clubkultur-default.jpg"/>
+         </mets:file>
+      </mets:fileGrp>
+      <mets:fileGrp USE="WEBARCHIVE">
+         <mets:file ID="FILE_0002_WEBARCHIVE" MIMETYPE="application/warc">
+            <mets:FLocat LOCTYPE="URL" xlink:href="upload-e9fe79fb-93eb-4e00-b6d0-0cc46993108a-tag-der-clubkultur-test-pkuor5fv.wacz"/>
+         </mets:file>
+         <mets:file ID="FILE_0003_WEBARCHIVE" MIMETYPE="application/warc">
+            <mets:FLocat LOCTYPE="URL" xlink:href="20260629130722869-2b26c73b-c76-0.wacz"/>
+         </mets:file>
+      </mets:fileGrp>
+   </mets:fileSec>
+   <mets:structMap TYPE="LOGICAL">
+      <mets:div ID="LOG_0002" LABEL="Testseite 01" TYPE="website">
+         <mets:mptr LOCTYPE="URL" xlink:href="https://digital.zlb.de/viewer/metsresolver?id=12345"/>
+         <mets:div ADMID="AMD" CONTENTIDS="urn:nbn:de:kobv:109-1-15532479" DMDID="DMDLOG_0001" ID="LOG_0003" LABEL="Tag der Clubkultur (automatisiert + händischer Crawl)" ORDER="202622300" TYPE="websiteCrawl"/>
+      </mets:div>
+   </mets:structMap>
+   <mets:structMap TYPE="PHYSICAL">
+      <mets:div ID="PHYS_0000" TYPE="physSequence">
+         <mets:div ID="PHYS_0001" ORDER="1" ORDERLABEL=" - " TYPE="page">
+            <mets:fptr FILEID="FILE_0001_TEASER"/>
+         </mets:div>
+         <mets:div ID="PHYS_0002" ORDER="2" ORDERLABEL="1" TYPE="page">
+            <mets:fptr FILEID="FILE_0002_WEBARCHIVE"/>
+         </mets:div>
+         <mets:div ID="PHYS_0003" ORDER="3" ORDERLABEL="2" TYPE="page">
+            <mets:fptr FILEID="FILE_0003_WEBARCHIVE"/>
+         </mets:div>
+      </mets:div>
+   </mets:structMap>
+   <mets:structLink>
+      <mets:smLink xlink:to="PHYS_0001" xlink:from="LOG_0003"/>
+      <mets:smLink xlink:to="PHYS_0002" xlink:from="LOG_0003"/>
+      <mets:smLink xlink:to="PHYS_0003" xlink:from="LOG_0003"/>
+   </mets:structLink>
+</mets:mets>

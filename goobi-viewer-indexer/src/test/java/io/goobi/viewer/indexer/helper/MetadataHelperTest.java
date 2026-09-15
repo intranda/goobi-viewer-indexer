@@ -16,9 +16,11 @@
 package io.goobi.viewer.indexer.helper;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -32,6 +34,7 @@ import java.util.UUID;
 
 import org.jdom2.Document;
 import org.jdom2.Element;
+import org.jdom2.Namespace;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -40,6 +43,7 @@ import de.intranda.digiverso.normdataimporter.model.NormData;
 import de.intranda.digiverso.normdataimporter.model.NormDataValue;
 import io.goobi.viewer.indexer.AbstractTest;
 import io.goobi.viewer.indexer.SolrIndexerDaemon;
+import io.goobi.viewer.indexer.helper.JDomXP.FileFormat;
 import io.goobi.viewer.indexer.model.GroupedMetadata;
 import io.goobi.viewer.indexer.model.IndexObject;
 import io.goobi.viewer.indexer.model.LuceneField;
@@ -47,6 +51,8 @@ import io.goobi.viewer.indexer.model.SolrConstants;
 import io.goobi.viewer.indexer.model.SolrConstants.MetadataGroupType;
 import io.goobi.viewer.indexer.model.config.FieldConfig;
 import io.goobi.viewer.indexer.model.config.GroupEntity;
+import io.goobi.viewer.indexer.model.config.SubfieldConfig;
+import io.goobi.viewer.indexer.model.config.XPathConfig;
 
 class MetadataHelperTest extends AbstractTest {
 
@@ -120,7 +126,81 @@ class MetadataHelperTest extends AbstractTest {
     }
 
     /**
-     * @see MetadataHelper#getGroupedMetadata(Element,GroupEntity,String)
+     * @see MetadataHelper#getGroupedMetadata(Element,GroupEntity,FieldConfig,String,StringBuilder,List,JDomXP,FileFormat)
+     * @verifies not add values from expressions of other formats
+     */
+    @Test
+    void getGroupedMetadata_shouldNotAddValuesFromExpressionsOfOtherFormats() throws Exception {
+        // Deliberately the shipped configuration rather than a test configuration: the person group
+        // entities only there map MD_VALUE from MODS, MARC and EAD expressions side by side, and the
+        // test configurations cover neither that combination nor MD_ADDRESSEE at all.
+        Configuration shippedConfig = new Configuration(new File("src/main/resources/config_indexer.xml").getAbsolutePath());
+        List<FieldConfig> fieldConfigurations = shippedConfig.getMetadataConfigurationManager().getConfigurationListForField("MD_AUTHOR");
+        assertNotNull(fieldConfigurations);
+        assertEquals(1, fieldConfigurations.size());
+        FieldConfig fieldConfig = fieldConfigurations.get(0);
+        assertNotNull(fieldConfig.getGroupEntity());
+
+        Document docMods = JDomXP.readXmlFile("src/test/resources/METS/aggregation_mods_test.xml");
+        assertNotNull(docMods);
+        Element eleName = docMods.getRootElement().getChild("name", SolrIndexerDaemon.getInstance().getConfiguration().getNamespaces().get("mods"));
+        assertNotNull(eleName);
+
+        GroupedMetadata gmd = MetadataHelper.getGroupedMetadata(eleName, fieldConfig.getGroupEntity(), fieldConfig, "MD_AUTHOR",
+                new StringBuilder(), new ArrayList<>(), new JDomXP(docMods), FileFormat.METS);
+
+        List<String> valueList = new ArrayList<>(1);
+        for (LuceneField field : gmd.getFields()) {
+            if (SolrConstants.MD_VALUE.equals(field.getField())) {
+                valueList.add(field.getValue());
+            }
+        }
+        // With the record indexed as METS, the ead: expression is filtered out and contributes nothing
+        assertEquals(List.of("Display_Form"), valueList);
+        // The main value decides both the displayed value and, via equals(), the identity of the
+        // group entity - a value shared by all persons of a record collapses them into one
+        assertEquals("Display_Form", gmd.getMainValue());
+    }
+
+    /**
+     * @see GroupedMetadata#collectGroupMetadataValues(java.util.Map,java.util.Map,Element,boolean,java.util.Map,FieldConfig,JDomXP,FileFormat)
+     * @verifies skip xpath expressions not matching source format
+     */
+    @Test
+    void collectGroupMetadataValues_shouldSkipXpathExpressionsNotMatchingSourceFormat() throws Exception {
+        // Shipped configuration for realistic MD_AUTHOR modifications, under which the bare separator is known to survive.
+        Configuration shippedConfig = new Configuration(new File("src/main/resources/config_indexer.xml").getAbsolutePath());
+        FieldConfig fieldConfig = shippedConfig.getMetadataConfigurationManager().getConfigurationListForField("MD_AUTHOR").get(0);
+        assertNotNull(fieldConfig);
+
+        Document docMods = JDomXP.readXmlFile("src/test/resources/METS/aggregation_mods_test.xml");
+        assertNotNull(docMods);
+        Element eleName = docMods.getRootElement().getChild("name", SolrIndexerDaemon.getInstance().getConfiguration().getNamespaces().get("mods"));
+        assertNotNull(eleName);
+        JDomXP jdomXP = new JDomXP(docMods);
+
+        // An ead:-prefixed expression built around a string function (concat): it returns a value even when the ead:part operand is absent,
+        // unlike a node-set selection - the very class of expression that leaked into non-EAD records before 90ca730d. The literal marker
+        // keeps the produced value stable and non-blank regardless of field modifications.
+        SubfieldConfig subfield = new SubfieldConfig(SolrConstants.MD_VALUE, true, false);
+        subfield.getXpaths().add(new XPathConfig("concat('markervalue', ead:part[@localtype=\"surname\"])", null, null, SolrConstants.MD_VALUE));
+        Map<String, SubfieldConfig> groupEntityFields = Map.of(SolrConstants.MD_VALUE, subfield);
+
+        // METS record: the ead: expression belongs to another format and must be skipped entirely
+        Map<String, List<String>> collectedMets = new HashMap<>();
+        new GroupedMetadata().collectGroupMetadataValues(collectedMets, groupEntityFields, eleName, false, null, fieldConfig, jdomXP,
+                FileFormat.METS);
+        assertFalse(collectedMets.containsKey(SolrConstants.MD_VALUE));
+
+        // EAD record: the same expression applies and is evaluated, so the concat marker value is produced
+        Map<String, List<String>> collectedEad = new HashMap<>();
+        new GroupedMetadata().collectGroupMetadataValues(collectedEad, groupEntityFields, eleName, false, null, fieldConfig, jdomXP,
+                FileFormat.EAD);
+        assertEquals(List.of("markervalue"), collectedEad.get(SolrConstants.MD_VALUE));
+    }
+
+    /**
+     * @see MetadataHelper#getGroupedMetadata(Element,GroupEntity,FieldConfig,String,StringBuilder,List,JDomXP)
      * @verifies group correctly
      */
     @Test
@@ -139,7 +219,7 @@ class MetadataHelperTest extends AbstractTest {
         Element eleName = docMods.getRootElement().getChild("name", SolrIndexerDaemon.getInstance().getConfiguration().getNamespaces().get("mods"));
         assertNotNull(eleName);
         GroupedMetadata gmd = MetadataHelper.getGroupedMetadata(eleName, fieldConfig.getGroupEntity(), fieldConfig, "MD_AUTHOR", new StringBuilder(),
-                new ArrayList<>());
+                new ArrayList<>(), new JDomXP(docMods));
         Assertions.assertFalse(gmd.getFields().isEmpty());
         assertEquals("Display_Form", gmd.getMainValue());
         String label = null;
@@ -203,7 +283,7 @@ class MetadataHelperTest extends AbstractTest {
     }
 
     /**
-     * @see MetadataHelper#getGroupedMetadata(Element,GroupEntity,FieldConfig,String,StringBuilder,List)
+     * @see MetadataHelper#getGroupedMetadata(Element,GroupEntity,FieldConfig,String,StringBuilder,List,JDomXP)
      * @verifies not lowercase certain fields
      */
     @Test
@@ -223,7 +303,7 @@ class MetadataHelperTest extends AbstractTest {
         Element eleName = docMods.getRootElement().getChild("name", SolrIndexerDaemon.getInstance().getConfiguration().getNamespaces().get("mods"));
         assertNotNull(eleName);
         GroupedMetadata gmd = MetadataHelper.getGroupedMetadata(eleName, fieldConfig.getGroupEntity(), fieldConfig, "MD_AUTHOR", new StringBuilder(),
-                new ArrayList<>());
+                new ArrayList<>(), new JDomXP(docMods));
         Assertions.assertFalse(gmd.getFields().isEmpty());
         assertEquals("display_form", gmd.getMainValue());
         String label = null;
@@ -284,6 +364,56 @@ class MetadataHelperTest extends AbstractTest {
         assertEquals("terms_of_address", termsOfAddress);
         assertEquals("xlink", link);
         assertEquals("MD_AUTHOR_Display_Form", groupField);
+    }
+
+    /**
+     * @see MetadataHelper#getGroupedMetadata(Element,GroupEntity,FieldConfig,String,StringBuilder,List,JDomXP)
+     * @verifies resolve authority data field references correctly
+     */
+    @Test
+    void getGroupedMetadata_shouldResolveAuthorityDataFieldReferencesCorrectly() throws Exception {
+        String url = "https://www.geonames.org/2950159";
+        List<NormData> normDataList = new ArrayList<>();
+        normDataList.add(new NormData("NORM_NAME", new NormDataValue("Berlin", null, null)));
+        MetadataHelper.authorityDataCache.put(url, new TestRecord(normDataList));
+        try {
+            List<FieldConfig> fieldConfigurations = SolrIndexerDaemon.getInstance()
+                    .getConfiguration()
+                    .getMetadataConfigurationManager()
+                    .getConfigurationListForField("MD_PLACEPUBLISH");
+            assertNotNull(fieldConfigurations);
+            assertEquals(1, fieldConfigurations.size());
+            FieldConfig fieldConfig = fieldConfigurations.get(0);
+            assertNotNull(fieldConfig.getGroupEntity());
+
+            Element elePlace = new Element("placeTerm");
+            elePlace.setAttribute("valueURI", url);
+            elePlace.setText("Berlin");
+
+            GroupedMetadata gmd = MetadataHelper.getGroupedMetadata(elePlace, fieldConfig.getGroupEntity(), fieldConfig, "MD_PLACEPUBLISH",
+                    new StringBuilder(), new ArrayList<>(), new JDomXP(new Document()));
+            String mainName = null;
+            for (LuceneField field : gmd.getFields()) {
+                if ("MD_MAINNAME".equals(field.getField())) {
+                    mainName = field.getValue();
+                    break;
+                }
+            }
+            assertEquals("Berlin", mainName);
+        } finally {
+            MetadataHelper.authorityDataCache.remove(url);
+        }
+    }
+
+    /**
+     * Minimal concrete {@link de.intranda.digiverso.normdataimporter.model.Record} for seeding the authority data cache in tests, avoiding real
+     * network calls to authority data providers.
+     */
+    private static class TestRecord extends de.intranda.digiverso.normdataimporter.model.Record {
+
+        TestRecord(List<NormData> normDataList) {
+            this.normDataList = normDataList;
+        }
     }
 
     /**

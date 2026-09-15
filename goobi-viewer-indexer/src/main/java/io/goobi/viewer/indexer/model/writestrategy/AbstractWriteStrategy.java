@@ -18,6 +18,8 @@ package io.goobi.viewer.indexer.model.writestrategy;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -55,6 +57,17 @@ public abstract class AbstractWriteStrategy implements ISolrWriteStrategy {
 
     /** Collected field values for further checks, etc. */
     protected Map<String, List<String>> collectedValues = new ConcurrentHashMap<>();
+
+    /**
+     * Records a field value for later duplicate checking. The backing list is a synchronized list so that concurrent callers (e.g.
+     * WorldViewsIndexer's parallel addPage) do not lose entries or corrupt the list.
+     *
+     * @param field collection key (e.g. {@link SolrConstants#URN})
+     * @param value value to record
+     */
+    protected void addCollectedValue(String field, String value) {
+        collectedValues.computeIfAbsent(field, k -> Collections.synchronizedList(new ArrayList<>())).add(value);
+    }
 
     /**
      * 
@@ -214,6 +227,30 @@ public abstract class AbstractWriteStrategy implements ISolrWriteStrategy {
         }
         if (doc.containsKey(SolrConstants.SEARCHTERMS_ARCHIVE)) {
             rootDoc.addField(SolrConstants.SUPERSEARCHTERMS_ARCHIVE, doc.getFieldValue(SolrConstants.SEARCHTERMS_ARCHIVE));
+        }
+        // Aggregate the page's layout-tag facet values onto the record doc as a distinct union, so the facet is
+        // available on the search result (record) list and not only on the page docs.
+        addLayoutTagsToRootDoc(doc, rootDoc);
+    }
+
+    /**
+     * Copies the distinct layout-tag facet values ({@link SolrConstants#MD_LAYOUTTAG}) from a page doc onto the record
+     * (root) doc, forming a distinct union across the record's pages. Duplicate values are skipped. This makes the
+     * layout-tag facet available on the search result (record) list, not only on the page docs.
+     *
+     * @param doc source (page) doc
+     * @param rootDoc target (record) doc
+     * @should add distinct layout tag values to root doc
+     */
+    static void addLayoutTagsToRootDoc(SolrInputDocument doc, SolrInputDocument rootDoc) {
+        if (doc == null || rootDoc == null || !doc.containsKey(SolrConstants.MD_LAYOUTTAG)) {
+            return;
+        }
+        for (Object value : doc.getFieldValues(SolrConstants.MD_LAYOUTTAG)) {
+            Collection<Object> existing = rootDoc.getFieldValues(SolrConstants.MD_LAYOUTTAG);
+            if (existing == null || !existing.contains(value)) {
+                rootDoc.addField(SolrConstants.MD_LAYOUTTAG, value);
+            }
         }
     }
 

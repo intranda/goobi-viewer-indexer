@@ -16,6 +16,7 @@
 package io.goobi.viewer.indexer.helper;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -23,6 +24,7 @@ import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -31,11 +33,12 @@ import org.apache.solr.common.SolrInputDocument;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import io.goobi.viewer.indexer.AbstractTest;
 import io.goobi.viewer.indexer.Indexer;
 import io.goobi.viewer.indexer.model.SolrConstants;
 import io.goobi.viewer.indexer.model.datarepository.DataRepository;
 
-class FulltextAugmentorTest {
+class FulltextAugmentorTest extends AbstractTest {
 
     /**
      * @see Indexer#addIndexFieldsFromAltoData(SolrInputDocument,Map,Map,String,String,String,int,boolean)
@@ -187,6 +190,24 @@ class FulltextAugmentorTest {
     }
 
     /**
+     * @see FulltextAugmentor#addFullTextToPageDoc(SolrInputDocument,Map,String,int,String)
+     * @verifies use png alternative file name if primary file name unusable
+     */
+    @Test
+    void addFullTextToPageDoc_shouldUsePngAlternativeFileNameIfPrimaryFileNameUnusable() throws Exception {
+        FulltextAugmentor augmentor = new FulltextAugmentor(new DataRepository("src/test/resources", true));
+        Map<String, Path> dataFolders = new HashMap<>();
+        dataFolders.put(DataRepository.PARAM_ALTO, Paths.get("src/test/resources/ALTO/"));
+        assertTrue(Files.isDirectory(dataFolders.get(DataRepository.PARAM_ALTO)));
+        SolrInputDocument doc = new SolrInputDocument(new HashMap<>());
+        doc.setField(SolrConstants.FILENAME, "https://example.com/iiif/PPN123/default.jpg");
+        doc.setField("FILENAME_PNG", "00000010.png");
+
+        assertTrue(augmentor.addFullTextToPageDoc(doc, dataFolders, "PPN123", 10, null));
+        assertEquals("alto/PPN123/00000010.xml", doc.getFieldValue(SolrConstants.FILENAME_ALTO));
+    }
+
+    /**
      * @see Indexer#addNamedEntitiesFields(Map,SolrInputDocument)
      * @verifies add field
      */
@@ -230,6 +251,27 @@ class FulltextAugmentorTest {
     @Test
     void cleanUpNamedEntityValue_shouldThrowIllegalArgumentExceptionGivenNull() {
         Assertions.assertThrows(IllegalArgumentException.class, () -> FulltextAugmentor.cleanUpNamedEntityValue(null));
+    }
+
+    /**
+     * @see FulltextAugmentor#addLayoutTagFields(Map,SolrInputDocument)
+     * @verifies add layout tag fields
+     * @verifies skip excluded labels
+     */
+    @Test
+    void addLayoutTagFields_shouldWriteLayoutTagField() throws Exception {
+        Map<String, Object> altoData = TextHelper.readAltoFile(new File("src/test/resources/ALTO/layoutTags.xml"));
+        SolrInputDocument doc = new SolrInputDocument(new HashMap<>());
+
+        FulltextAugmentor.addLayoutTagFields(altoData, doc);
+
+        Collection<Object> labels = doc.getFieldValues(SolrConstants.MD_LAYOUTTAG);
+        assertNotNull(labels);
+        assertTrue(labels.contains("gr_jacob_grimm"));
+        assertTrue(labels.contains("gr_wilhelm_grimm"));
+        assertTrue(labels.contains("gr_unterstrichen"));
+        // gr_printed is configured as an excluded label in config_indexer.test.xml
+        assertFalse(labels.contains("gr_printed"));
     }
 
 }

@@ -108,8 +108,8 @@ class ConfigurationTest extends AbstractTest {
             SubfieldConfig fieldSubconfig = groupEntity.getSubfields().get("field1");
             Assertions.assertNotNull(fieldSubconfig);
             assertEquals(2, fieldSubconfig.getXpaths().size());
-            assertEquals("xpath1", fieldSubconfig.getXpaths().get(0));
-            assertEquals("xpath2", fieldSubconfig.getXpaths().get(1));
+            assertEquals("xpath1", fieldSubconfig.getXpaths().get(0).getxPath());
+            assertEquals("xpath2", fieldSubconfig.getXpaths().get(1).getxPath());
             assertTrue(fieldSubconfig.isMultivalued());
             assertTrue(fieldSubconfig.isAddSortField());
             assertEquals("def", fieldSubconfig.getDefaultValues().get("xpath2"));
@@ -118,7 +118,7 @@ class ConfigurationTest extends AbstractTest {
             SubfieldConfig fieldSubconfig = groupEntity.getSubfields().get("field2");
             Assertions.assertNotNull(fieldSubconfig);
             assertEquals(1, fieldSubconfig.getXpaths().size());
-            assertEquals("xpath3", fieldSubconfig.getXpaths().get(0));
+            assertEquals("xpath3", fieldSubconfig.getXpaths().get(0).getxPath());
             assertFalse(fieldSubconfig.isMultivalued());
         }
 
@@ -353,6 +353,15 @@ class ConfigurationTest extends AbstractTest {
     }
 
     /**
+     * @see Configuration#getMetsThumbnailFileGroup()
+     * @verifies return default value if nothing configured
+     */
+    @Test
+    void getMetsThumbnailFileGroup_shouldReturnDefaultValueIfNothingConfigured() {
+        assertEquals("TEASER", SolrIndexerDaemon.getInstance().getConfiguration().getMetsThumbnailFileGroup());
+    }
+
+    /**
      * @see Configuration#getMetsAllowedPhysicalTypes()
      * @verifies return configured values
      */
@@ -433,6 +442,17 @@ class ConfigurationTest extends AbstractTest {
     @Test
     void getOldSolrUrl_shouldReturnCorrectValue() {
         assertEquals("https://viewer-testing-index.goobi.io/solr/indexer-testing", SolrIndexerDaemon.getInstance().getConfiguration().getSolrUrl());
+    }
+
+    /**
+     * @see Configuration#getLayoutTagFacetExcludeLabels()
+     * @verifies return configured exclude labels
+     */
+    @Test
+    void getLayoutTagFacetExcludeLabels_shouldReturnConfiguredExcludeLabels() {
+        List<String> excludeLabels = SolrIndexerDaemon.getInstance().getConfiguration().getLayoutTagFacetExcludeLabels();
+        assertEquals(1, excludeLabels.size());
+        assertEquals("gr_printed", excludeLabels.get(0));
     }
 
     /**

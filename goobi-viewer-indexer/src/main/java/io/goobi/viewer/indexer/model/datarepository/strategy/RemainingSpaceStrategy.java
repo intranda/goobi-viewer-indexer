@@ -151,7 +151,7 @@ public class RemainingSpaceStrategy extends AbstractDataRepositoryStrategy {
 
     /**
      * @param dataRepositories
-     * @return SortedMap<Long, DataRepository>
+     * @return {@code SortedMap<Long, DataRepository>}
      * @should subtract the buffer size from available space
      */
     static SortedMap<Long, DataRepository> generateRepositorySpaceMap(List<DataRepository> dataRepositories) {

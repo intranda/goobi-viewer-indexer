@@ -15,6 +15,8 @@
  */
 package io.goobi.viewer.indexer.model.writestrategy;
 
+import java.util.Collection;
+
 import org.apache.solr.common.SolrInputDocument;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -50,5 +52,32 @@ class AbstractWriteStrategyTest {
         Assertions.assertNotNull(doc.getFieldValues(SolrConstants.DATECREATED));
         Assertions.assertEquals(1, doc.getFieldValues(SolrConstants.DATECREATED).size());
         Assertions.assertEquals(123L, doc.getFieldValue(SolrConstants.DATECREATED));
+    }
+
+    /**
+     * @see AbstractWriteStrategy#addLayoutTagsToRootDoc(SolrInputDocument,SolrInputDocument)
+     * @verifies add distinct layout tag values to root doc
+     */
+    @Test
+    void addLayoutTagsToRootDoc_shouldAddDistinctLayoutTagValuesToRootDoc() {
+        SolrInputDocument rootDoc = new SolrInputDocument();
+
+        SolrInputDocument page1 = new SolrInputDocument();
+        page1.addField(SolrConstants.MD_LAYOUTTAG, "gr_jacob_grimm");
+        page1.addField(SolrConstants.MD_LAYOUTTAG, "gr_unterstrichen");
+        SolrInputDocument page2 = new SolrInputDocument();
+        page2.addField(SolrConstants.MD_LAYOUTTAG, "gr_jacob_grimm"); // duplicate across pages
+        page2.addField(SolrConstants.MD_LAYOUTTAG, "gr_wilhelm_grimm");
+
+        AbstractWriteStrategy.addLayoutTagsToRootDoc(page1, rootDoc);
+        AbstractWriteStrategy.addLayoutTagsToRootDoc(page2, rootDoc);
+
+        Collection<Object> values = rootDoc.getFieldValues(SolrConstants.MD_LAYOUTTAG);
+        Assertions.assertNotNull(values);
+        // Distinct union across pages (the duplicate gr_jacob_grimm is not repeated)
+        Assertions.assertEquals(3, values.size());
+        Assertions.assertTrue(values.contains("gr_jacob_grimm"));
+        Assertions.assertTrue(values.contains("gr_unterstrichen"));
+        Assertions.assertTrue(values.contains("gr_wilhelm_grimm"));
     }
 }

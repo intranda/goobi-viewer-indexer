@@ -57,6 +57,7 @@ import io.goobi.viewer.indexer.model.SolrConstants.MetadataGroupType;
 import io.goobi.viewer.indexer.model.config.FieldConfig;
 import io.goobi.viewer.indexer.model.config.GroupEntity;
 import io.goobi.viewer.indexer.model.config.NonSortConfiguration;
+import io.goobi.viewer.indexer.model.config.SubfieldConfig;
 import io.goobi.viewer.indexer.model.config.ValueNormalizer;
 import io.goobi.viewer.indexer.model.config.XPathConfig;
 
@@ -227,6 +228,12 @@ public final class MetadataHelper {
                         logger.error("An XPath expression for {} is null.", configurationItem.getFieldname());
                         continue;
                     }
+                    // A single field configuration may bundle expressions for several source formats. Evaluating a foreign format's expression
+                    // never yields a value, but an absolute one ('//foo:bar') is rescanned from the document root for every element, which is
+                    // prohibitively expensive on large records.
+                    if (!xpathConfig.appliesTo(indexObj.getSourceDocFormat())) {
+                        continue;
+                    }
                     String xpath = xpathConfig.getxPath();
                     String fieldValue = "";
                     String query;
@@ -264,7 +271,7 @@ public final class MetadataHelper {
                                 // Grouped metadata
                                 Element eleMods = (Element) xpathAnswerObject;
                                 GroupedMetadata gmd = getGroupedMetadata(eleMods, configurationItem.getGroupEntity(), configurationItem,
-                                        configurationItem.getFieldname(), sbDefaultMetadataValues, ret);
+                                        configurationItem.getFieldname(), sbDefaultMetadataValues, ret, xp, indexObj.getSourceDocFormat());
 
                                 // Add the relevant value as a non-grouped metadata value (for term browsing, etc.)
                                 if (StringUtils.isNotEmpty(gmd.getMainValue())) {
@@ -1207,6 +1214,7 @@ public final class MetadataHelper {
     }
 
     /**
+     * Convenience overload that disables source-format filtering of subfield expressions (all expressions are evaluated regardless of format).
      *
      * @param ele Relative JDOM2 root element
      * @param groupEntity {@link GroupEntity} configuration from which to create the {@link GroupedMetadata}
@@ -1214,13 +1222,34 @@ public final class MetadataHelper {
      * @param groupLabel Main field name
      * @param sbDefaultMetadataValues StringBuilder that collects default values
      * @param luceneFields
+     * @param jdomXP {@link io.goobi.viewer.indexer.helper.JDomXP} of the document that owns <code>ele</code>
+     * @return Generated {@link GroupedMetadata}
+     * @throws FatalIndexerException
+     */
+    static GroupedMetadata getGroupedMetadata(Element ele, GroupEntity groupEntity, FieldConfig configurationItem, String groupLabel,
+            StringBuilder sbDefaultMetadataValues, List<LuceneField> luceneFields, JDomXP jdomXP) throws FatalIndexerException {
+        return getGroupedMetadata(ele, groupEntity, configurationItem, groupLabel, sbDefaultMetadataValues, luceneFields, jdomXP, null);
+    }
+
+    /**
+     *
+     * @param ele Relative JDOM2 root element
+     * @param groupEntity {@link GroupEntity} configuration from which to create the {@link GroupedMetadata}
+     * @param configurationItem Master field configuration
+     * @param groupLabel Main field name
+     * @param sbDefaultMetadataValues StringBuilder that collects default values
+     * @param luceneFields
+     * @param jdomXP {@link io.goobi.viewer.indexer.helper.JDomXP} of the document that owns <code>ele</code>
+     * @param sourceDocFormat {@link io.goobi.viewer.indexer.helper.JDomXP.FileFormat} of the indexed document; used to skip subfield expressions
+     *            that belong to a different format. May be null to disable format filtering.
      * @return Generated {@link GroupedMetadata}
      * @throws FatalIndexerException
      * @should group correctly
      * @should not lowercase certain fields
      */
     static GroupedMetadata getGroupedMetadata(Element ele, GroupEntity groupEntity, FieldConfig configurationItem, String groupLabel,
-            StringBuilder sbDefaultMetadataValues, List<LuceneField> luceneFields) throws FatalIndexerException {
+            StringBuilder sbDefaultMetadataValues, List<LuceneField> luceneFields, JDomXP jdomXP, FileFormat sourceDocFormat)
+            throws FatalIndexerException {
         logger.trace("getGroupedMetadata: {}", groupLabel);
         GroupedMetadata ret = new GroupedMetadata();
         ret.setLabel(groupLabel);
@@ -1235,7 +1264,8 @@ public final class MetadataHelper {
         StringBuilder sbAuthorityDataTerms = new StringBuilder();
 
         Map<String, List<String>> collectedValues = new HashMap<>();
-        ret.collectGroupMetadataValues(collectedValues, groupEntity.getSubfields(), ele, authorityDataEnabled, null, configurationItem);
+        ret.collectGroupMetadataValues(collectedValues, groupEntity.getSubfields(), ele, authorityDataEnabled, null, configurationItem, jdomXP,
+                sourceDocFormat);
 
         if (!groupEntity.getSubfields().containsKey(SolrConstants.MD_VALUE)) {
             logger.warn("'{}' not configured for grouped metadata field '{}'.", SolrConstants.MD_VALUE, groupLabel);
@@ -1264,7 +1294,7 @@ public final class MetadataHelper {
         if (!additionalFieldsFromParent.isEmpty()) {
             logger.debug("Collecting source metadata for {}", configurationItem.getFieldname());
             ret.collectGroupMetadataValues(collectedValues, groupEntity.getSubfields(), ele.getParentElement(), authorityDataEnabled,
-                    additionalFieldsFromParent, configurationItem);
+                    additionalFieldsFromParent, configurationItem, jdomXP, sourceDocFormat);
         }
         // if no MD_VALUE field exists, construct one
         if (mdValue == null) {
@@ -1331,7 +1361,7 @@ public final class MetadataHelper {
             }
         }
 
-        // Retrieve authority data
+        // Retrieve authority data  
         if (authorityDataEnabled && ret.getAuthorityURI() != null) {
             authorityData.addAll(retrieveAuthorityData(ret.getAuthorityURI(), sbDefaultMetadataValues,
                     sbAuthorityDataTerms, addAuthorityDataFieldsToDefault, configurationItem.getReplaceRules(),
@@ -1365,6 +1395,27 @@ public final class MetadataHelper {
                         }
                         break;
                     default: // nothing
+                }
+            }
+        }
+
+        // Resolve fields configured as "authorityData:NORM_XXX" (instead of an XPath expression) against the retrieved authority data
+        if (!authorityData.isEmpty()) {
+            for (SubfieldConfig subfield : groupEntity.getSubfields().values()) {
+                for (XPathConfig xpc : subfield.getXpaths()) {
+                    String xp = xpc.getxPath();
+                    if (!xp.startsWith(GroupedMetadata.AUTHORITY_DATA_FIELD_PREFIX)) {
+                        continue;
+                    }
+                    String authorityFieldName = xp.substring(GroupedMetadata.AUTHORITY_DATA_FIELD_PREFIX.length());
+                    for (LuceneField authorityField : authorityData) {
+                        if (authorityField.getField().equals(authorityFieldName) && StringUtils.isNotBlank(authorityField.getValue())) {
+                            ret.getFields().add(new LuceneField(subfield.getFieldname(), authorityField.getValue()));
+                            if (!subfield.isMultivalued()) {
+                                break;
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -1450,14 +1501,14 @@ public final class MetadataHelper {
         if (!groupEntity.getChildren().isEmpty()) {
             for (GroupEntity childGroupEntity : groupEntity.getChildren()) {
                 logger.debug("Processing child config: {}", childGroupEntity.getName());
-                List<Element> eleChildList = JDomXP.evaluateToElementsStatic(childGroupEntity.getXpath(), ele);
+                List<Element> eleChildList = jdomXP.evaluateToElements(childGroupEntity.getXpath(), ele);
                 if (eleChildList == null) {
                     continue;
                 }
                 for (Element eleChild : eleChildList) {
                     GroupedMetadata child =
                             getGroupedMetadata(eleChild, childGroupEntity, configurationItem, childGroupEntity.getName(), sbDefaultMetadataValues,
-                                    luceneFields);
+                                    luceneFields, jdomXP);
                     ret.getChildren().add(child);
                     if (StringUtils.isNotEmpty(child.getMainValue())) {
                         logger.debug("added child: {}", child.getMainValue());

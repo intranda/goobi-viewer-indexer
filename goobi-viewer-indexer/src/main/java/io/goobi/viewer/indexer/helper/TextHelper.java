@@ -34,6 +34,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 
 import javax.xml.stream.XMLStreamException;
 
@@ -47,6 +49,8 @@ import org.jdom2.output.XMLOutputter;
 import org.jsoup.Jsoup;
 
 import de.intranda.digiverso.ocr.alto.model.structureclasses.logical.AltoDocument;
+import de.intranda.digiverso.ocr.alto.model.structureclasses.logical.AltoTags.TagType;
+import de.intranda.digiverso.ocr.alto.model.structureclasses.logical.Tag;
 import de.intranda.digiverso.ocr.alto.utils.HyphenationLinker;
 import de.intranda.digiverso.ocr.conversion.ConvertAbbyyToAltoStaX;
 import de.intranda.digiverso.ocr.conversion.ConvertTeiToAlto;
@@ -147,7 +151,33 @@ public final class TextHelper {
         linker.linkWords(altoDoc);
         Document doc = new Document(altoDoc.writeToDom());
 
-        return readAltoDoc(doc);
+        Map<String, Object> ret = readAltoDoc(doc);
+        addLayoutTagLabels(altoDoc, ret);
+        return ret;
+    }
+
+    /**
+     * Collects the distinct labels of all ALTO {@code <LayoutTag>}s that are actually applied on the page (i.e. that
+     * are referenced by at least one element) and stores them in the given map under
+     * {@link SolrConstants#MD_LAYOUTTAG}. Labels are taken verbatim from the ALTO; no collection-specific label names
+     * are hardcoded here (filtering of unwanted labels such as the printed-text label happens downstream via
+     * configuration).
+     *
+     * @param altoDoc parsed ALTO document
+     * @param ret target map that receives the label list
+     * @should collect labels of referenced layout tags
+     * @should ignore unreferenced layout tags
+     */
+    static void addLayoutTagLabels(AltoDocument altoDoc, Map<String, Object> ret) {
+        Set<String> labels = new TreeSet<>();
+        if (altoDoc != null && altoDoc.getTags() != null) {
+            for (Tag tag : altoDoc.getTags().getTagsAsList()) {
+                if (tag.getTagType() == TagType.LAYOUT_TAG && tag.getLabel() != null && !tag.getReferences().isEmpty()) {
+                    labels.add(tag.getLabel());
+                }
+            }
+        }
+        ret.put(SolrConstants.MD_LAYOUTTAG, new ArrayList<>(labels));
     }
 
     /**

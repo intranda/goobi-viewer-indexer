@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mets:mets OBJID="128121" xsi:schemaLocation="http://www.loc.gov/standards/premis/ http://www.loc.gov/standards/premis/v2/premis-v2-0.xsd http://www.loc.gov/mods/v3 http://www.loc.gov/standards/mods/v3/mods-3-7.xsd http://www.loc.gov/METS/ http://www.loc.gov/standards/mets/mets.xsd http://zvdd.gdz-cms.de/ 
+	  http://pfad/zu/schema/xsd/zvdd.xsd
+	   http://www.loc.gov/standards/mix/ http://www.loc.gov/standards/mix/mix.xsd" xmlns:mets="http://www.loc.gov/METS/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:mods="http://www.loc.gov/mods/v3" xmlns:dv="http://dfg-viewer.de/" xmlns:xlink="http://www.w3.org/1999/xlink">
+   <mets:metsHdr CREATEDATE="2026-07-16T09:16:00Z">
+      <mets:agent OTHERTYPE="SOFTWARE" ROLE="CREATOR" TYPE="OTHER">
+         <mets:name>Goobi - d01b7 - 2026-04-23T13:10:32Z</mets:name>
+      </mets:agent>
+   </mets:metsHdr>
+   <mets:dmdSec ID="DMDLOG_0001">
+      <mets:mdWrap MDTYPE="MODS">
+         <mets:xmlData>
+            <mods:mods>
+               <mods:typeOfResource>mixed material</mods:typeOfResource>
+               <mods:genre authority="marcgt">web site</mods:genre>
+               <mods:originInfo>
+                  <mods:place>
+                     <mods:placeTerm type="text">Berlin</mods:placeTerm>
+                  </mods:place>
+                  <mods:dateIssued encoding="w3cdtf" keyDate="yes">2024</mods:dateIssued>
+                  <mods:dateIssued displayLabel="displayDate">2024</mods:dateIssued>
+                  <mods:dateCaptured encoding="w3cdtf">16.10.2024, 13:31:14</mods:dateCaptured>
+               </mods:originInfo>
+               <mods:physicalDescription>
+                  <mods:extent>2,35 GB</mods:extent>
+                  <mods:digitalOrigin>born digital</mods:digitalOrigin>
+               </mods:physicalDescription>
+               <mods:relatedItem type="host">
+                  <mods:recordInfo>
+                     <mods:recordIdentifier source="DE-609">35423530</mods:recordIdentifier>
+                  </mods:recordInfo>
+               </mods:relatedItem>
+               <mods:recordInfo>
+                  <mods:recordIdentifier source="DE-609">35423530_2024</mods:recordIdentifier>
+               </mods:recordInfo>
+               <mods:identifier type="urn">urn:nbn:de:kobv:109-1-15508437</mods:identifier>
+               <mods:identifier type="webarchive">https://replayweb.page/?source=https%3A%2F%2Fapp.browsertrix.com%2Fapi%2Forgs%2Fe77cf10b-dfc8-4c14-811c-24bb338bdf10%2Fcollections%2F26c25613-c2ad-4d38-b2b4-ac8033c93ba0%2Fpublic%2Freplay.json#view=pages&amp;url=https%3A%2F%2Ftagderclubkultur.berlin%2F&amp;ts=20241016113114&amp;waczhash=56728f2582bce9b174d3f38f7e1309b1aac43099212b8586bab6f6a2ef2efc49</mods:identifier>
+               <mods:part order="202400000" type="host">
+                  <mods:detail type="volume">
+                     <mods:number>2024, Crawl vom 2024-10-16</mods:number>
+                  </mods:detail>
+               </mods:part>
+               <mods:accessCondition type="dz">Freier Zugang</mods:accessCondition>
+               <mods:accessCondition type="use and reproduction">Rights reserved</mods:accessCondition>
+            </mods:mods>
+         </mets:xmlData>
+      </mets:mdWrap>
+   </mets:dmdSec>
+   <mets:amdSec ID="AMD">
+      <mets:rightsMD ID="RIGHTS">
+         <mets:mdWrap MDTYPE="OTHER" MIMETYPE="text/xml" OTHERMDTYPE="DVRIGHTS">
+            <mets:xmlData>
+               <dv:rights>
+                  <dv:owner>Zentral- und Landesbibliothek Berlin</dv:owner>
+                  <dv:ownerLogo>https://digital.zlb.de/viewer/resources/themes/zlb/images/zlbdfgviewerlogo.jpg</dv:ownerLogo>
+                  <dv:ownerSiteURL>http://www.zlb.de</dv:ownerSiteURL>
+                  <dv:ownerContact>landesbibliothek-digital@zlb.de</dv:ownerContact>
+               </dv:rights>
+            </mets:xmlData>
+         </mets:mdWrap>
+      </mets:rightsMD>
+      <mets:digiprovMD ID="DIGIPROV">
+         <mets:mdWrap MDTYPE="OTHER" MIMETYPE="text/xml" OTHERMDTYPE="DVLINKS">
+            <mets:xmlData>
+               <dv:links>
+                  <dv:reference>https://www.voebb.de/aDISWeb/app?service=direct/0/Home/$DirectLink&amp;sp=SPROD00&amp;sp=SAK35423530_2024</dv:reference>
+                  <dv:presentation>https://digital.zlb.de/viewer/ppnresolver?id=35423530_2024</dv:presentation>
+               </dv:links>
+            </mets:xmlData>
+         </mets:mdWrap>
+      </mets:digiprovMD>
+   </mets:amdSec>
+   <mets:fileSec>
+      <mets:fileGrp USE="TEASER">
+         <mets:file ID="FILE_0001_TEASER" MIMETYPE="image/jpeg">
+            <mets:FLocat LOCTYPE="URL" xlink:href="file:///opt/digiverso/viewer/media/35423530_2024/tag-der-clubkultur-default.jpg"/>
+         </mets:file>
+      </mets:fileGrp>
+   </mets:fileSec>
+   <mets:structMap TYPE="LOGICAL">
+      <mets:div ID="LOG_0002" LABEL="Tag der Clubkultur" TYPE="website">
+         <mets:mptr LOCTYPE="URL" xlink:href="https://digital.zlb.de/viewer/metsresolver?id=35423530"/>
+         <mets:div ADMID="AMD" CONTENTIDS="urn:nbn:de:kobv:109-1-15508437" DMDID="DMDLOG_0001" ID="LOG_0003" ORDER="202400000" TYPE="websiteCrawl"/>
+      </mets:div>
+   </mets:structMap>
+   <mets:structMap TYPE="PHYSICAL">
+      <mets:div ID="PHYS_0000" TYPE="physSequence">
+         <mets:div ID="PHYS_0001" ORDER="1" ORDERLABEL=" - " TYPE="page">
+            <mets:fptr FILEID="FILE_0001_TEASER"/>
+         </mets:div>
+      </mets:div>
+   </mets:structMap>
+   <mets:structLink>
+      <mets:smLink xlink:to="PHYS_0001" xlink:from="LOG_0003"/>
+   </mets:structLink>
+</mets:mets>

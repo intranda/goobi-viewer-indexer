@@ -73,6 +73,14 @@
 		<!-- If true, all collection names from volumes will be added to their corresponding anchor record (default is false) -->
 		<addVolumeCollectionsToAnchor>false</addVolumeCollectionsToAnchor>
 
+		<!-- ALTO <LayoutTag> labels applied on a page are indexed per page into MD_LAYOUTTAG (facetable). Labels are
+		     collection-specific; list any labels that should be kept out of the facet (e.g. the printed-text label).
+		     No labels are excluded by default.
+		<layoutTagFacets>
+			<excludeLabel>gr_printed</excludeLabel>
+		</layoutTagFacets>
+		-->
+
 		<representativeImage>
 			<!-- If true, the first page of a document is set as the representative image if no other page is
 			specified in the source document. If this is set to false, and no page is explicitly set as representative,
@@ -125,6 +133,9 @@
 				it will be used for indexing image file paths. -->
 			<preferredImageFileGroup>BOOKVIEWER</preferredImageFileGroup>
 			<preferredImageFileGroup>ZOOMIFY</preferredImageFileGroup>
+			<!-- thumbnailFileGroup: File group whose first file is used as THUMBNAIL if no other representative image could be
+				determined. This group never generates PAGE documents. Defaults to "TEASER" if not configured. -->
+			<thumbnailFileGroup>TEASER</thumbnailFileGroup>
             <!-- physicalElementTypes/type (0-n): Values of mets:div/@TYPE that shall be processed as pages. Type "page" is always allowed,
                 others must be configured here. -->
             <physicalElementTypes>
@@ -560,6 +571,21 @@
 			</list>
 		</MD_ACCESSCONDITIONCOPYRIGHTURL>
 
+        <!-- This field is important; EVENTTYPE is a required fields for LIDO events. -->
+		<EVENTTYPE>
+			<list>
+				<item>
+					<xpath>lido:eventType/lido:term</xpath>
+					<xpath>lido:eventType/skos:Concept/skos:prefLabel[@xml:lang='en']</xpath>
+					<xpath>lido:eventType/lido:conceptID</xpath>
+					<getnode>first</getnode>
+					<addToDefault>false</addToDefault>
+					<onefield>false</onefield>
+					<addUntokenizedVersion>false</addUntokenizedVersion>
+				</item>
+			</list>
+		</EVENTTYPE>
+
 		<EVENTDATE>
 			<list>
 				<item>
@@ -793,6 +819,10 @@
 					<groupEntity type="LOCATION" addCoordsToDocstruct="true">
 						<field name="MD_VALUE">text()</field>
 						<field name="NORM_URI">@valueURI</field>
+						<!-- Instead of an XPath expression, "authorityData:NORM_XXX" resolves a value from the retrieved authority
+							data (e.g. the preferred name from a GeoNames record) once it has been retrieved, and writes it to this
+							METADATA document under the given field name. -->
+						<field name="MD_MAINNAME" multivalued="false">authorityData:NORM_NAME</field>
 					</groupEntity>
 				</item>
 			</list>
