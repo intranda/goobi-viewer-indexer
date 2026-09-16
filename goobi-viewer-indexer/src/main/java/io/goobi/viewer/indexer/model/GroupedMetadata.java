@@ -65,6 +65,8 @@ public class GroupedMetadata {
     /** If true, this field won't be added to he index. */
     private boolean skip = false;
     private boolean allowDuplicateValues = false;
+    /** If true, authority data retrieval for this group failed (e.g. service unreachable), so the record's authority data is incomplete. */
+    private boolean authorityDataIncomplete = false;
     private List<GroupedMetadata> children = new ArrayList<>();
 
     /**
@@ -87,6 +89,7 @@ public class GroupedMetadata {
         setLabel(orig.getLabel());
         setMainValue(orig.getMainValue());
         setAuthorityURI(orig.getAuthorityURI());
+        setAuthorityDataIncomplete(orig.isAuthorityDataIncomplete());
         for (LuceneField field : orig.getFields()) {
             fields.add(new LuceneField(field));
         }
@@ -421,6 +424,20 @@ public class GroupedMetadata {
      */
     public void setAllowDuplicateValues(boolean allowDuplicateValues) {
         this.allowDuplicateValues = allowDuplicateValues;
+    }
+
+    /**
+     * @return the authorityDataIncomplete
+     */
+    public boolean isAuthorityDataIncomplete() {
+        return authorityDataIncomplete;
+    }
+
+    /**
+     * @param authorityDataIncomplete the authorityDataIncomplete to set
+     */
+    public void setAuthorityDataIncomplete(boolean authorityDataIncomplete) {
+        this.authorityDataIncomplete = authorityDataIncomplete;
     }
 
     /**

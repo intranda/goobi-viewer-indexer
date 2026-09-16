@@ -200,6 +200,60 @@ class MetadataHelperTest extends AbstractTest {
     }
 
     /**
+     * @see MetadataHelper#getGroupedMetadata(Element,GroupEntity,FieldConfig,String,StringBuilder,List,JDomXP,FileFormat)
+     * @verifies flag group as authority data incomplete if retrieval fails
+     */
+    @Test
+    void getGroupedMetadata_shouldFlagGroupAsAuthorityDataIncompleteIfRetrievalFails() throws Exception {
+        Configuration shippedConfig = new Configuration(new File("src/main/resources/config_indexer.xml").getAbsolutePath());
+        FieldConfig fieldConfig = shippedConfig.getMetadataConfigurationManager().getConfigurationListForField("MD_AUTHOR").get(0);
+        assertNotNull(fieldConfig.getGroupEntity());
+
+        Document docMods = JDomXP.readXmlFile("src/test/resources/METS/aggregation_mods_test.xml");
+        Element eleName = docMods.getRootElement().getChild("name", SolrIndexerDaemon.getInstance().getConfiguration().getNamespaces().get("mods"));
+        assertNotNull(eleName);
+        // Point authority lookup at an unreachable loopback address so NormDataImporter.getSingleRecord returns null
+        // (connection refused, deterministic and without any external network dependency).
+        eleName.removeAttribute("authority");
+        eleName.setAttribute("valueURI", "http://127.0.0.1:1/authority/test");
+
+        MetadataHelper.setAuthorityDataEnabled(true);
+        GroupedMetadata gmd = MetadataHelper.getGroupedMetadata(eleName, fieldConfig.getGroupEntity(), fieldConfig, "MD_AUTHOR",
+                new StringBuilder(), new ArrayList<>(), new JDomXP(docMods), FileFormat.METS);
+
+        assertTrue(gmd.isAuthorityDataIncomplete());
+    }
+
+    /**
+     * @see MetadataHelper#getGroupedMetadata(Element,GroupEntity,FieldConfig,String,StringBuilder,List,JDomXP,FileFormat)
+     * @verifies not leak authority data incomplete marker into fields
+     */
+    @Test
+    void getGroupedMetadata_shouldNotLeakAuthorityDataIncompleteMarkerIntoFields() throws Exception {
+        Configuration shippedConfig = new Configuration(new File("src/main/resources/config_indexer.xml").getAbsolutePath());
+        FieldConfig fieldConfig = shippedConfig.getMetadataConfigurationManager().getConfigurationListForField("MD_AUTHOR").get(0);
+        assertNotNull(fieldConfig.getGroupEntity());
+
+        Document docMods = JDomXP.readXmlFile("src/test/resources/METS/aggregation_mods_test.xml");
+        Element eleName = docMods.getRootElement().getChild("name", SolrIndexerDaemon.getInstance().getConfiguration().getNamespaces().get("mods"));
+        assertNotNull(eleName);
+        eleName.removeAttribute("authority");
+        eleName.setAttribute("valueURI", "http://127.0.0.1:1/authority/test");
+
+        MetadataHelper.setAuthorityDataEnabled(true);
+        GroupedMetadata gmd = MetadataHelper.getGroupedMetadata(eleName, fieldConfig.getGroupEntity(), fieldConfig, "MD_AUTHOR",
+                new StringBuilder(), new ArrayList<>(), new JDomXP(docMods), FileFormat.METS);
+
+        // The marker used internally to signal the failure must not end up as an actual metadata field
+        for (LuceneField field : gmd.getFields()) {
+            assertFalse(SolrConstants.BOOL_AUTHORITY_DATA_INCOMPLETE.equals(field.getField()));
+        }
+        for (LuceneField field : gmd.getAuthorityDataFields()) {
+            assertFalse(SolrConstants.BOOL_AUTHORITY_DATA_INCOMPLETE.equals(field.getField()));
+        }
+    }
+
+    /**
      * @see MetadataHelper#getGroupedMetadata(Element,GroupEntity,FieldConfig,String,StringBuilder,List,JDomXP)
      * @verifies group correctly
      */

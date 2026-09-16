@@ -273,6 +273,13 @@ public final class MetadataHelper {
                                 GroupedMetadata gmd = getGroupedMetadata(eleMods, configurationItem.getGroupEntity(), configurationItem,
                                         configurationItem.getFieldname(), sbDefaultMetadataValues, ret, xp, indexObj.getSourceDocFormat());
 
+                                // Flag the record for reindexing if authority data retrieval failed for this group (e.g. service unreachable).
+                                // Emitted once per docstruct doc; the viewer groups flagged docs by PI_TOPSTRUCT.
+                                if (gmd.isAuthorityDataIncomplete() && !indexObj.isAuthorityDataIncomplete()) {
+                                    indexObj.setAuthorityDataIncomplete(true);
+                                    indexObj.addToLucene(new LuceneField(SolrConstants.BOOL_AUTHORITY_DATA_INCOMPLETE, "true"), true);
+                                }
+
                                 // Add the relevant value as a non-grouped metadata value (for term browsing, etc.)
                                 if (StringUtils.isNotEmpty(gmd.getMainValue())) {
                                     if (nonShareable) {
@@ -543,7 +550,11 @@ public final class MetadataHelper {
             }
             if (rec == null) {
                 logger.warn("Authority dataset could not be retrieved: {}", url);
-                return Collections.emptyList();
+                // Signal the failure to the caller via a marker field so the record can be flagged for reindexing.
+                // This is the "service unreachable / not resolvable" case, as opposed to a resolvable record with no fields (below).
+                List<LuceneField> incompleteMarker = new ArrayList<>(1);
+                incompleteMarker.add(new LuceneField(SolrConstants.BOOL_AUTHORITY_DATA_INCOMPLETE, "true"));
+                return incompleteMarker;
             }
             if (rec.getNormDataList().isEmpty()) {
                 logger.warn("No authority data fields found.");
@@ -1246,6 +1257,8 @@ public final class MetadataHelper {
      * @throws FatalIndexerException
      * @should group correctly
      * @should not lowercase certain fields
+     * @should flag group as authority data incomplete if retrieval fails
+     * @should not leak authority data incomplete marker into fields
      */
     static GroupedMetadata getGroupedMetadata(Element ele, GroupEntity groupEntity, FieldConfig configurationItem, String groupLabel,
             StringBuilder sbDefaultMetadataValues, List<LuceneField> luceneFields, JDomXP jdomXP, FileFormat sourceDocFormat)
@@ -1361,11 +1374,16 @@ public final class MetadataHelper {
             }
         }
 
-        // Retrieve authority data  
+        // Retrieve authority data
         if (authorityDataEnabled && ret.getAuthorityURI() != null) {
-            authorityData.addAll(retrieveAuthorityData(ret.getAuthorityURI(), sbDefaultMetadataValues,
+            List<LuceneField> retrievedAuthorityData = new ArrayList<>(retrieveAuthorityData(ret.getAuthorityURI(), sbDefaultMetadataValues,
                     sbAuthorityDataTerms, addAuthorityDataFieldsToDefault, configurationItem.getReplaceRules(),
                     configurationItem.getFieldname()));
+            // Detect and strip the "authority data incomplete" marker (retrieval failed, e.g. service unreachable)
+            if (retrievedAuthorityData.removeIf(field -> SolrConstants.BOOL_AUTHORITY_DATA_INCOMPLETE.equals(field.getField()))) {
+                ret.setAuthorityDataIncomplete(true);
+            }
+            authorityData.addAll(retrievedAuthorityData);
             // Add default authority data name to the docstruct doc so that it can be searched
             for (LuceneField authorityField : authorityData) {
                 switch (authorityField.getField()) {

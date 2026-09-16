@@ -285,6 +285,8 @@ public final class SolrConstants {
 
     /** Field containing true if a page contains a double image. */
     public static final String BOOL_DOUBLE_IMAGE = "BOOL_DOUBLE_IMAGE";
+    /** Field containing true if authority data (e.g. GND) could not be retrieved for the record and the record should be reindexed later. */
+    public static final String BOOL_AUTHORITY_DATA_INCOMPLETE = "BOOL_AUTHORITY_DATA_INCOMPLETE";
     /** Constant <code>MD_ANNOTATION_ID="MD_ANNOTATION_ID"</code> */
     public static final String MD_ANNOTATION_ID = "MD_ANNOTATION_ID";
 

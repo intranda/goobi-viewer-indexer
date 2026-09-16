@@ -65,6 +65,8 @@ public class IndexObject {
     private Element rootStructNode;
     private boolean anchor = false;
     private boolean volume;
+    /** If true, authority data (e.g. GND) could not be retrieved for this object, so the record should be reindexed later. */
+    private boolean authorityDataIncomplete = false;
     private String defaultValue = "";
     private String parentPI = "";
     private String topstructPI = "";
@@ -658,6 +660,20 @@ public class IndexObject {
      */
     public IndexObject getParent() {
         return parent;
+    }
+
+    /**
+     * @return the authorityDataIncomplete
+     */
+    public boolean isAuthorityDataIncomplete() {
+        return authorityDataIncomplete;
+    }
+
+    /**
+     * @param authorityDataIncomplete the authorityDataIncomplete to set
+     */
+    public void setAuthorityDataIncomplete(boolean authorityDataIncomplete) {
+        this.authorityDataIncomplete = authorityDataIncomplete;
     }
 
     /**
