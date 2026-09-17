@@ -39,6 +39,7 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.ThreadContext;
 import org.apache.solr.common.SolrInputDocument;
 import org.jdom2.Element;
 import org.jdom2.Namespace;
@@ -249,10 +250,13 @@ public class PhysicalDocumentBuilder {
 
         Collection<PhysicalElement> pages = Collections.synchronizedList(new ArrayList<PhysicalElement>());
         if (SolrIndexerDaemon.getInstance().getConfiguration().getThreads() > 1) {
-            // Generate each page document in its own thread
+            // Generate each page document in its own thread. Capture the current logging context (MDC) so the pool's
+            // worker threads can re-apply it and their log lines stay attributed to this record.
+            final Map<String, String> loggingContext = ThreadContext.getImmutableContext();
             ForkJoinTask<?> task = null;
             try (ForkJoinPool pool = new ForkJoinPool(SolrIndexerDaemon.getInstance().getConfiguration().getThreads())) {
                 task = pool.submit(() -> eleStructMapPhysicalList.parallelStream().forEach(eleStructMapPhysical -> {
+                    ThreadContext.putAll(loggingContext);
                     try {
                         String iddoc = Indexer.getNextIddoc();
                         PhysicalElement page =

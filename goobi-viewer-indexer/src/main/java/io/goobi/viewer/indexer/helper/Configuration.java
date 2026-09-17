@@ -477,6 +477,19 @@ public final class Configuration {
 
     /**
      * <p>
+     * getRecordThreads.
+     * </p>
+     *
+     * @return Number of records to index concurrently (record-level parallelism). Default 1 (serial, legacy behavior).
+     *         Total worker threads is approximately this value multiplied by {@link #getThreads()} (intra-record pool
+     *         size), so size both together against available CPU and Solr capacity.
+     */
+    public int getRecordThreads() {
+        return Math.max(1, getInt("performance.recordThreads", 1));
+    }
+
+    /**
+     * <p>
      * isCountHotfolderFiles.
      * </p>
      *

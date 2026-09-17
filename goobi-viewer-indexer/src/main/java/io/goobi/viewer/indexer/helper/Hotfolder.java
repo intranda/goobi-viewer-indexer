@@ -42,6 +42,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.ThreadContext;
 import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.common.SolrDocument;
@@ -362,11 +363,13 @@ public class Hotfolder {
     }
 
     /**
-     * Empties and re-inits the secondary logger.
+     * Discards the captured secondary log for the given record.
+     *
+     * @param recordKey record identifier (the MDC {@value SecondaryAppender#MDC_KEY} value)
      */
-    private void resetSecondaryLog() {
+    private void resetSecondaryLog(String recordKey) {
         if (secondaryAppender != null) {
-            secondaryAppender.reset();
+            secondaryAppender.reset(recordKey);
         }
     }
 
@@ -474,7 +477,6 @@ public class Hotfolder {
         }
         Path fileToReindex = highPriorityIndexQueue.poll();
         if (fileToReindex != null) {
-            resetSecondaryLog();
             logger.info("Found file '{}' (priority queue).", fileToReindex.getFileName());
             doIndex(fileToReindex);
         } else {
@@ -650,21 +652,37 @@ public class Hotfolder {
             return false;
         }
 
-        resetSecondaryLog();
-        checkFreeSpace();
-        Map<String, Boolean> reindexSettings = new HashMap<>();
-        reindexSettings.put(DataRepository.PARAM_FULLTEXT, false);
-        reindexSettings.put(DataRepository.PARAM_TEIWC, false);
-        reindexSettings.put(DataRepository.PARAM_ALTO, false);
-        reindexSettings.put(DataRepository.PARAM_MIX, false);
-        reindexSettings.put(DataRepository.PARAM_UGC, false);
-        boolean ret = handleSourceFile(recordFile, reindexSettings);
-        if (secondaryAppender != null && emailConfigurationComplete) {
-            checkAndSendErrorReport(recordFile.getFileName() + ": Indexing failed (" + Version.asString() + ")",
-                    secondaryAppender.getLog());
-        }
+        // Tag this record on the MDC so that every log line (including those from the intra-record worker pools, which
+        // re-apply this context) is attributable to it, and so the secondary appender collects this record's log in its
+        // own buffer even when several records are indexed in parallel. The displayed tag ('rec') starts as the file name
+        // and is upgraded to the PI once the record is parsed (see Indexer.selectDataRepository); the buffer key ('recId')
+        // stays the file name for the whole record so all its lines share one buffer.
+        String recordKey = recordFile.getFileName().toString();
+        ThreadContext.put(SecondaryAppender.MDC_KEY, recordKey);
+        ThreadContext.put(SecondaryAppender.MDC_KEY_ID, recordKey);
+        try {
+            resetSecondaryLog(recordKey);
+            checkFreeSpace();
+            Map<String, Boolean> reindexSettings = new HashMap<>();
+            reindexSettings.put(DataRepository.PARAM_FULLTEXT, false);
+            reindexSettings.put(DataRepository.PARAM_TEIWC, false);
+            reindexSettings.put(DataRepository.PARAM_ALTO, false);
+            reindexSettings.put(DataRepository.PARAM_MIX, false);
+            reindexSettings.put(DataRepository.PARAM_UGC, false);
+            boolean ret = handleSourceFile(recordFile, reindexSettings);
+            if (secondaryAppender != null && emailConfigurationComplete) {
+                checkAndSendErrorReport(recordFile.getFileName() + ": Indexing failed (" + Version.asString() + ")",
+                        secondaryAppender.getLog(recordKey));
+            }
 
-        return ret;
+            return ret;
+        } finally {
+            // Release this record's data-repository reservation (no-op for strategies that do not reserve).
+            dataRepositoryStrategy.releaseReservation();
+            resetSecondaryLog(recordKey);
+            ThreadContext.remove(SecondaryAppender.MDC_KEY);
+            ThreadContext.remove(SecondaryAppender.MDC_KEY_ID);
+        }
     }
 
     /**
@@ -707,7 +725,7 @@ public class Hotfolder {
             logger.error("Insufficient free space: {} / {} MB available. Indexer will now shut down.", freeSpace, minStorageSpace);
             if (secondaryAppender != null && emailConfigurationComplete) {
                 checkAndSendErrorReport("Record indexing failed due to insufficient space (" + Version.asString() + ")",
-                        secondaryAppender.getLog());
+                        secondaryAppender.getLog(ThreadContext.get(SecondaryAppender.MDC_KEY)));
             }
             throw new FatalIndexerException("Insufficient free space");
         }

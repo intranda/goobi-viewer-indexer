@@ -43,6 +43,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.ThreadContext;
 import org.apache.solr.client.solrj.impl.BaseHttpSolrClient.RemoteSolrException;
 import org.apache.solr.common.SolrInputDocument;
 
@@ -303,6 +304,8 @@ public class SerializingSolrWriteStrategy extends AbstractWriteStrategy {
         Collections.sort(orderList);
 
         if (SolrIndexerDaemon.getInstance().getConfiguration().getThreads() > 1) {
+            // Capture the logging context (MDC) so the pool's worker threads keep this record's log tag.
+            final Map<String, String> loggingContext = ThreadContext.getImmutableContext();
             try (ExecutorService executor = Executors.newFixedThreadPool(SolrIndexerDaemon.getInstance().getConfiguration().getThreads())) {
                 for (final int order : orderList) {
 
@@ -311,6 +314,7 @@ public class SerializingSolrWriteStrategy extends AbstractWriteStrategy {
 
                         @Override
                         public void run() {
+                            ThreadContext.putAll(loggingContext);
                             try {
                                 writePageDoc(order, rootDoc, aggregateRecords);
                             } catch (FatalIndexerException e) {

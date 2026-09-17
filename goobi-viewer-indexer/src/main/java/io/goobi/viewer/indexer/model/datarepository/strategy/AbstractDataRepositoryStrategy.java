@@ -17,7 +17,9 @@ package io.goobi.viewer.indexer.model.datarepository.strategy;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.IdentityHashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -37,6 +39,58 @@ public abstract class AbstractDataRepositoryStrategy implements IDataRepositoryS
     private static final Logger logger = LogManager.getLogger(AbstractDataRepositoryStrategy.class);
 
     protected List<DataRepository> dataRepositories;
+
+    /**
+     * In-flight reservations per repository: the amount (bytes for {@link RemainingSpaceStrategy}, record count for
+     * {@link MaxRecordNumberStrategy}) selected for records whose files are not yet on disk. Concurrent selections net
+     * this out of a repository's live free space / record count so two records cannot both be assigned the last slot of
+     * the same repository. Guarded by {@code this}; keyed by repository identity (the same instances are reused).
+     */
+    private final Map<DataRepository, Long> pendingReservations = new IdentityHashMap<>();
+    /** The repository the current thread reserved for its in-progress record, so the reservation can be released. */
+    private final ThreadLocal<DataRepository> reservedRepository = new ThreadLocal<>();
+    /** The amount the current thread reserved, paired with {@link #reservedRepository}. */
+    private final ThreadLocal<Long> reservedAmount = ThreadLocal.withInitial(() -> 0L);
+
+    /**
+     * Returns the currently reserved (in-flight) amount for the given repository.
+     *
+     * @param repository repository to query
+     * @return reserved amount, 0 if none
+     */
+    protected synchronized long getPendingReservation(DataRepository repository) {
+        return pendingReservations.getOrDefault(repository, 0L);
+    }
+
+    /**
+     * Reserves the given amount against the given repository for the current thread's record, first releasing any
+     * reservation the thread still holds (defensive; normally already released on the previous record's completion).
+     *
+     * @param repository selected repository
+     * @param amount amount to reserve (bytes or record count)
+     */
+    protected synchronized void reserve(DataRepository repository, long amount) {
+        releaseReservation();
+        pendingReservations.merge(repository, amount, Long::sum);
+        reservedRepository.set(repository);
+        reservedAmount.set(amount);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public synchronized void releaseReservation() {
+        DataRepository repository = reservedRepository.get();
+        if (repository != null) {
+            long remaining = pendingReservations.getOrDefault(repository, 0L) - reservedAmount.get();
+            if (remaining > 0) {
+                pendingReservations.put(repository, remaining);
+            } else {
+                pendingReservations.remove(repository);
+            }
+            reservedRepository.remove();
+            reservedAmount.remove();
+        }
+    }
 
     /**
      * Creates a data repository strategy object based on the configuration.

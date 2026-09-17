@@ -34,6 +34,7 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.ThreadContext;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.common.SolrInputDocument;
 import org.jdom2.Element;
@@ -350,8 +351,11 @@ public class EadIndexer extends Indexer {
             pool = new ForkJoinPool(SolrIndexerDaemon.getInstance().getConfiguration().getThreads());
             // Snapshot into an ArrayList so get(order) is O(1); JDOM2's filtered child list has O(n) random access
             final List<Element> children = new ArrayList<>(childrenNodeList);
+            // Capture the logging context (MDC) so the pool's worker threads keep this record's log tag.
+            final Map<String, String> loggingContext = ThreadContext.getImmutableContext();
             try {
                 pool.submit(() -> IntStream.range(0, children.size()).parallel().forEach(order -> {
+                    ThreadContext.putAll(loggingContext);
                     Element node = children.get(order);
                     try {
                         // Do not use parallel processing in recursion

@@ -57,6 +57,7 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.ThreadContext;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
@@ -103,6 +104,7 @@ import io.goobi.viewer.indexer.helper.TextHelper;
 import io.goobi.viewer.indexer.helper.Utils;
 import io.goobi.viewer.indexer.helper.WebAnnotationTools;
 import io.goobi.viewer.indexer.helper.XmlTools;
+import io.goobi.viewer.indexer.helper.logging.SecondaryAppender;
 import io.goobi.viewer.indexer.model.GroupedMetadata;
 import io.goobi.viewer.indexer.model.IndexObject;
 import io.goobi.viewer.indexer.model.LuceneField;
@@ -1712,6 +1714,11 @@ public abstract class Indexer {
      */
     protected void selectDataRepository(IndexObject indexObj, String pi, Path recordFile, Map<String, Path> dataFolders)
             throws FatalIndexerException {
+        if (StringUtils.isNotBlank(pi)) {
+            // Upgrade the displayed record log tag from the file name to the (now known) PI. The stable buffer key
+            // (SecondaryAppender.MDC_KEY_ID) is left unchanged so the record's log stays in a single buffer.
+            ThreadContext.put(SecondaryAppender.MDC_KEY, pi);
+        }
         DataRepository[] repositories =
                 hotfolder.getDataRepositoryStrategy()
                         .selectDataRepository(pi, recordFile, dataFolders, SolrIndexerDaemon.getInstance().getSearchIndex(),
