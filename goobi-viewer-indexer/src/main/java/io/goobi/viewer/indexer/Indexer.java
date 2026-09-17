@@ -1715,9 +1715,12 @@ public abstract class Indexer {
     protected void selectDataRepository(IndexObject indexObj, String pi, Path recordFile, Map<String, Path> dataFolders)
             throws FatalIndexerException {
         if (StringUtils.isNotBlank(pi)) {
-            // Upgrade the displayed record log tag from the file name to the (now known) PI. The stable buffer key
-            // (SecondaryAppender.MDC_KEY_ID) is left unchanged so the record's log stays in a single buffer.
-            ThreadContext.put(SecondaryAppender.MDC_KEY, pi);
+            // Enrich the displayed record log tag with the (now known) PI. Keep the file name, because files exported
+            // from Goobi workflow are named by the process title, which may differ entirely from the PI (catalog id), so
+            // the file name is what correlates a log line to the file on disk. Show "<file name> (<PI>)". The stable
+            // buffer key (MDC_KEY_ID) is left unchanged so the record's log stays in a single buffer.
+            String recordFileName = ThreadContext.get(SecondaryAppender.MDC_KEY_ID);
+            ThreadContext.put(SecondaryAppender.MDC_KEY, recordFileName != null ? recordFileName + " (" + pi + ")" : pi);
         }
         DataRepository[] repositories =
                 hotfolder.getDataRepositoryStrategy()
