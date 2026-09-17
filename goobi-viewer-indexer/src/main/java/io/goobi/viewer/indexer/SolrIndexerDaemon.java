@@ -268,6 +268,11 @@ public final class SolrIndexerDaemon {
                 Thread.currentThread().interrupt();
             }
         }
+
+        // Finish any records still indexing in parallel and release the record-level executors.
+        for (Hotfolder hotfolder : hotfolders) {
+            hotfolder.shutdownRecordExecutor();
+        }
     }
 
     /**

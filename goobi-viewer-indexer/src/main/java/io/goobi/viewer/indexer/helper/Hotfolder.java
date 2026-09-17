@@ -28,12 +28,20 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Stream;
 
 import org.apache.commons.io.FileUtils;
@@ -144,8 +152,26 @@ public class Hotfolder {
      * anchor reconciliation, the affected anchor's NUMVOLUMES may remain stale until the next volume of that anchor is imported (which
      * re-triggers {@link #flagAnchorForReconciliation(String)}). Since {@link #reconcileAnchor(String)} always validates the stored count
      * against Solr, this causes only a delayed count refresh, never data corruption.
+     * <p>
+     * A concurrent set because, under record-level parallelism ({@code performance.recordThreads} &gt; 1), several volume
+     * workers may flag their anchor at the same time.
      */
-    private final Set<String> anchorPisPendingReconciliation = new HashSet<>();
+    private final Set<String> anchorPisPendingReconciliation = ConcurrentHashMap.newKeySet();
+
+    /**
+     * Per-anchor-PI locks serializing writes to the same anchor (the {@code anchorMerge}/anchor-doc write in
+     * {@link io.goobi.viewer.indexer.MetsIndexer} and {@code anchorSuperupdate}) when records index in parallel. Different
+     * anchors proceed concurrently; volumes take no lock (they only flag their anchor). Entries are created on demand and
+     * intentionally not evicted — the number of distinct anchor PIs per run is small.
+     */
+    private final ConcurrentMap<String, ReentrantLock> anchorWriteLocks = new ConcurrentHashMap<>();
+
+    /** Executor for record-level parallelism; null when {@code performance.recordThreads} &le; 1 (serial, legacy behavior). */
+    private ExecutorService recordExecutor;
+    /** Records submitted to {@link #recordExecutor} and not yet awaited. Accessed only from the single scan thread. */
+    private final List<Future<Boolean>> inFlightRecords = new ArrayList<>();
+    /** Upper bound on submitted-but-unfinished records; beyond it the scan thread blocks on the oldest for backpressure. */
+    private int maxInFlightRecords = 1;
 
     /**
      * Zero-arg constructor for tests.
@@ -229,6 +255,16 @@ public class Hotfolder {
         // Secondary logging appender
         final LoggerContext context = (LoggerContext) LogManager.getContext(false);
         secondaryAppender = (SecondaryAppender) context.getConfiguration().getAppenders().get("record");
+
+        // Record-level parallelism
+        int recordThreads = SolrIndexerDaemon.getInstance().getConfiguration().getRecordThreads();
+        if (recordThreads > 1) {
+            recordExecutor = Executors.newFixedThreadPool(recordThreads);
+            maxInFlightRecords = recordThreads * 2;
+            logger.info("Record-level parallelism ENABLED: indexing up to {} records concurrently.", recordThreads);
+        } else {
+            logger.info("Record-level parallelism disabled (recordThreads=1).");
+        }
     }
 
     /**
@@ -494,27 +530,33 @@ public class Hotfolder {
             }
 
             if (!indexQueue.isEmpty()) {
-                Path recordFile = indexQueue.poll();
-                // Check whether the data folders for this record have been copied completely, otherwise skip
-                Set<Path> alreadyCheckedFiles = new HashSet<>();
-                while (!isDataFolderExportDone(recordFile)) {
-                    logger.info("Export not yet finished for '{}'", recordFile.getFileName());
-                    alreadyCheckedFiles.add(recordFile);
-                    indexQueue.add(recordFile); // re-add at the end
-                    if (alreadyCheckedFiles.contains(indexQueue.peek())) {
-                        logger.info("All files in queue have not yet finished export.");
-                        return true;
+                if (recordExecutor == null) {
+                    // Serial: index the next export-ready record inline (unchanged behavior).
+                    Path recordFile = pollExportReadyRecord();
+                    if (recordFile != null) {
+                        logger.info("Processing {} from memory queue ({})...", recordFile.getFileName(), getHotfolderPath().getFileName());
+                        doIndex(recordFile);
                     }
-                    recordFile = indexQueue.poll();
+                } else {
+                    // Parallel: fill the pool with as many export-ready records as capacity allows this pass, so records
+                    // index concurrently instead of one per scan cycle.
+                    pruneCompletedRecords();
+                    while (inFlightRecords.size() < maxInFlightRecords && !indexQueue.isEmpty()) {
+                        Path recordFile = pollExportReadyRecord();
+                        if (recordFile == null) {
+                            break; // remaining queued files are still exporting
+                        }
+                        submitRecord(recordFile);
+                    }
                 }
-                logger.info("Processing {} from memory queue ({})...", recordFile.getFileName(), getHotfolderPath().getFileName());
-                doIndex(recordFile);
-                return true; // always break after attempting to index a file, so that the loop restarts
+                return true; // always break so the loop restarts (refill/rescan)
             }
 
-            // Both the priority queue and the regular index queue have drained: reconcile any anchors whose volume count
-            // changed during this batch. Coalescing here means a bulk import re-indexes each anchor at most once per
-            // batch (per queue drain) instead of once per volume.
+            // Both queues have drained. Wait for any records still indexing in parallel to finish, then reconcile any
+            // anchors whose volume count changed during this batch. Coalescing here means a bulk import re-indexes each
+            // anchor at most once per batch (per queue drain) instead of once per volume; awaiting first keeps the
+            // reconcile from racing an in-flight volume of the same anchor.
+            awaitInFlightRecords();
             reconcilePendingAnchors();
 
             logger.debug("Hotfolder ({}): Listing files...", getHotfolderPath().getFileName());
@@ -555,6 +597,158 @@ public class Hotfolder {
     public void flagAnchorForReconciliation(String anchorPi) {
         if (StringUtils.isNotEmpty(anchorPi)) {
             anchorPisPendingReconciliation.add(anchorPi);
+        }
+    }
+
+    /**
+     * Acquires the write lock for the given anchor PI (created on demand), serializing concurrent writes to the same
+     * anchor's Solr doc and METS file under record-level parallelism. Callers MUST release it in a finally via
+     * {@link #releaseAnchorWriteLock(String)}. Uncontended (effectively a no-op) when records are indexed serially.
+     *
+     * @param anchorPi anchor PI to lock; ignored if null or empty
+     */
+    public void acquireAnchorWriteLock(String anchorPi) {
+        if (StringUtils.isNotEmpty(anchorPi)) {
+            anchorWriteLocks.computeIfAbsent(anchorPi, k -> new ReentrantLock()).lock();
+        }
+    }
+
+    /**
+     * Releases the anchor write lock previously acquired via {@link #acquireAnchorWriteLock(String)}. Safe to call even
+     * if the current thread does not hold it (then it is a no-op), so it can sit unconditionally in a finally block.
+     *
+     * @param anchorPi anchor PI to unlock; ignored if null or empty
+     */
+    public void releaseAnchorWriteLock(String anchorPi) {
+        if (StringUtils.isNotEmpty(anchorPi)) {
+            ReentrantLock lock = anchorWriteLocks.get(anchorPi);
+            if (lock != null && lock.isHeldByCurrentThread()) {
+                lock.unlock();
+            }
+        }
+    }
+
+    /**
+     * Polls the regular index queue for the next record whose data folders have finished exporting, re-queuing any that
+     * are still exporting. Returns null if the queue is empty or every remaining file is still exporting (the caller
+     * should then stop for this pass). Note: {@link #isDataFolderExportDone(Path)} sleeps ~1s per checked file on the
+     * calling (scan) thread, so this throttles how fast records can be handed to the pool.
+     *
+     * @return an export-ready record file, or null if none is ready right now
+     */
+    private Path pollExportReadyRecord() {
+        Path recordFile = indexQueue.poll();
+        if (recordFile == null) {
+            return null;
+        }
+        // Check whether the data folders for this record have been copied completely, otherwise skip and re-queue.
+        Set<Path> alreadyCheckedFiles = new HashSet<>();
+        while (!isDataFolderExportDone(recordFile)) {
+            logger.info("Export not yet finished for '{}'", recordFile.getFileName());
+            alreadyCheckedFiles.add(recordFile);
+            indexQueue.add(recordFile); // re-add at the end
+            if (alreadyCheckedFiles.contains(indexQueue.peek())) {
+                logger.info("All files in queue have not yet finished export.");
+                return null;
+            }
+            recordFile = indexQueue.poll();
+            if (recordFile == null) {
+                return null;
+            }
+        }
+        return recordFile;
+    }
+
+    /**
+     * Submits a record for parallel indexing on {@link #recordExecutor}, applying backpressure so at most
+     * {@link #maxInFlightRecords} records are in flight (the scan thread blocks on the oldest once the bound is reached).
+     *
+     * @param recordFile record file to index
+     * @throws FatalIndexerException if an already-finished record failed fatally
+     */
+    private void submitRecord(Path recordFile) throws FatalIndexerException {
+        pruneCompletedRecords();
+        while (inFlightRecords.size() >= maxInFlightRecords) {
+            awaitOldestRecord();
+            pruneCompletedRecords();
+        }
+        logger.info("Submitting {} for parallel indexing ({})...", recordFile.getFileName(), getHotfolderPath().getFileName());
+        inFlightRecords.add(recordExecutor.submit(() -> doIndex(recordFile)));
+    }
+
+    /**
+     * Removes and joins all in-flight records that have already completed, surfacing any fatal error.
+     *
+     * @throws FatalIndexerException if a completed record failed fatally
+     */
+    private void pruneCompletedRecords() throws FatalIndexerException {
+        for (Iterator<Future<Boolean>> it = inFlightRecords.iterator(); it.hasNext();) {
+            Future<Boolean> future = it.next();
+            if (future.isDone()) {
+                it.remove();
+                joinRecord(future);
+            }
+        }
+    }
+
+    /**
+     * Blocks until the oldest in-flight record finishes, then removes and joins it.
+     *
+     * @throws FatalIndexerException if that record failed fatally
+     */
+    private void awaitOldestRecord() throws FatalIndexerException {
+        if (!inFlightRecords.isEmpty()) {
+            joinRecord(inFlightRecords.remove(0));
+        }
+    }
+
+    /**
+     * Blocks until every in-flight record has finished and clears the list. Used before anchor reconciliation and on
+     * shutdown so that no record is still writing when those run.
+     *
+     * @throws FatalIndexerException if any record failed fatally
+     */
+    private void awaitInFlightRecords() throws FatalIndexerException {
+        for (Future<Boolean> future : inFlightRecords) {
+            joinRecord(future);
+        }
+        inFlightRecords.clear();
+    }
+
+    /**
+     * Waits for a single submitted record and propagates a fatal failure; a non-fatal failure is logged (the record's own
+     * error handling and e-mail already ran on the worker thread).
+     *
+     * @param future the record's future
+     * @throws FatalIndexerException if the record failed with a {@link FatalIndexerException}
+     */
+    private static void joinRecord(Future<Boolean> future) throws FatalIndexerException {
+        try {
+            future.get();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            logger.error(e.getMessage(), e);
+        } catch (ExecutionException e) {
+            Throwable cause = e.getCause();
+            if (cause instanceof FatalIndexerException fatal) {
+                throw fatal;
+            }
+            logger.error("Parallel record indexing failed: {}", cause != null ? cause.getMessage() : e.getMessage(), cause);
+        }
+    }
+
+    /**
+     * Awaits any outstanding parallel records and shuts down the record executor (if record-level parallelism is on).
+     * Called during daemon shutdown.
+     */
+    public void shutdownRecordExecutor() {
+        if (recordExecutor != null) {
+            try {
+                awaitInFlightRecords();
+            } catch (FatalIndexerException e) {
+                logger.error(e.getMessage(), e);
+            }
+            recordExecutor.shutdown();
         }
     }
 
@@ -868,7 +1062,18 @@ public class Hotfolder {
                 // SUPERUPDATE
                 DataRepository[] repositories = dataRepositoryStrategy.selectDataRepository(null, sourceFile, null,
                         SolrIndexerDaemon.getInstance().getSearchIndex(), SolrIndexerDaemon.getInstance().getOldSearchIndex());
-                MetsIndexer.anchorSuperupdate(sourceFile, updatedMets, repositories[1] != null ? repositories[1] : repositories[0]);
+                // Derive the clean anchor PI (strip the '#' anti-collision part) so this file move serializes against a
+                // concurrent re-index of the same anchor via the same per-PI lock.
+                String anchorPi = FilenameUtils.getBaseName(filename);
+                if (anchorPi.contains("#")) {
+                    anchorPi = anchorPi.substring(0, anchorPi.indexOf('#'));
+                }
+                acquireAnchorWriteLock(anchorPi);
+                try {
+                    MetsIndexer.anchorSuperupdate(sourceFile, updatedMets, repositories[1] != null ? repositories[1] : repositories[0]);
+                } finally {
+                    releaseAnchorWriteLock(anchorPi);
+                }
                 Utils.submitDataToViewer(Collections.emptyList(), countRecordFiles()); // TODO submit any record identifiers here?
             } else if (filename.endsWith(DocUpdateIndexer.FILE_EXTENSION)) {
                 // Single Solr document update

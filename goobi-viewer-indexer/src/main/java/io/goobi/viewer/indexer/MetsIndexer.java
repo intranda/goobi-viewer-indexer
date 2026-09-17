@@ -306,6 +306,8 @@ public class MetsIndexer extends Indexer {
         logger.debug("Indexing METS file '{}'...", metsFile.getFileName());
         ISolrWriteStrategy writeStrategy = inWriteStrategy;
         IndexingResult ret = new IndexingResult();
+        // Set once this record is found to be an anchor and its write lock is held; released in the finally below.
+        String lockedAnchorPi = null;
         try {
             initJDomXP(metsFile);
             IndexObject indexObj = new IndexObject(getNextIddoc());
@@ -571,6 +573,11 @@ public class MetsIndexer extends Indexer {
             }
 
             if (indexObj.isAnchor()) {
+                // Serialize concurrent writes to the same anchor (its Solr doc + METS file) under record-level
+                // parallelism; different anchors and all volumes proceed without contention. Held until the finally
+                // below so it covers both the METS rebuild here and the Solr write further down.
+                hotfolder.acquireAnchorWriteLock(indexObj.getPi());
+                lockedAnchorPi = indexObj.getPi();
                 // Rebuild the anchor METS file so its logical structure lists all currently indexed volumes (priority queue).
                 // Volume<->anchor association is via the stable PI_PARENT, so no IDDOC_PARENT repair of the volumes is needed.
                 logger.debug("'{}' is an anchor file.", metsFile.getFileName());
@@ -629,6 +636,7 @@ public class MetsIndexer extends Indexer {
             ret.setError(e.getMessage() != null ? e.getMessage() : e.getClass().getName());
             SolrIndexerDaemon.getInstance().getSearchIndex().rollback();
         } finally {
+            hotfolder.releaseAnchorWriteLock(lockedAnchorPi);
             if (writeStrategy != null) {
                 writeStrategy.cleanup();
             }
