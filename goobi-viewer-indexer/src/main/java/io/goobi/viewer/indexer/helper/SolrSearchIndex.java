@@ -489,6 +489,25 @@ public final class SolrSearchIndex {
      * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException
      */
     public void commit(boolean optimize) throws FatalIndexerException {
+        // SPIKE (throwaway): defer per-record commits to a single commit at hotfolder queue drain (see Hotfolder.scan
+        // and forceCommit()) to measure the throughput cost of per-record hard commits under record-level parallelism.
+        if (SolrIndexerDaemon.getInstance().getConfiguration().isDeferCommits()) {
+            return;
+        }
+        doCommit(optimize);
+    }
+
+    /**
+     * Performs an actual Solr commit regardless of the {@code performance.deferCommits} spike flag. Used to issue the
+     * single deferred commit when the hotfolder queue drains.
+     *
+     * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException
+     */
+    public void forceCommit() throws FatalIndexerException {
+        doCommit(false);
+    }
+
+    private void doCommit(boolean optimize) throws FatalIndexerException {
         boolean success = false;
         int tries = RETRY_ATTEMPTS;
 

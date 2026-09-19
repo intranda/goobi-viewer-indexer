@@ -559,6 +559,11 @@ public class Hotfolder {
             awaitInFlightRecords();
             reconcilePendingAnchors();
 
+            // SPIKE (throwaway): when per-record commits are deferred, issue the single commit for this drained batch.
+            if (SolrIndexerDaemon.getInstance().getConfiguration().isDeferCommits()) {
+                SolrIndexerDaemon.getInstance().getSearchIndex().forceCommit();
+            }
+
             logger.debug("Hotfolder ({}): Listing files...", getHotfolderPath().getFileName());
             List<Path> newFiles = new ArrayList<>();
             try (DirectoryStream<Path> stream = Files.newDirectoryStream(hotfolderPath, "*.{xml,json,delete,purge,docupdate,UPDATED}")) {

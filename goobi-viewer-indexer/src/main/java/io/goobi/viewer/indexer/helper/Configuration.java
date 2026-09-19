@@ -489,6 +489,17 @@ public final class Configuration {
     }
 
     /**
+     * SPIKE (throwaway): when true, per-record Solr commits are skipped and a single commit is issued when the hotfolder
+     * queue drains, to measure whether per-record hard commits are the throughput ceiling under record-level parallelism.
+     * Default false (unchanged behavior). Remove once the commit-granularity question is settled.
+     *
+     * @return a boolean
+     */
+    public boolean isDeferCommits() {
+        return getBoolean("performance.deferCommits", false);
+    }
+
+    /**
      * <p>
      * isCountHotfolderFiles.
      * </p>
