@@ -225,7 +225,7 @@ public class LazySolrWriteStrategy extends AbstractWriteStrategy {
 
         if (!docsToAdd.isEmpty()) {
             searchIndex.writeToIndex(docsToAdd);
-            searchIndex.commit(searchIndex.isOptimize());
+            searchIndex.commitAfterRecord();
             logger.debug("{} new doc(s) added.", docsToAdd.size());
         } else {
             throw new IndexerException("No docs to write");

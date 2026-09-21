@@ -28,6 +28,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.configuration2.ex.ConfigurationException;
 import org.apache.commons.lang3.StringUtils;
@@ -74,6 +75,13 @@ public final class SolrSearchIndex {
     private boolean optimize = false;
 
     private SolrClient client;
+
+    /** Records written since the last commit, for the batched-commit policy (see {@link #commitAfterRecord()}). */
+    private final AtomicInteger pendingRecords = new AtomicInteger();
+    /** Epoch millis of the last commit, for the time-based commit trigger. */
+    private volatile long lastCommitMillis = System.currentTimeMillis();
+    /** Serializes commit decision + execution so at most one commit runs at a time. */
+    private final Object commitLock = new Object();
 
     /**
      * <p>
@@ -489,22 +497,61 @@ public final class SolrSearchIndex {
      * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException
      */
     public void commit(boolean optimize) throws FatalIndexerException {
-        // SPIKE (throwaway): defer per-record commits to a single commit at hotfolder queue drain (see Hotfolder.scan
-        // and forceCommit()) to measure the throughput cost of per-record hard commits under record-level parallelism.
-        if (SolrIndexerDaemon.getInstance().getConfiguration().isDeferCommits()) {
-            return;
-        }
         doCommit(optimize);
+        pendingRecords.set(0);
+        lastCommitMillis = System.currentTimeMillis();
     }
 
     /**
-     * Performs an actual Solr commit regardless of the {@code performance.deferCommits} spike flag. Used to issue the
-     * single deferred commit when the hotfolder queue drains.
+     * Registers that one record's documents have been written, and commits if the batched-commit policy is due.
+     * <p>
+     * Called once per successfully written record by the write strategies instead of an unconditional per-record commit.
+     * With {@code performance.commitBatchSize=1} (default) this commits after every record, reproducing the legacy
+     * behavior; with a larger batch size it commits only every N records (bounding hard-commit contention under
+     * record-level parallelism) or once {@code performance.commitMaxSeconds} has elapsed. Any remainder is flushed by
+     * {@link #commitPending()} on queue drain / shutdown, so nothing waits indefinitely.
      *
      * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException
      */
-    public void forceCommit() throws FatalIndexerException {
-        doCommit(false);
+    public void commitAfterRecord() throws FatalIndexerException {
+        int pending = pendingRecords.incrementAndGet();
+        int batchSize = SolrIndexerDaemon.getInstance().getConfiguration().getCommitBatchSize();
+        int maxSeconds = SolrIndexerDaemon.getInstance().getConfiguration().getCommitMaxSeconds();
+        boolean due = pending >= batchSize
+                || (maxSeconds > 0 && System.currentTimeMillis() - lastCommitMillis >= maxSeconds * 1000L);
+        if (due) {
+            flushPending();
+        }
+    }
+
+    /**
+     * Commits any pending (uncommitted) records regardless of the batch thresholds. Called when the hotfolder queue
+     * drains and on shutdown so a sub-batch remainder is never left uncommitted.
+     *
+     * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException
+     */
+    public void commitPending() throws FatalIndexerException {
+        if (pendingRecords.get() > 0) {
+            flushPending();
+        }
+    }
+
+    /**
+     * Commits everything buffered in Solr and resets the pending-record counter. Synchronized so only one commit runs at
+     * a time (Solr serializes hard commits anyway); a doc-level {@code add} always precedes the corresponding
+     * {@link #commitAfterRecord()}, so whatever is buffered is committed here regardless of the exact counter value.
+     *
+     * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException
+     */
+    private void flushPending() throws FatalIndexerException {
+        synchronized (commitLock) {
+            if (pendingRecords.get() == 0) {
+                return; // another thread already flushed
+            }
+            doCommit(optimize);
+            pendingRecords.set(0);
+            lastCommitMillis = System.currentTimeMillis();
+        }
     }
 
     private void doCommit(boolean optimize) throws FatalIndexerException {

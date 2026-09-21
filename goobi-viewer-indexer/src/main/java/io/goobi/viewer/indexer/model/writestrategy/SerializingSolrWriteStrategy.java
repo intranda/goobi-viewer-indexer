@@ -342,7 +342,7 @@ public class SerializingSolrWriteStrategy extends AbstractWriteStrategy {
             throw new IndexerException(e.getMessage());
         }
 
-        searchIndex.commit(searchIndex.isOptimize());
+        searchIndex.commitAfterRecord();
     }
 
     /**

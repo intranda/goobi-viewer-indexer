@@ -248,6 +248,16 @@
 			serialized per anchor PI. Default is 1 (serial). -->
 		<recordThreads>4</recordThreads>
 
+		<!-- Number of successfully indexed records to accumulate before issuing a single Solr commit. 1 (default) commits
+			after every record. Larger values batch commits to reduce hard-commit contention under record-level
+			parallelism; a batch is also committed when the hotfolder queue drains and on shutdown, so a remainder is
+			never left uncommitted. -->
+		<commitBatchSize>1</commitBatchSize>
+
+		<!-- Maximum seconds a pending (uncommitted) batch may age before it is committed even if commitBatchSize has not
+			been reached, bounding staleness during a slow trickle of records. Default 10; 0 disables the time bound. -->
+		<commitMaxSeconds>10</commitMaxSeconds>
+
 		<!-- If true, the indexer will report the remaining number of record files in the hotfolder to the viewer REST API after every indexed record.
 			Should be turned off when indexing large numbers of records at once or if the storage is slow. Default is true. -->
 		<countHotfolderFiles>true</countHotfolderFiles>

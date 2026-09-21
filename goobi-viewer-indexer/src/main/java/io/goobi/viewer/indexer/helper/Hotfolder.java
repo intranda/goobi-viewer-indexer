@@ -559,10 +559,9 @@ public class Hotfolder {
             awaitInFlightRecords();
             reconcilePendingAnchors();
 
-            // SPIKE (throwaway): when per-record commits are deferred, issue the single commit for this drained batch.
-            if (SolrIndexerDaemon.getInstance().getConfiguration().isDeferCommits()) {
-                SolrIndexerDaemon.getInstance().getSearchIndex().forceCommit();
-            }
+            // Flush any records still pending under the batched-commit policy now that the queue has drained, so a
+            // sub-batch remainder is committed promptly rather than waiting for the next batch.
+            SolrIndexerDaemon.getInstance().getSearchIndex().commitPending();
 
             logger.debug("Hotfolder ({}): Listing files...", getHotfolderPath().getFileName());
             List<Path> newFiles = new ArrayList<>();
@@ -750,6 +749,8 @@ public class Hotfolder {
         if (recordExecutor != null) {
             try {
                 awaitInFlightRecords();
+                // Commit any records still pending under the batched-commit policy before shutting down.
+                SolrIndexerDaemon.getInstance().getSearchIndex().commitPending();
             } catch (FatalIndexerException e) {
                 logger.error(e.getMessage(), e);
             }

@@ -489,14 +489,25 @@ public final class Configuration {
     }
 
     /**
-     * SPIKE (throwaway): when true, per-record Solr commits are skipped and a single commit is issued when the hotfolder
-     * queue drains, to measure whether per-record hard commits are the throughput ceiling under record-level parallelism.
-     * Default false (unchanged behavior). Remove once the commit-granularity question is settled.
+     * Number of successfully indexed records to accumulate before issuing a single Solr commit. Default 1 = commit after
+     * every record (legacy behavior). Values &gt; 1 batch commits to reduce hard-commit contention under record-level
+     * parallelism; a batch is also flushed when the hotfolder queue drains and on shutdown, so a sub-batch remainder is
+     * never left uncommitted (see {@link #getCommitMaxSeconds()} for the time bound).
      *
-     * @return a boolean
+     * @return records per commit; at least 1
      */
-    public boolean isDeferCommits() {
-        return getBoolean("performance.deferCommits", false);
+    public int getCommitBatchSize() {
+        return Math.max(1, getInt("performance.commitBatchSize", 1));
+    }
+
+    /**
+     * Maximum number of seconds a pending (uncommitted) batch may age before it is committed even if
+     * {@link #getCommitBatchSize()} has not been reached. Bounds staleness during a slow trickle of records. Default 10.
+     *
+     * @return max seconds before a pending batch is force-committed; 0 disables the time bound
+     */
+    public int getCommitMaxSeconds() {
+        return Math.max(0, getInt("performance.commitMaxSeconds", 10));
     }
 
     /**
