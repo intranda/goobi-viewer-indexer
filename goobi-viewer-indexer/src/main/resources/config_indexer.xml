@@ -255,8 +255,10 @@
 		<commitBatchSize>1</commitBatchSize>
 
 		<!-- Maximum seconds a pending (uncommitted) batch may age before it is committed even if commitBatchSize has not
-			been reached, bounding staleness during a slow trickle of records. Default 10; 0 disables the time bound. -->
-		<commitMaxSeconds>10</commitMaxSeconds>
+			been reached. A wall-time bound for sustained, never-draining imports; NOT needed to flush a finished batch
+			(the queue-drain flush handles that). Default 0 (disabled): only commitBatchSize and queue drain govern, and
+			active indexing is never interrupted by a timer. Set > 0 only to bound visibility during long continuous imports. -->
+		<commitMaxSeconds>0</commitMaxSeconds>
 
 		<!-- If true, the indexer will report the remaining number of record files in the hotfolder to the viewer REST API after every indexed record.
 			Should be turned off when indexing large numbers of records at once or if the storage is slow. Default is true. -->

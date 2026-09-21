@@ -502,12 +502,16 @@ public final class Configuration {
 
     /**
      * Maximum number of seconds a pending (uncommitted) batch may age before it is committed even if
-     * {@link #getCommitBatchSize()} has not been reached. Bounds staleness during a slow trickle of records. Default 10.
+     * {@link #getCommitBatchSize()} has not been reached. This is a wall-time bound for a sustained, never-draining
+     * stream; it is <b>not</b> needed to flush the tail of a finished batch, which the hotfolder does the moment its
+     * queue drains. Default <b>0 (disabled)</b>, so by default only {@link #getCommitBatchSize()} and the queue-drain
+     * flush govern and active indexing is never interrupted by a timer. Set &gt; 0 only to bound visibility during long
+     * continuous imports.
      *
-     * @return max seconds before a pending batch is force-committed; 0 disables the time bound
+     * @return max seconds before a pending batch is force-committed; 0 (default) disables the time bound
      */
     public int getCommitMaxSeconds() {
-        return Math.max(0, getInt("performance.commitMaxSeconds", 10));
+        return Math.max(0, getInt("performance.commitMaxSeconds", 0));
     }
 
     /**
