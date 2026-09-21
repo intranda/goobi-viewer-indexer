@@ -545,12 +545,15 @@ public final class SolrSearchIndex {
      */
     private void flushPending() throws FatalIndexerException {
         synchronized (commitLock) {
-            if (pendingRecords.get() == 0) {
+            int flushed = pendingRecords.get();
+            if (flushed == 0) {
                 return; // another thread already flushed
             }
             doCommit(optimize);
             pendingRecords.set(0);
             lastCommitMillis = System.currentTimeMillis();
+            logger.info("Committed {} record(s) to Solr (commitBatchSize={}).", flushed,
+                    SolrIndexerDaemon.getInstance().getConfiguration().getCommitBatchSize());
         }
     }
 
