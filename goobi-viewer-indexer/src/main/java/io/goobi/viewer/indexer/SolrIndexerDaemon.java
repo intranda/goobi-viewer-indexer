@@ -35,6 +35,8 @@ import io.goobi.viewer.indexer.helper.Configuration;
 import io.goobi.viewer.indexer.helper.Hotfolder;
 import io.goobi.viewer.indexer.helper.SolrSearchIndex;
 import io.goobi.viewer.indexer.helper.Utils;
+import io.goobi.viewer.indexer.model.datarepository.strategy.AbstractDataRepositoryStrategy;
+import io.goobi.viewer.indexer.model.datarepository.strategy.IDataRepositoryStrategy;
 
 /**
  * Entry Point into Application.
@@ -57,6 +59,8 @@ public final class SolrIndexerDaemon {
 
     private SolrSearchIndex searchIndex;
     private SolrSearchIndex oldSearchIndex;
+    /** Data repository strategy shared by all hotfolders (created once so repositories are loaded and logged only once). */
+    private IDataRepositoryStrategy dataRepositoryStrategy;
 
     private List<Hotfolder> hotfolders = new ArrayList<>();
 
@@ -132,7 +136,11 @@ public final class SolrIndexerDaemon {
         }
 
         // create hotfolder(s)
-        for (String hotfolderPath : getConfiguration().getHotfolderPaths()) {
+        List<String> hotfolderPaths = getConfiguration().getHotfolderPaths();
+        for (int i = 0; i < hotfolderPaths.size(); i++) {
+            String hotfolderPath = hotfolderPaths.get(i);
+            // Announce each configured hotfolder and its priority (first = highest; scanned before the others).
+            logger.info("Monitoring hotfolder {} of {}: {}", i + 1, hotfolderPaths.size(), hotfolderPath);
             Hotfolder hotfolder = new Hotfolder(hotfolderPath);
             hotfolders.add(hotfolder);
             if (hotfolder.getSuccessFolder() == null || !Files.isDirectory(hotfolder.getSuccessFolder())) {
@@ -392,6 +400,21 @@ public final class SolrIndexerDaemon {
      */
     public SolrSearchIndex getSearchIndex() {
         return this.searchIndex;
+    }
+
+    /**
+     * Returns the shared data repository strategy, creating it on first use. Shared across all hotfolders so the
+     * configured repositories are loaded (and logged) only once, and so their in-flight reservation accounting is
+     * consistent across hotfolders.
+     *
+     * @return the shared {@link IDataRepositoryStrategy}
+     * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException
+     */
+    public synchronized IDataRepositoryStrategy getDataRepositoryStrategy() throws FatalIndexerException {
+        if (dataRepositoryStrategy == null) {
+            dataRepositoryStrategy = AbstractDataRepositoryStrategy.create(getConfiguration());
+        }
+        return dataRepositoryStrategy;
     }
 
     /**

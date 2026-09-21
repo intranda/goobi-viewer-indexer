@@ -76,7 +76,6 @@ import io.goobi.viewer.indexer.helper.logging.SecondaryAppender;
 import io.goobi.viewer.indexer.model.SolrConstants;
 import io.goobi.viewer.indexer.model.SolrConstants.DocType;
 import io.goobi.viewer.indexer.model.datarepository.DataRepository;
-import io.goobi.viewer.indexer.model.datarepository.strategy.AbstractDataRepositoryStrategy;
 import io.goobi.viewer.indexer.model.datarepository.strategy.IDataRepositoryStrategy;
 import jakarta.mail.MessagingException;
 
@@ -180,7 +179,7 @@ public class Hotfolder {
      */
     Hotfolder() throws FatalIndexerException {
         logger.trace("Hotfolder()");
-        this.dataRepositoryStrategy = AbstractDataRepositoryStrategy.create(SolrIndexerDaemon.getInstance().getConfiguration());
+        this.dataRepositoryStrategy = SolrIndexerDaemon.getInstance().getDataRepositoryStrategy();
     }
 
     /**
@@ -193,7 +192,7 @@ public class Hotfolder {
      */
     public Hotfolder(String hotfolderPath) throws FatalIndexerException {
         logger.trace("Hotfolder({})", hotfolderPath);
-        dataRepositoryStrategy = AbstractDataRepositoryStrategy.create(SolrIndexerDaemon.getInstance().getConfiguration());
+        dataRepositoryStrategy = SolrIndexerDaemon.getInstance().getDataRepositoryStrategy();
 
         initFolders(hotfolderPath, SolrIndexerDaemon.getInstance().getConfiguration());
 
