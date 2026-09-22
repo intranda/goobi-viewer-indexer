@@ -489,6 +489,30 @@ public final class Configuration {
     }
 
     /**
+     * EXPERIMENTAL. When true, record-level and intra-record (page/child-node/serializing-write) parallelism share a
+     * single work-stealing {@link java.util.concurrent.ForkJoinPool} sized by {@link #getWorkerThreads()}, which
+     * auto-balances the two: few large records let page tasks fill the pool, many small records let the records fill it.
+     * Replaces the separate {@link #getRecordThreads()} × {@link #getThreads()} pools. Default false (legacy two-pool
+     * model). Note: pool tasks block on Solr/file/HTTP I/O, so size {@link #getWorkerThreads()} with headroom above the
+     * core count to hide that latency (a plain core-sized pool can underperform the oversubscribed two-pool model).
+     *
+     * @return a boolean
+     */
+    public boolean isSharedWorkerPool() {
+        return getBoolean("performance.sharedWorkerPool", false);
+    }
+
+    /**
+     * Parallelism of the shared work-stealing pool used when {@link #isSharedWorkerPool()} is true. Default is the number
+     * of available processors; raise it above the core count as I/O headroom for the blocking Solr/file/HTTP work.
+     *
+     * @return worker pool parallelism; at least 1
+     */
+    public int getWorkerThreads() {
+        return Math.max(1, getInt("performance.workerThreads", Runtime.getRuntime().availableProcessors()));
+    }
+
+    /**
      * Number of successfully indexed records to accumulate before issuing a single Solr commit. Default 1 = commit after
      * every record (legacy behavior). Values &gt; 1 batch commits to reduce hard-commit contention under record-level
      * parallelism; a batch is also flushed when the hotfolder queue drains and on shutdown, so a sub-batch remainder is

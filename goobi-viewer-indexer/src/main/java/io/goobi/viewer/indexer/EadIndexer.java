@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.ForkJoinTask;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.stream.IntStream;
@@ -344,7 +345,30 @@ public class EadIndexer extends Indexer {
             logger.debug("{} child elements found", childrenNodeList.size());
         }
 
-        if (allowParallelProcessing && pool == null && childrenNodeList.size() >= SolrIndexerDaemon.getInstance().getConfiguration().getThreads()) {
+        if (allowParallelProcessing && SolrIndexerDaemon.getInstance().getConfiguration().isSharedWorkerPool()
+                && ForkJoinTask.inForkJoinPool() && childrenNodeList.size() > 1) {
+            // Already running as a record task on the shared work-stealing pool: fork child-node indexing into that same
+            // pool rather than creating a nested pool, so record and child parallelism share one budget.
+            logger.info("Processing {} nodes in parallel on the shared pool (node depth={})...", childrenNodeList.size(), depth);
+            final List<Element> children = new ArrayList<>(childrenNodeList);
+            final Map<String, String> loggingContext = ThreadContext.getImmutableContext();
+            IntStream.range(0, children.size()).parallel().forEach(order -> {
+                ThreadContext.putAll(loggingContext);
+                Element node = children.get(order);
+                try {
+                    // Do not use parallel processing in recursion
+                    IndexObject obj = indexChild(node, parentIndexObject, depth, order, writeStrategy, false);
+                    if (obj != null) {
+                        ret.add(obj);
+                    }
+                } catch (FatalIndexerException e) {
+                    logger.error("Should be exiting here now...");
+                } catch (IOException e) {
+                    logger.error(e.getMessage());
+                }
+            });
+        } else if (allowParallelProcessing && pool == null
+                && childrenNodeList.size() >= SolrIndexerDaemon.getInstance().getConfiguration().getThreads()) {
             // Generate each page document in its own thread
             logger.info("Processing {} nodes in parallel in {} threads (node depth={})...", childrenNodeList.size(),
                     SolrIndexerDaemon.getInstance().getConfiguration().getThreads(), depth);

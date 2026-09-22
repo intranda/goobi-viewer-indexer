@@ -165,8 +165,10 @@ public class Hotfolder {
      */
     private final ConcurrentMap<String, ReentrantLock> anchorWriteLocks = new ConcurrentHashMap<>();
 
-    /** Executor for record-level parallelism; null when {@code performance.recordThreads} &le; 1 (serial, legacy behavior). */
+    /** Executor for record-level parallelism; null when serial (legacy, {@code recordThreads}=1 and shared pool off). */
     private ExecutorService recordExecutor;
+    /** True if this hotfolder created {@link #recordExecutor} itself (and must shut it down); false when it is the shared daemon pool. */
+    private boolean ownsRecordExecutor;
     /** Records submitted to {@link #recordExecutor} and not yet awaited. Accessed only from the single scan thread. */
     private final List<Future<Boolean>> inFlightRecords = new ArrayList<>();
     /** Upper bound on submitted-but-unfinished records; beyond it the scan thread blocks on the oldest for backpressure. */
@@ -256,13 +258,23 @@ public class Hotfolder {
         secondaryAppender = (SecondaryAppender) context.getConfiguration().getAppenders().get("record");
 
         // Record-level parallelism
-        int recordThreads = SolrIndexerDaemon.getInstance().getConfiguration().getRecordThreads();
-        if (recordThreads > 1) {
-            recordExecutor = Executors.newFixedThreadPool(recordThreads);
-            maxInFlightRecords = recordThreads * 2;
-            logger.info("Record-level parallelism ENABLED: indexing up to {} records concurrently.", recordThreads);
+        if (SolrIndexerDaemon.getInstance().getConfiguration().isSharedWorkerPool()) {
+            // Shared work-stealing pool: records and their nested page/child tasks draw from one auto-balanced budget.
+            recordExecutor = SolrIndexerDaemon.getInstance().getWorkerPool();
+            ownsRecordExecutor = false;
+            int workerThreads = SolrIndexerDaemon.getInstance().getConfiguration().getWorkerThreads();
+            maxInFlightRecords = workerThreads * 2;
+            logger.info("Record-level parallelism via SHARED work-stealing pool (parallelism {}).", workerThreads);
         } else {
-            logger.info("Record-level parallelism disabled (recordThreads=1).");
+            int recordThreads = SolrIndexerDaemon.getInstance().getConfiguration().getRecordThreads();
+            if (recordThreads > 1) {
+                recordExecutor = Executors.newFixedThreadPool(recordThreads);
+                ownsRecordExecutor = true;
+                maxInFlightRecords = recordThreads * 2;
+                logger.info("Record-level parallelism ENABLED: indexing up to {} records concurrently.", recordThreads);
+            } else {
+                logger.info("Record-level parallelism disabled (recordThreads=1).");
+            }
         }
     }
 
@@ -753,7 +765,10 @@ public class Hotfolder {
             } catch (FatalIndexerException e) {
                 logger.error(e.getMessage(), e);
             }
-            recordExecutor.shutdown();
+            // Only shut down a pool this hotfolder owns; the shared work-stealing pool is shut down by the daemon.
+            if (ownsRecordExecutor) {
+                recordExecutor.shutdown();
+            }
         }
     }
 

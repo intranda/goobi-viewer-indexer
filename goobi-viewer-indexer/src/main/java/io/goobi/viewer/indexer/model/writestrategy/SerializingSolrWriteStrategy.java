@@ -37,6 +37,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ForkJoinTask;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.io.FileUtils;
@@ -303,7 +304,19 @@ public class SerializingSolrWriteStrategy extends AbstractWriteStrategy {
         List<Integer> orderList = new ArrayList<>(pageDocOrderIddocMap.keySet());
         Collections.sort(orderList);
 
-        if (SolrIndexerDaemon.getInstance().getConfiguration().getThreads() > 1) {
+        boolean sharedWorkerPool = SolrIndexerDaemon.getInstance().getConfiguration().isSharedWorkerPool();
+        if (sharedWorkerPool && ForkJoinTask.inForkJoinPool()) {
+            // Already running as a record task on the shared work-stealing pool: fork the page writes into that same pool.
+            final Map<String, String> loggingContext = ThreadContext.getImmutableContext();
+            orderList.parallelStream().forEach(order -> {
+                ThreadContext.putAll(loggingContext);
+                try {
+                    writePageDoc(order, rootDoc, aggregateRecords);
+                } catch (FatalIndexerException e) {
+                    logger.error(e.getMessage());
+                }
+            });
+        } else if (SolrIndexerDaemon.getInstance().getConfiguration().getThreads() > 1) {
             // Capture the logging context (MDC) so the pool's worker threads keep this record's log tag.
             final Map<String, String> loggingContext = ThreadContext.getImmutableContext();
             try (ExecutorService executor = Executors.newFixedThreadPool(SolrIndexerDaemon.getInstance().getConfiguration().getThreads())) {

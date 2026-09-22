@@ -20,6 +20,7 @@ import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.ForkJoinPool;
 
 import org.apache.commons.configuration2.ex.ConfigurationException;
 import org.apache.commons.lang3.StringUtils;
@@ -61,6 +62,8 @@ public final class SolrIndexerDaemon {
     private SolrSearchIndex oldSearchIndex;
     /** Data repository strategy shared by all hotfolders (created once so repositories are loaded and logged only once). */
     private IDataRepositoryStrategy dataRepositoryStrategy;
+    /** Shared work-stealing pool for record + nested page work when performance.sharedWorkerPool is enabled; null otherwise. */
+    private ForkJoinPool workerPool;
 
     private List<Hotfolder> hotfolders = new ArrayList<>();
 
@@ -283,6 +286,10 @@ public final class SolrIndexerDaemon {
         for (Hotfolder hotfolder : hotfolders) {
             hotfolder.shutdownRecordExecutor();
         }
+        // Shut down the shared work-stealing pool (if the shared-pool mode was used).
+        if (workerPool != null) {
+            workerPool.shutdown();
+        }
     }
 
     /**
@@ -415,6 +422,21 @@ public final class SolrIndexerDaemon {
             dataRepositoryStrategy = AbstractDataRepositoryStrategy.create(getConfiguration());
         }
         return dataRepositoryStrategy;
+    }
+
+    /**
+     * Returns the shared work-stealing pool (created on first use) when {@code performance.sharedWorkerPool} is enabled,
+     * else null. Shared across all hotfolders so record and nested page/child tasks draw from one auto-balanced budget.
+     *
+     * @return the shared {@link ForkJoinPool}, or null if the shared-pool mode is disabled
+     */
+    public synchronized ForkJoinPool getWorkerPool() {
+        if (workerPool == null && getConfiguration().isSharedWorkerPool()) {
+            int parallelism = getConfiguration().getWorkerThreads();
+            workerPool = new ForkJoinPool(parallelism);
+            logger.info("Shared work-stealing pool ENABLED with parallelism {}.", parallelism);
+        }
+        return workerPool;
     }
 
     /**
