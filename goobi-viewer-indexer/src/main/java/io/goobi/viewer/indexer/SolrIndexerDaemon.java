@@ -441,7 +441,7 @@ public final class SolrIndexerDaemon {
         if (workerPool == null && getConfiguration().isSharedWorkerPool()) {
             int parallelism = getConfiguration().getWorkerThreads();
             workerPool = new ForkJoinPool(parallelism);
-            logger.info("Shared work-stealing pool ENABLED with parallelism {}.", parallelism);
+            logger.debug("Shared work-stealing pool created with parallelism {}.", parallelism);
         }
         return workerPool;
     }
