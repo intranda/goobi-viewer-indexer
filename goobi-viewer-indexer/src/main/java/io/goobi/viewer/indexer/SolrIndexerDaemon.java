@@ -260,9 +260,16 @@ public final class SolrIndexerDaemon {
             logger.warn("<sleep> must contain an numerical value, using default interval of {} ms instead.", DEFAULT_SLEEP_INTERVAL);
         }
 
-        logger.info("Thread configuration: up to {} record(s) indexed in parallel (performance.recordThreads), "
-                + "each using up to {} thread(s) for page/child-node generation (performance.threads).",
-                configuration.getRecordThreads(), configuration.getThreads());
+        if (configuration.isSharedWorkerPool()) {
+            logger.info("Thread configuration: shared work-stealing pool of {} thread(s) (performance.sharedWorkerPool=true, "
+                    + "performance.workerThreads); record and page/child-node work auto-balance within it "
+                    + "(performance.recordThreads and performance.threads are ignored).",
+                    configuration.getWorkerThreads());
+        } else {
+            logger.info("Thread configuration: up to {} record(s) indexed in parallel (performance.recordThreads), "
+                    + "each using up to {} thread(s) for page/child-node generation (performance.threads).",
+                    configuration.getRecordThreads(), configuration.getThreads());
+        }
 
         Utils.submitDataToViewer(Collections.emptyList(), hotfolders.get(0).countRecordFiles());
 
