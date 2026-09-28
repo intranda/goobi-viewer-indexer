@@ -262,13 +262,13 @@ public final class SolrIndexerDaemon {
 
         if (configuration.isSharedWorkerPool()) {
             logger.info("Thread configuration: shared work-stealing pool of {} thread(s) (performance.sharedWorkerPool=true, "
-                    + "performance.workerThreads); record and page/child-node work auto-balance within it "
-                    + "(performance.recordThreads and performance.threads are ignored).",
-                    configuration.getWorkerThreads());
+                    + "performance.threads); record and page/child-node work auto-balance within it "
+                    + "(performance.pageThreads is ignored).",
+                    configuration.getThreads());
         } else {
-            logger.info("Thread configuration: up to {} record(s) indexed in parallel (performance.recordThreads), "
-                    + "each using up to {} thread(s) for page/child-node generation (performance.threads).",
-                    configuration.getRecordThreads(), configuration.getThreads());
+            logger.info("Thread configuration: up to {} record(s) indexed in parallel (performance.threads), "
+                    + "each using up to {} thread(s) for page/child-node generation (performance.pageThreads).",
+                    configuration.getThreads(), configuration.getPageThreads());
         }
 
         Utils.submitDataToViewer(Collections.emptyList(), hotfolders.get(0).countRecordFiles());
@@ -439,7 +439,7 @@ public final class SolrIndexerDaemon {
      */
     public synchronized ForkJoinPool getWorkerPool() {
         if (workerPool == null && getConfiguration().isSharedWorkerPool()) {
-            int parallelism = getConfiguration().getWorkerThreads();
+            int parallelism = getConfiguration().getThreads();
             workerPool = new ForkJoinPool(parallelism);
             logger.debug("Shared work-stealing pool created with parallelism {}.", parallelism);
         }

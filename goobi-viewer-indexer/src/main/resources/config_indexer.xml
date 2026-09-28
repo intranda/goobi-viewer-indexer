@@ -145,7 +145,7 @@
             </physicalElementTypes>
             
             <!-- volumeCheckXPath: XPath expression to check whether the currently processed records has an anchor host. -->
-            <volumeCheckXPath>/mets:mets/mets:dmdSec[1]/mets:mdWrap[@MDTYPE="MODS"]/mets:xmlData/mods:mods/mods:relatedItem[@type="host"][not(@otherType) or @otherType="hierarchical"][not(@containerType)]/mods:recordInfo/mods:recordIdentifier[not(@source)]</volumeCheckXPath>
+            <volumeCheckXPath>/mets:mets/mets:dmdSec[1]/mets:mdWrap[@MDTYPE="MODS"]/mets:xmlData/mods:mods/mods:relatedItem[@type="host"][not(@otherType) or @otherType="hierarchical"][not(@containerType)]/mods:recordInfo/mods:recordIdentifier[not(@source) or @source="gbv-ppn"]</volumeCheckXPath>
 		</mets>
 
 		<lido>
@@ -240,13 +240,19 @@
 		<!-- If true, an optimize query will be sent to Solr after every indexed object. -->
 		<autoOptimize>false</autoOptimize>
 
-		<!-- If more than 1, page documents will be generated in parallel threads. Default is 1. -->
+		<!-- Top-level worker-thread count. Meaning depends on sharedWorkerPool (see below):
+			- sharedWorkerPool=false (default): number of whole records indexed concurrently (record-level parallelism).
+			  Total worker threads is roughly threads * pageThreads, so size both together against CPU and Solr capacity.
+			  Anchor records are serialized per anchor PI.
+			- sharedWorkerPool=true: parallelism of the single shared work-stealing pool (pageThreads is ignored).
+			Default is 1 (serial). NOTE: this key formerly configured page-generation parallelism; that role has moved to
+			pageThreads. Update existing configs accordingly. -->
 		<threads>4</threads>
 
-		<!-- If more than 1, that many whole records are indexed concurrently. Total worker threads is roughly
-			recordThreads * threads, so size both together against available CPU and Solr capacity. Anchor records are
-			serialized per anchor PI. Default is 1 (serial). -->
-		<recordThreads>4</recordThreads>
+		<!-- Intra-record parallelism: threads used WITHIN one record for page-document generation, EAD child-node indexing
+			and serializing page writes. Applies only when sharedWorkerPool=false; in the shared pool this work nests into
+			the shared pool and pageThreads is ignored. Default is 1 (intra-record work runs serially). -->
+		<pageThreads>4</pageThreads>
 
 		<!-- Number of successfully indexed records to accumulate before issuing a single Solr commit. 1 (default) commits
 			after every record. Larger values batch commits to reduce hard-commit contention under record-level
@@ -260,16 +266,13 @@
 			active indexing is never interrupted by a timer. Set > 0 only to bound visibility during long continuous imports. -->
 		<commitMaxSeconds>0</commitMaxSeconds>
 
-		<!-- If true, record-level and page-level parallelism share a single work-stealing pool (sized by workerThreads)
-			that auto-balances the two instead of the separate recordThreads x threads pools: few large records let their
-			page tasks fill the pool, many small records let the records fill it. Default false (legacy two-pool model:
-			recordThreads and threads apply). Experimental; benchmark against the two-pool model before enabling. -->
+		<!-- If true, record-level and page-level parallelism share a single work-stealing pool (sized by threads) that
+			auto-balances the two instead of the separate threads x pageThreads pools: few large records let their page
+			tasks fill the pool, many small records let the records fill it. When enabled, threads is the shared pool's
+			parallelism and pageThreads is ignored; size threads with headroom above the core count as I/O headroom, since
+			pool tasks block on Solr/file/HTTP work. Default false (two-pool model: threads and pageThreads apply).
+			Experimental; benchmark against the two-pool model before enabling. -->
 		<sharedWorkerPool>false</sharedWorkerPool>
-
-		<!-- Parallelism of the shared work-stealing pool when sharedWorkerPool is true. Default is the number of available
-			processors; raise it above the core count as I/O headroom, since pool tasks block on Solr/file/HTTP work.
-			Ignored when sharedWorkerPool is false. -->
-		<workerThreads>8</workerThreads>
 
 		<!-- If true, the indexer will report the remaining number of record files in the hotfolder to the viewer REST API after every indexed record.
 			Should be turned off when indexing large numbers of records at once or if the storage is slow. Default is true. -->

@@ -152,7 +152,7 @@ public class Hotfolder {
      * re-triggers {@link #flagAnchorForReconciliation(String)}). Since {@link #reconcileAnchor(String)} always validates the stored count
      * against Solr, this causes only a delayed count refresh, never data corruption.
      * <p>
-     * A concurrent set because, under record-level parallelism ({@code performance.recordThreads} &gt; 1), several volume
+     * A concurrent set because, under record-level parallelism ({@code performance.threads} &gt; 1), several volume
      * workers may flag their anchor at the same time.
      */
     private final Set<String> anchorPisPendingReconciliation = ConcurrentHashMap.newKeySet();
@@ -165,7 +165,7 @@ public class Hotfolder {
      */
     private final ConcurrentMap<String, ReentrantLock> anchorWriteLocks = new ConcurrentHashMap<>();
 
-    /** Executor for record-level parallelism; null when serial (legacy, {@code recordThreads}=1 and shared pool off). */
+    /** Executor for record-level parallelism; null when serial ({@code performance.threads}=1 and shared pool off). */
     private ExecutorService recordExecutor;
     /** True if this hotfolder created {@link #recordExecutor} itself (and must shut it down); false when it is the shared daemon pool. */
     private boolean ownsRecordExecutor;
@@ -262,18 +262,18 @@ public class Hotfolder {
             // Shared work-stealing pool: records and their nested page/child tasks draw from one auto-balanced budget.
             recordExecutor = SolrIndexerDaemon.getInstance().getWorkerPool();
             ownsRecordExecutor = false;
-            int workerThreads = SolrIndexerDaemon.getInstance().getConfiguration().getWorkerThreads();
+            int workerThreads = SolrIndexerDaemon.getInstance().getConfiguration().getThreads();
             maxInFlightRecords = workerThreads * 2;
             logger.info("Record-level parallelism via SHARED work-stealing pool (parallelism {}).", workerThreads);
         } else {
-            int recordThreads = SolrIndexerDaemon.getInstance().getConfiguration().getRecordThreads();
+            int recordThreads = SolrIndexerDaemon.getInstance().getConfiguration().getThreads();
             if (recordThreads > 1) {
                 recordExecutor = Executors.newFixedThreadPool(recordThreads);
                 ownsRecordExecutor = true;
                 maxInFlightRecords = recordThreads * 2;
                 logger.info("Record-level parallelism ENABLED: indexing up to {} records concurrently.", recordThreads);
             } else {
-                logger.info("Record-level parallelism disabled (recordThreads=1).");
+                logger.info("Record-level parallelism disabled (performance.threads=1).");
             }
         }
     }

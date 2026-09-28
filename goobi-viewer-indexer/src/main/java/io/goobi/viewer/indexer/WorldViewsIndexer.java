@@ -716,12 +716,12 @@ public class WorldViewsIndexer extends Indexer {
         List<Element> eleListImages = xp.evaluateToElements("worldviews/resource/images/image", null);
         logger.info("Generating {} page documents (count starts at {})...", eleListImages.size(), pageCountStart);
 
-        if (SolrIndexerDaemon.getInstance().getConfiguration().getThreads() > 1) {
+        if (SolrIndexerDaemon.getInstance().getConfiguration().getPageThreads() > 1) {
             // Generate each page document in its own thread
 
             ConcurrentHashMap<String, Boolean> map = new ConcurrentHashMap<>();
             ForkJoinTask<?> task = null;
-            try (ForkJoinPool pool = new ForkJoinPool(SolrIndexerDaemon.getInstance().getConfiguration().getThreads())) {
+            try (ForkJoinPool pool = new ForkJoinPool(SolrIndexerDaemon.getInstance().getConfiguration().getPageThreads())) {
                 task = pool.submit(() -> eleListImages.parallelStream().forEach(eleImage -> {
                     String iddoc = getNextIddoc();
                     if (map.containsKey(iddoc)) {

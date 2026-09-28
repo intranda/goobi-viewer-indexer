@@ -272,8 +272,9 @@ public class EadIndexer extends Indexer {
             indexObj.addToLucene(SolrConstants.MIMETYPE, "application/xml");
 
             // Index all child elements recursively
-            List<IndexObject> childObjectList =
-                    indexAllChildren(indexObj, 1, writeStrategy, SolrIndexerDaemon.getInstance().getConfiguration().getThreads() > 1);
+            boolean allowParallelChildren = SolrIndexerDaemon.getInstance().getConfiguration().isSharedWorkerPool()
+                    || SolrIndexerDaemon.getInstance().getConfiguration().getPageThreads() > 1;
+            List<IndexObject> childObjectList = indexAllChildren(indexObj, 1, writeStrategy, allowParallelChildren);
             indexObj.addChildMetadata(childObjectList);
 
             // Add grouped metadata as separate documents
@@ -368,11 +369,11 @@ public class EadIndexer extends Indexer {
                 }
             });
         } else if (allowParallelProcessing && pool == null
-                && childrenNodeList.size() >= SolrIndexerDaemon.getInstance().getConfiguration().getThreads()) {
+                && childrenNodeList.size() >= SolrIndexerDaemon.getInstance().getConfiguration().getPageThreads()) {
             // Generate each page document in its own thread
             logger.info("Processing {} nodes in parallel in {} threads (node depth={})...", childrenNodeList.size(),
-                    SolrIndexerDaemon.getInstance().getConfiguration().getThreads(), depth);
-            pool = new ForkJoinPool(SolrIndexerDaemon.getInstance().getConfiguration().getThreads());
+                    SolrIndexerDaemon.getInstance().getConfiguration().getPageThreads(), depth);
+            pool = new ForkJoinPool(SolrIndexerDaemon.getInstance().getConfiguration().getPageThreads());
             // Snapshot into an ArrayList so get(order) is O(1); JDOM2's filtered child list has O(n) random access
             final List<Element> children = new ArrayList<>(childrenNodeList);
             // Capture the logging context (MDC) so the pool's worker threads keep this record's log tag.

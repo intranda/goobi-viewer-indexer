@@ -251,7 +251,7 @@ public class PhysicalDocumentBuilder {
 
         Collection<PhysicalElement> pages = Collections.synchronizedList(new ArrayList<PhysicalElement>());
         boolean sharedWorkerPool = SolrIndexerDaemon.getInstance().getConfiguration().isSharedWorkerPool();
-        if (SolrIndexerDaemon.getInstance().getConfiguration().getThreads() > 1 || sharedWorkerPool) {
+        if (SolrIndexerDaemon.getInstance().getConfiguration().getPageThreads() > 1 || sharedWorkerPool) {
             // Generate each page document in parallel. Capture the current logging context (MDC) so the worker threads
             // can re-apply it and their log lines stay attributed to this record.
             final Map<String, String> loggingContext = ThreadContext.getImmutableContext();
@@ -280,7 +280,7 @@ public class PhysicalDocumentBuilder {
                 eleStructMapPhysicalList.parallelStream().forEach(pageTask);
             } else {
                 ForkJoinTask<?> task = null;
-                try (ForkJoinPool pool = new ForkJoinPool(SolrIndexerDaemon.getInstance().getConfiguration().getThreads())) {
+                try (ForkJoinPool pool = new ForkJoinPool(SolrIndexerDaemon.getInstance().getConfiguration().getPageThreads())) {
                     task = pool.submit(() -> eleStructMapPhysicalList.parallelStream().forEach(pageTask));
                     task.get(GENERATE_PAGE_DOCUMENT_TIMEOUT_HOURS, TimeUnit.HOURS);
                 } catch (ExecutionException e) {

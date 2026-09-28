@@ -466,50 +466,51 @@ public final class Configuration {
 
     /**
      * <p>
-     * getThreads.
+     * getThreads. The top-level worker-thread count, interpreted per {@link #isSharedWorkerPool()}:
      * </p>
+     * <ul>
+     * <li>two-pool model ({@code sharedWorkerPool=false}): number of whole records indexed concurrently (record-level
+     * parallelism); total worker threads is approximately this value multiplied by {@link #getPageThreads()}. Anchor
+     * records are serialized per anchor PI.</li>
+     * <li>shared model ({@code sharedWorkerPool=true}): parallelism of the single work-stealing pool that record and
+     * intra-record (page/child-node) work draw from. Size it with headroom above the core count as I/O headroom for the
+     * blocking Solr/file/HTTP work.</li>
+     * </ul>
+     * Default 1 (serial). Note: this key formerly configured page-generation parallelism; that role moved to
+     * {@link #getPageThreads()}.
      *
-     * @return Number of CPU threads to be used for page generation.
+     * @return top-level worker thread count; at least 1
      */
     public int getThreads() {
-        return getInt("performance.threads", 1);
+        return Math.max(1, getInt("performance.threads", 1));
     }
 
     /**
      * <p>
-     * getRecordThreads.
+     * getPageThreads. Intra-record parallelism: the number of threads used within a single record for page-document
+     * generation, EAD child-node indexing and serializing page writes. Applies only in the two-pool model
+     * ({@code sharedWorkerPool=false}); in the shared model this work nests into the shared pool and this value is
+     * ignored. Default 1 (intra-record work runs serially).
      * </p>
      *
-     * @return Number of records to index concurrently (record-level parallelism). Default 1 (serial, legacy behavior).
-     *         Total worker threads is approximately this value multiplied by {@link #getThreads()} (intra-record pool
-     *         size), so size both together against available CPU and Solr capacity.
+     * @return intra-record (page/child-node) thread count; at least 1
      */
-    public int getRecordThreads() {
-        return Math.max(1, getInt("performance.recordThreads", 1));
+    public int getPageThreads() {
+        return Math.max(1, getInt("performance.pageThreads", 1));
     }
 
     /**
      * EXPERIMENTAL. When true, record-level and intra-record (page/child-node/serializing-write) parallelism share a
-     * single work-stealing {@link java.util.concurrent.ForkJoinPool} sized by {@link #getWorkerThreads()}, which
-     * auto-balances the two: few large records let page tasks fill the pool, many small records let the records fill it.
-     * Replaces the separate {@link #getRecordThreads()} × {@link #getThreads()} pools. Default false (legacy two-pool
-     * model). Note: pool tasks block on Solr/file/HTTP I/O, so size {@link #getWorkerThreads()} with headroom above the
-     * core count to hide that latency (a plain core-sized pool can underperform the oversubscribed two-pool model).
+     * single work-stealing {@link java.util.concurrent.ForkJoinPool} sized by {@link #getThreads()}, which auto-balances
+     * the two: few large records let page tasks fill the pool, many small records let the records fill it. Replaces the
+     * separate {@link #getThreads()} × {@link #getPageThreads()} pools of the two-pool model. Default false (two-pool
+     * model). Note: pool tasks block on Solr/file/HTTP I/O, so size {@link #getThreads()} with headroom above the core
+     * count to hide that latency (a plain core-sized pool can underperform the oversubscribed two-pool model).
      *
      * @return a boolean
      */
     public boolean isSharedWorkerPool() {
         return getBoolean("performance.sharedWorkerPool", false);
-    }
-
-    /**
-     * Parallelism of the shared work-stealing pool used when {@link #isSharedWorkerPool()} is true. Default is the number
-     * of available processors; raise it above the core count as I/O headroom for the blocking Solr/file/HTTP work.
-     *
-     * @return worker pool parallelism; at least 1
-     */
-    public int getWorkerThreads() {
-        return Math.max(1, getInt("performance.workerThreads", Runtime.getRuntime().availableProcessors()));
     }
 
     /**

@@ -316,10 +316,10 @@ public class SerializingSolrWriteStrategy extends AbstractWriteStrategy {
                     logger.error(e.getMessage());
                 }
             });
-        } else if (SolrIndexerDaemon.getInstance().getConfiguration().getThreads() > 1) {
+        } else if (SolrIndexerDaemon.getInstance().getConfiguration().getPageThreads() > 1) {
             // Capture the logging context (MDC) so the pool's worker threads keep this record's log tag.
             final Map<String, String> loggingContext = ThreadContext.getImmutableContext();
-            try (ExecutorService executor = Executors.newFixedThreadPool(SolrIndexerDaemon.getInstance().getConfiguration().getThreads())) {
+            try (ExecutorService executor = Executors.newFixedThreadPool(SolrIndexerDaemon.getInstance().getConfiguration().getPageThreads())) {
                 for (final int order : orderList) {
 
                     // Generate write page document in its own thread

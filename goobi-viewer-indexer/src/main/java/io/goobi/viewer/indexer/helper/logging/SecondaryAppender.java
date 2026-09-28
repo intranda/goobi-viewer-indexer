@@ -35,7 +35,7 @@ import org.apache.logging.log4j.core.layout.PatternLayout;
 /**
  * Appender that captures the log of a single record's indexing so it can be e-mailed to configured recipients on error.
  * <p>
- * With record-level parallelism ({@code performance.recordThreads} &gt; 1) several records are indexed on different
+ * With record-level parallelism ({@code performance.threads} &gt; 1) several records are indexed on different
  * threads at once, so a single shared buffer would interleave and clobber. Instead this appender keeps one buffer per
  * record, keyed by the {@link org.apache.logging.log4j.ThreadContext} (MDC) value {@value #MDC_KEY}, which the indexer
  * sets to the record's file name at the start of processing and propagates to the intra-record worker pools. Log events
