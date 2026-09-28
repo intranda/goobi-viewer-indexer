@@ -525,7 +525,13 @@ public class Hotfolder {
         Path fileToReindex = highPriorityIndexQueue.poll();
         if (fileToReindex != null) {
             logger.info("Found file '{}' (priority queue).", fileToReindex.getFileName());
-            doIndex(fileToReindex);
+            if (recordExecutor != null && !ownsRecordExecutor) {
+                // Shared pool: run on a pool worker so the record's page/child work nests into the shared pool, but wait
+                // for it here so priority items stay serial on the scan thread as before.
+                joinRecord(recordExecutor.submit(() -> doIndex(fileToReindex)));
+            } else {
+                doIndex(fileToReindex);
+            }
         } else {
             // Check for the shutdown trigger file first
             Path shutdownFile = Paths.get(hotfolderPath.toAbsolutePath().toString(), SHUTDOWN_FILE);

@@ -114,8 +114,8 @@
             object. -->
         <autoOptimize>false</autoOptimize>
         
-        <!-- If more than 1, page documents will be generated in parallel threads within a record. Default is 1. -->
-        <pageThreads>4</pageThreads>
+        <!-- If more than 1, page documents will be generated in parallel threads. Default is 1. -->
+        <threads>4</threads>
     </performance>
     
     <!-- languageMapping: maps ISO 639-2 (or any other) language codes to ISO 639-1 -->
