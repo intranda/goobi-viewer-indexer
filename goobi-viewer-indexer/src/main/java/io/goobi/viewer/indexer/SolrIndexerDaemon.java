@@ -138,6 +138,9 @@ public final class SolrIndexerDaemon {
             // oldSolrUrl is optional
         }
 
+        // Log the global hotfolder settings once, rather than once per hotfolder
+        Hotfolder.logGlobalSettings(getConfiguration());
+
         // create hotfolder(s)
         List<String> hotfolderPaths = getConfiguration().getHotfolderPaths();
         for (int i = 0; i < hotfolderPaths.size(); i++) {

@@ -886,28 +886,49 @@ public final class Configuration {
      * @should return false until all values configured
      */
     boolean checkEmailConfiguration() {
+        return checkEmailConfiguration(true);
+    }
+
+    /**
+     *
+     * @param logProblems if true, log why the configuration is incomplete; false checks silently
+     * @return true if all email configuration date is complete; false otherwise
+     */
+    boolean checkEmailConfiguration(boolean logProblems) {
         if (StringUtils.isNotEmpty(getString("init.email.recipients"))) {
-            logger.warn("init.email.recipients is configured as a single string. Reconfgure using <address> subelements.");
+            if (logProblems) {
+                logger.warn("init.email.recipients is configured as a single string. Reconfgure using <address> subelements.");
+            }
             return false;
         }
         if (getEmailRecipients().isEmpty()) {
-            logger.warn("init.email.recipients.address not configured, cannot send e-mail report.");
+            if (logProblems) {
+                logger.warn("init.email.recipients.address not configured, cannot send e-mail report.");
+            }
             return false;
         }
         if (StringUtils.isEmpty(getString("init.email.smtpServer"))) {
-            logger.warn("init.email.smtpServer not configured, cannot send e-mail report.");
+            if (logProblems) {
+                logger.warn("init.email.smtpServer not configured, cannot send e-mail report.");
+            }
             return false;
         }
         if (StringUtils.isEmpty(getString("init.email.smtpSenderAddress"))) {
-            logger.debug("init.email.smtpSenderAddress not configured, cannot send e-mail report.");
+            if (logProblems) {
+                logger.debug("init.email.smtpSenderAddress not configured, cannot send e-mail report.");
+            }
             return false;
         }
         if (StringUtils.isEmpty(getString("init.email.smtpSenderName"))) {
-            logger.warn("init.email.smtpSenderName not configured, cannot send e-mail report.");
+            if (logProblems) {
+                logger.warn("init.email.smtpSenderName not configured, cannot send e-mail report.");
+            }
             return false;
         }
         if (StringUtils.isEmpty(getString("init.email.smtpSecurity"))) {
-            logger.warn("init.email.smtpSecurity not configured, cannot send e-mail report.");
+            if (logProblems) {
+                logger.warn("init.email.smtpSecurity not configured, cannot send e-mail report.");
+            }
             return false;
         }
 

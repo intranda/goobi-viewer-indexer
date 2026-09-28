@@ -204,27 +204,11 @@ public class Hotfolder {
         metsFileSizeThreshold = SolrIndexerDaemon.getInstance().getConfiguration().getInt("performance.metsFileSizeThreshold", 10485760);
         dataFolderSizeThreshold = SolrIndexerDaemon.getInstance().getConfiguration().getInt("performance.dataFolderSizeThreshold", 157286400);
 
+        // The settings below come from the global configuration, so they are logged once at startup by logGlobalSettings()
+        // rather than once per hotfolder here.
         addVolumeCollectionsToAnchorFields = SolrIndexerDaemon.getInstance().getConfiguration().getAddVolumeCollectionsToAnchorFields();
-        if (!addVolumeCollectionsToAnchorFields.isEmpty()) {
-            logger.info("Volume collections WILL BE ADDED to anchors for fields: {}", addVolumeCollectionsToAnchorFields);
-        } else {
-            logger.info("Volume collections WILL NOT BE ADDED to anchors.");
-        }
-
         prioritizeLargeImageFolders = SolrIndexerDaemon.getInstance().getConfiguration().isPrioritizeLargeImageFolders();
-        if (prioritizeLargeImageFolders) {
-            logger.info("Large image folder prioritization is ENABLED.");
-        }
-
-        String temp = SolrIndexerDaemon.getInstance().getConfiguration().getConfiguration("deleteContentFilesOnFailure");
-        if (temp != null) {
-            deleteContentFilesOnFailure = Boolean.valueOf(temp);
-        }
-        if (deleteContentFilesOnFailure) {
-            logger.info("Content files will be REMOVED from the hotfolder in case of indexing errors.");
-        } else {
-            logger.info("Content files will be PRESERVED in the hotfolder in case of indexing errors.");
-        }
+        deleteContentFilesOnFailure = readDeleteContentFilesOnFailure(SolrIndexerDaemon.getInstance().getConfiguration());
 
         MetadataHelper.setAuthorityDataEnabled(SolrIndexerDaemon.getInstance().getConfiguration().getBoolean("init.authorityData[@enabled]", true));
         if (MetadataHelper.isAuthorityDataEnabled()) {
@@ -236,8 +220,59 @@ public class Hotfolder {
             // Authority data fields to be added to DEFAULT
             MetadataHelper.setAddAuthorityDataFieldsToDefault(
                     SolrIndexerDaemon.getInstance().getConfiguration().getStringList("init.authorityData.addFieldsToDefault.field"));
-            if (MetadataHelper.getAddAuthorityDataFieldsToDefault() != null) {
-                for (String field : MetadataHelper.getAddAuthorityDataFieldsToDefault()) {
+        }
+
+        // E-mail configuration (checked silently; problems are logged once by logGlobalSettings())
+        emailConfigurationComplete = SolrIndexerDaemon.getInstance().getConfiguration().checkEmailConfiguration(false);
+
+        // Secondary logging appender
+        final LoggerContext context = (LoggerContext) LogManager.getContext(false);
+        secondaryAppender = (SecondaryAppender) context.getConfiguration().getAppenders().get("record");
+
+        // Record-level parallelism (the thread configuration is logged once by SolrIndexerDaemon.start())
+        if (SolrIndexerDaemon.getInstance().getConfiguration().isSharedWorkerPool()) {
+            // Shared work-stealing pool: records and their nested page/child tasks draw from one auto-balanced budget.
+            recordExecutor = SolrIndexerDaemon.getInstance().getWorkerPool();
+            ownsRecordExecutor = false;
+            maxInFlightRecords = SolrIndexerDaemon.getInstance().getConfiguration().getThreads() * 2;
+        } else {
+            int recordThreads = SolrIndexerDaemon.getInstance().getConfiguration().getThreads();
+            if (recordThreads > 1) {
+                recordExecutor = Executors.newFixedThreadPool(recordThreads);
+                ownsRecordExecutor = true;
+                maxInFlightRecords = recordThreads * 2;
+            }
+        }
+    }
+
+    /**
+     * Logs the hotfolder settings that come from the global indexer configuration and are therefore identical for every
+     * hotfolder. Called once at startup instead of from each constructor, so the lines are not repeated per hotfolder.
+     *
+     * @param config indexer configuration
+     */
+    public static void logGlobalSettings(Configuration config) {
+        List<String> anchorFields = config.getAddVolumeCollectionsToAnchorFields();
+        if (!anchorFields.isEmpty()) {
+            logger.info("Volume collections WILL BE ADDED to anchors for fields: {}", anchorFields);
+        } else {
+            logger.info("Volume collections WILL NOT BE ADDED to anchors.");
+        }
+
+        if (config.isPrioritizeLargeImageFolders()) {
+            logger.info("Large image folder prioritization is ENABLED.");
+        }
+
+        if (readDeleteContentFilesOnFailure(config)) {
+            logger.info("Content files will be REMOVED from the hotfolder in case of indexing errors.");
+        } else {
+            logger.info("Content files will be PRESERVED in the hotfolder in case of indexing errors.");
+        }
+
+        if (config.getBoolean("init.authorityData[@enabled]", true)) {
+            List<String> defaultFields = config.getStringList("init.authorityData.addFieldsToDefault.field");
+            if (defaultFields != null) {
+                for (String field : defaultFields) {
                     logger.info("{} values will be added to DEFAULT", field);
                 }
             }
@@ -245,40 +280,22 @@ public class Hotfolder {
             logger.info("Authority data retrieval is disabled.");
         }
 
-        // REST API token configuration
-        if (StringUtils.isEmpty(SolrIndexerDaemon.getInstance().getConfiguration().getViewerAuthorizationToken())) {
+        if (StringUtils.isEmpty(config.getViewerAuthorizationToken())) {
             logger.warn("Goobi viewer REST API token not found, communications disabled.");
         }
 
-        // E-mail configuration
-        emailConfigurationComplete = SolrIndexerDaemon.getInstance().getConfiguration().checkEmailConfiguration();
-        if (emailConfigurationComplete) {
+        if (config.checkEmailConfiguration()) {
             logger.info("E-mail configuration OK.");
         }
+    }
 
-        // Secondary logging appender
-        final LoggerContext context = (LoggerContext) LogManager.getContext(false);
-        secondaryAppender = (SecondaryAppender) context.getConfiguration().getAppenders().get("record");
-
-        // Record-level parallelism
-        if (SolrIndexerDaemon.getInstance().getConfiguration().isSharedWorkerPool()) {
-            // Shared work-stealing pool: records and their nested page/child tasks draw from one auto-balanced budget.
-            recordExecutor = SolrIndexerDaemon.getInstance().getWorkerPool();
-            ownsRecordExecutor = false;
-            int workerThreads = SolrIndexerDaemon.getInstance().getConfiguration().getThreads();
-            maxInFlightRecords = workerThreads * 2;
-            logger.info("Record-level parallelism via SHARED work-stealing pool (parallelism {}).", workerThreads);
-        } else {
-            int recordThreads = SolrIndexerDaemon.getInstance().getConfiguration().getThreads();
-            if (recordThreads > 1) {
-                recordExecutor = Executors.newFixedThreadPool(recordThreads);
-                ownsRecordExecutor = true;
-                maxInFlightRecords = recordThreads * 2;
-                logger.info("Record-level parallelism ENABLED: indexing up to {} records concurrently.", recordThreads);
-            } else {
-                logger.info("Record-level parallelism disabled (performance.threads=1).");
-            }
-        }
+    /**
+     * @param config indexer configuration
+     * @return value of deleteContentFilesOnFailure; true if not configured
+     */
+    private static boolean readDeleteContentFilesOnFailure(Configuration config) {
+        String value = config.getConfiguration("deleteContentFilesOnFailure");
+        return value == null || Boolean.parseBoolean(value);
     }
 
     /**
