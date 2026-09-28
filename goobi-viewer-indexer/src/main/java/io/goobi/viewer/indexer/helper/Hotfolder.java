@@ -29,12 +29,12 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -142,8 +142,11 @@ public class Hotfolder {
     private final IDataRepositoryStrategy dataRepositoryStrategy;
     /** Regular index queue for files found in the regular hotfolder. */
     private final Queue<Path> indexQueue = new LinkedBlockingQueue<>(queueCapacity);
-    /** High priority index queue for volume re-indexing, etc. */
-    private final Queue<Path> highPriorityIndexQueue = new LinkedList<>();
+    /**
+     * High priority index queue for anchor re-indexing, anchor update (.UPDATED) files, etc. Concurrent because record
+     * workers add .UPDATED files to it (via {@link #getHighPriorityQueue()}) while the scan thread polls it.
+     */
+    private final Queue<Path> highPriorityIndexQueue = new ConcurrentLinkedQueue<>();
     /**
      * PIs of anchor records whose volume count changed and that must be reconciled (NUMVOLUMES + METS) once queues drain.
      * <p>
@@ -526,10 +529,15 @@ public class Hotfolder {
         if (fileToReindex != null) {
             logger.info("Found file '{}' (priority queue).", fileToReindex.getFileName());
             if (recordExecutor != null && !ownsRecordExecutor) {
-                // Shared pool: run on a pool worker so the record's page/child work nests into the shared pool, but wait
-                // for it here so priority items stay serial on the scan thread as before.
+                pruneCompletedRecords();
+            }
+            if (recordExecutor != null && !ownsRecordExecutor && inFlightRecords.isEmpty()) {
+                // Shared pool, idle (e.g. reconciliation after a queue drain): run on a pool worker so the record's page/child
+                // work nests into the shared pool, but wait for it here so priority items stay serial as before.
                 joinRecord(recordExecutor.submit(() -> doIndex(fileToReindex)));
             } else {
+                // Serial/two-pool mode, or shared pool still busy with regular records (anchor files queued by record workers
+                // mid-batch): run inline right away instead of waiting behind the records already in the pool.
                 doIndex(fileToReindex);
             }
         } else {
