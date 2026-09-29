@@ -200,6 +200,77 @@ class MetadataHelperTest extends AbstractTest {
     }
 
     /**
+     * Builds a corporate <code>mods:name</code> element with two untyped <code>mods:namePart</code> children.
+     *
+     * @return mods:name element attached to a new document
+     */
+    private static Element createCorporateNameElement() {
+        Namespace nsMods = SolrIndexerDaemon.getInstance().getConfiguration().getNamespaces().get("mods");
+        Element eleName = new Element("name", nsMods).setAttribute("type", "corporate");
+        eleName.addContent(new Element("namePart", nsMods).setText("Weltausstellung"));
+        eleName.addContent(new Element("namePart", nsMods).setText("1873; Wien"));
+        new Document(eleName);
+        return eleName;
+    }
+
+    /**
+     * @see GroupedMetadata#collectGroupMetadataValues(java.util.Map,java.util.Map,Element,boolean,java.util.Map,FieldConfig,JDomXP,FileFormat)
+     * @verifies concatenate values if concatenate enabled
+     */
+    @Test
+    void collectGroupMetadataValues_shouldConcatenateValuesIfConcatenateEnabled() throws Exception {
+        Configuration shippedConfig = new Configuration(new File("src/main/resources/config_indexer.xml").getAbsolutePath());
+        FieldConfig fieldConfig = shippedConfig.getMetadataConfigurationManager().getConfigurationListForField("MD_CORPORATEAUTHOR").get(0);
+        assertNotNull(fieldConfig);
+        // Shipped config enables concatenation for untyped corporate name parts
+        assertTrue(fieldConfig.getGroupEntity().getSubfields().get(SolrConstants.MD_VALUE).isConcatenate());
+
+        Element eleName = createCorporateNameElement();
+        SubfieldConfig subfield = new SubfieldConfig(SolrConstants.MD_VALUE, true, false);
+        subfield.setConcatenate(true);
+        subfield.setSeparator(". ");
+        subfield.getXpaths().add(new XPathConfig("mods:namePart[not(@type)]", null, null, SolrConstants.MD_VALUE));
+
+        GroupedMetadata gmd = new GroupedMetadata();
+        Map<String, List<String>> collected = new HashMap<>();
+        gmd.collectGroupMetadataValues(collected, Map.of(SolrConstants.MD_VALUE, subfield), eleName, false, null, fieldConfig,
+                new JDomXP(eleName.getDocument()), FileFormat.METS);
+        assertEquals(List.of("Weltausstellung. 1873; Wien"), collected.get(SolrConstants.MD_VALUE));
+        List<String> mdValues = gmd.getFields()
+                .stream()
+                .filter(f -> SolrConstants.MD_VALUE.equals(f.getField()))
+                .map(LuceneField::getValue)
+                .toList();
+        assertEquals(List.of("Weltausstellung. 1873; Wien"), mdValues);
+    }
+
+    /**
+     * @see GroupedMetadata#collectGroupMetadataValues(java.util.Map,java.util.Map,Element,boolean,java.util.Map,FieldConfig,JDomXP,FileFormat)
+     * @verifies keep separate values if concatenate disabled
+     */
+    @Test
+    void collectGroupMetadataValues_shouldKeepSeparateValuesIfConcatenateDisabled() throws Exception {
+        Configuration shippedConfig = new Configuration(new File("src/main/resources/config_indexer.xml").getAbsolutePath());
+        FieldConfig fieldConfig = shippedConfig.getMetadataConfigurationManager().getConfigurationListForField("MD_CORPORATEAUTHOR").get(0);
+        assertNotNull(fieldConfig);
+
+        Element eleName = createCorporateNameElement();
+        SubfieldConfig subfield = new SubfieldConfig(SolrConstants.MD_VALUE, true, false);
+        subfield.getXpaths().add(new XPathConfig("mods:namePart[not(@type)]", null, null, SolrConstants.MD_VALUE));
+
+        GroupedMetadata gmd = new GroupedMetadata();
+        Map<String, List<String>> collected = new HashMap<>();
+        gmd.collectGroupMetadataValues(collected, Map.of(SolrConstants.MD_VALUE, subfield), eleName, false, null, fieldConfig,
+                new JDomXP(eleName.getDocument()), FileFormat.METS);
+        List<String> mdValues = gmd.getFields()
+                .stream()
+                .filter(f -> SolrConstants.MD_VALUE.equals(f.getField()))
+                .map(LuceneField::getValue)
+                .toList();
+        assertEquals(List.of("Weltausstellung", "1873; Wien"), mdValues);
+    }
+
+    /**
      * @see MetadataHelper#getGroupedMetadata(Element,GroupEntity,FieldConfig,String,StringBuilder,List,JDomXP)
      * @verifies group correctly
      */

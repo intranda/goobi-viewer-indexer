@@ -15,10 +15,13 @@
  */
 package io.goobi.viewer.indexer.model.config;
 
+import java.io.StringReader;
 import java.util.List;
 
 import org.apache.commons.configuration2.HierarchicalConfiguration;
 import org.apache.commons.configuration2.XMLConfiguration;
+import org.apache.commons.configuration2.io.FileHandler;
+import org.apache.commons.configuration2.tree.ImmutableNode;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -144,5 +147,30 @@ class MetadataConfigurationManagerTest extends AbstractTest {
         Assertions.assertEquals(MetadataGroupType.PERSON, child.getType());
         Assertions.assertEquals("intranda:actor[intranda:role='Künstler/-in']", child.getXpath());
         Assertions.assertEquals(8, child.getSubfields().size());
+    }
+
+    /**
+     * @see MetadataConfigurationManager#readSubfield(HierarchicalConfiguration)
+     * @verifies read concatenation settings correctly
+     */
+    @Test
+    void readSubfield_shouldReadConcatenationSettingsCorrectly() throws Exception {
+        XMLConfiguration config = new XMLConfiguration();
+        new FileHandler(config).load(new StringReader("<config>"
+                + "<field name=\"MD_FOO\" concatenate=\"true\" separator=\", \">mods:namePart</field>"
+                + "<field name=\"MD_BAR\">mods:namePart</field>"
+                + "</config>"));
+        List<HierarchicalConfiguration<ImmutableNode>> fields = config.configurationsAt("field");
+        Assertions.assertEquals(2, fields.size());
+
+        SubfieldConfig concatenated = MetadataConfigurationManager.readSubfield(fields.get(0));
+        Assertions.assertNotNull(concatenated);
+        Assertions.assertTrue(concatenated.isConcatenate());
+        Assertions.assertEquals(", ", concatenated.getSeparator());
+
+        SubfieldConfig separate = MetadataConfigurationManager.readSubfield(fields.get(1));
+        Assertions.assertNotNull(separate);
+        Assertions.assertFalse(separate.isConcatenate());
+        Assertions.assertEquals(SubfieldConfig.DEFAULT_SEPARATOR, separate.getSeparator());
     }
 }

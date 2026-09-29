@@ -347,6 +347,7 @@ public final class MetadataConfigurationManager {
      * @param sub
      * @return {@link SubfieldConfig}
      * @should read subfield config correctly
+     * @should read concatenation settings correctly
      */
     static SubfieldConfig readSubfield(HierarchicalConfiguration<ImmutableNode> sub) {
         if (sub == null) {
@@ -366,6 +367,8 @@ public final class MetadataConfigurationManager {
         }
 
         SubfieldConfig ret = new SubfieldConfig(fieldName, multivalued, addSortField);
+        ret.setConcatenate(sub.getBoolean("[@concatenate]", false));
+        ret.setSeparator(sub.getString("[@separator]", SubfieldConfig.DEFAULT_SEPARATOR));
         ret.getXpaths().add(new XPathConfig(xpathExp, null, null, fieldName));
         ret.getDefaultValues().put(xpathExp, defaultValue);
         logger.debug("Loaded group entity field: {} - {}", fieldName, xpathExp);
