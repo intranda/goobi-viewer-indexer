@@ -151,6 +151,8 @@ public class GroupedMetadata {
      * @param sourceDocFormat {@link io.goobi.viewer.indexer.helper.JDomXP.FileFormat} of the indexed document; subfield expressions whose namespace
      *            prefix belongs to a different format are skipped. May be null to disable format filtering.
      * @should skip xpath expressions not matching source format
+     * @should concatenate values if concatenate enabled
+     * @should keep separate values if concatenate disabled
      */
     public void collectGroupMetadataValues(Map<String, List<String>> collectedValues, Map<String, SubfieldConfig> groupEntityFields, Element ele,
             boolean authorityDataEnabled, Map<String, String> xpathReplacements, FieldConfig configurationItem, JDomXP jdomXP,
@@ -204,6 +206,17 @@ public class GroupedMetadata {
                     if (values == null || values.isEmpty()) {
                         continue;
                     }
+                }
+                // Join all values into a single one, if configured (e.g. multiple mods:namePart elements of a corporation)
+                if (subfield.isConcatenate() && values.size() > 1) {
+                    List<String> parts = new ArrayList<>(values.size());
+                    for (Object val : values) {
+                        String part = JDomXP.objectToString(val).trim();
+                        if (StringUtils.isNotBlank(part)) {
+                            parts.add(part);
+                        }
+                    }
+                    values = Collections.singletonList(String.join(subfield.getSeparator(), parts));
                 }
                 // Trim down to the first value if subfield is not multivalued
                 if (!subfield.isMultivalued() && values.size() > 1) {

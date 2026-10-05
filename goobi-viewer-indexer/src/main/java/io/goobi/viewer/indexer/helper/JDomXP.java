@@ -114,6 +114,9 @@ public class JDomXP {
      * namespaces on every call, which dominates the per-record cost on metadata-rich records; caching removes nearly all
      * of it. JDOM {@link XPathExpression} instances are reusable across evaluations but are <b>not</b> thread-safe, and
      * page-document generation runs on a {@link java.util.concurrent.ForkJoinPool}, so the cache is held per thread.
+     * <p>
+     * Lifetime is one record: the per-record pools are closed after each record (discarding their threads), and the
+     * long-lived hotfolder thread releases its entry via {@link #clearXPathCache()} at the end of every record.
      */
     private static final ThreadLocal<Map<String, XPathExpression<Object>>> XPATH_CACHE = ThreadLocal.withInitial(HashMap::new);
 
@@ -192,6 +195,14 @@ public class JDomXP {
         }
 
         return getCompiledExpression(expr, filter, localNamespaces).evaluate(parent);
+    }
+
+    /**
+     * Removes the calling thread's compiled XPath cache. Call at the end of a unit of work (e.g. a record) on threads that
+     * outlive it, so cached expressions are not retained indefinitely.
+     */
+    public static void clearXPathCache() {
+        XPATH_CACHE.remove();
     }
 
     /**
