@@ -658,7 +658,14 @@ public class Hotfolder {
         reindexSettings.put(DataRepository.PARAM_ALTO, false);
         reindexSettings.put(DataRepository.PARAM_MIX, false);
         reindexSettings.put(DataRepository.PARAM_UGC, false);
-        boolean ret = handleSourceFile(recordFile, reindexSettings);
+        boolean ret;
+        try {
+            ret = handleSourceFile(recordFile, reindexSettings);
+        } finally {
+            // Release this long-lived thread's compiled XPath caches so they don't accumulate across records
+            JDomXP.clearXPathCache();
+            XmlTools.clearXPathCache();
+        }
         if (secondaryAppender != null && emailConfigurationComplete) {
             checkAndSendErrorReport(recordFile.getFileName() + ": Indexing failed (" + Version.asString() + ")",
                     secondaryAppender.getLog());

@@ -216,6 +216,14 @@ public final class XmlTools {
     }
 
     /**
+     * Per-thread cache of compiled XPath expressions, keyed by return-type filter, namespace signature and the
+     * (normalized) expression string. JDOM {@link XPathExpression} instances are reusable but not thread-safe, so the
+     * cache is held per thread. See {@link JDomXP} for the rationale (compilation is the dominant per-record XPath cost)
+     * and the cache lifetime; long-lived threads release their entry via {@link #clearXPathCache()}.
+     */
+    private static final ThreadLocal<Map<String, XPathExpression<Object>>> XPATH_CACHE = ThreadLocal.withInitial(HashMap::new);
+
+    /**
      * XPath evaluation with a given return type filter.
      *
      * @param expr XPath expression to evaluate.
@@ -224,16 +232,17 @@ public final class XmlTools {
      * @param namespaces a {@link java.util.List} object.
      * @return a {@link java.util.List} object.
      */
-    /**
-     * Per-thread cache of compiled XPath expressions, keyed by return-type filter, namespace signature and the
-     * (normalized) expression string. JDOM {@link XPathExpression} instances are reusable but not thread-safe, so the
-     * cache is held per thread. See {@link JDomXP} for the rationale (compilation is the dominant per-record XPath cost).
-     */
-    private static final ThreadLocal<Map<String, XPathExpression<Object>>> XPATH_CACHE = ThreadLocal.withInitial(HashMap::new);
-
     @SuppressWarnings({ "rawtypes" })
     public static List<Object> evaluate(String expr, Object parent, Filter filter, List<Namespace> namespaces) {
         return getCompiledExpression(expr, filter, namespaces).evaluate(parent);
+    }
+
+    /**
+     * Removes the calling thread's compiled XPath cache. Call at the end of a unit of work (e.g. a record) on threads that
+     * outlive it, so cached expressions are not retained indefinitely.
+     */
+    public static void clearXPathCache() {
+        XPATH_CACHE.remove();
     }
 
     /**
