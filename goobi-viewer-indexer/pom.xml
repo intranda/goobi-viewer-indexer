@@ -50,7 +50,7 @@
 		<commons-configuration2.version>2.15.1</commons-configuration2.version>
 		<commons-io.version>2.22.0</commons-io.version>
 		<commons-jxpath.version>1.4.0</commons-jxpath.version>
-		<commons-lang3.version>3.20.0</commons-lang3.version>
+		<commons-lang3.version>3.21.0</commons-lang3.version>
 		<commons-text.version>1.15.0</commons-text.version>
 		<commons-collections.version>4.6.0</commons-collections.version>
 		<httpclient.version>4.5.14</httpclient.version>
@@ -58,7 +58,7 @@
 		<icu.version>78.3</icu.version>
 		<imageio-openjpeg.version>0.6.8</imageio-openjpeg.version>
 		<log4j.version>2.26.1</log4j.version>
-		<jackson.version>2.22.2</jackson.version>
+		<jackson.version>2.22.3</jackson.version>
 		<jaxen.version>2.0.6</jaxen.version>
 		<jai.version>1.4.0</jai.version>
 		<jakarta.mail-api.version>2.1.5</jakarta.mail-api.version>
@@ -68,6 +68,7 @@
 		<junit.version>6.1.3</junit.version>
 		<metadata-extractor.version>2.21.0</metadata-extractor.version>
 		<solr.version>9.10.1</solr.version>
+		<zookeeper.version>3.9.6</zookeeper.version>
 		<sf-geojson.version>3.3.3</sf-geojson.version>
 		<pdfbox.version>3.0.8</pdfbox.version>
 	</properties>
@@ -101,6 +102,17 @@
 				<version>${junit.version}</version>
 				<type>pom</type>
 				<scope>import</scope>
+			</dependency>
+			<!-- solr-solrj pulls in ZooKeeper (and through it Netty 4.1) transitively; pin the patched release -->
+			<dependency>
+				<groupId>org.apache.zookeeper</groupId>
+				<artifactId>zookeeper</artifactId>
+				<version>${zookeeper.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.zookeeper</groupId>
+				<artifactId>zookeeper-jute</artifactId>
+				<version>${zookeeper.version}</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
@@ -371,7 +383,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-plugin</artifactId>
-				<version>3.5.6</version>
+				<version>3.6.0</version>
 				<configuration>
 					<skipTests>${skipTests}</skipTests>
 				</configuration>
@@ -436,7 +448,7 @@
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>buildnumber-maven-plugin</artifactId>
-				<version>3.3.0</version>
+				<version>3.3.1</version>
 				<configuration>
 					<shortRevisionLength>7</shortRevisionLength>
 					<doCheck>false</doCheck>
@@ -503,7 +515,7 @@
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>versions-maven-plugin</artifactId>
-				<version>2.21.0</version>
+				<version>2.22.0</version>
 				<configuration>
 					<rulesUri>file://${basedir}/version-number-rules.xml</rulesUri>
 				</configuration>
@@ -540,7 +552,7 @@
 					<dependency>
 						<groupId>com.puppycrawl.tools</groupId>
 						<artifactId>checkstyle</artifactId>
-						<version>14.0.0</version>
+						<version>14.3.0</version>
 					</dependency>
 				</dependencies>
 				<executions>
