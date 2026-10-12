@@ -234,8 +234,15 @@
 		<!-- If a data folder size exceeds the given number (in bytes), an alternate Solr write strategy will be used to avoid memory overflows (default is 157286400 bytes) -->
 		<dataFolderSizeThreshold>157286400</dataFolderSizeThreshold>
 
-		<!-- Number of documents written to Solr in one commit when using SerializingWriteStrategyBatch -->
+		<!-- Number of documents sent to Solr per request when using the serializing or streaming write strategy (see below) -->
 		<serializingWriteStrategyBatchSize>1000</serializingWriteStrategyBatchSize>
+
+		<!-- If true, large EAD files (exceeding metsFileSizeThreshold) are indexed with a streaming write strategy: their documents are sent
+			to Solr in batches while the file is being indexed, instead of first serializing every document to a file in tempFolder. This
+			avoids writing up to millions of temp files for very large archives. The documents only become visible with the commit at the
+			end of the record (unless Solr itself is configured with autoSoftCommit or autoCommit with openSearcher=true); if indexing
+			fails, the documents already sent are deleted again. Default is true. -->
+		<streamingWriteStrategy>true</streamingWriteStrategy>
 
 		<!-- If true, an optimize query will be sent to Solr after every indexed object. -->
 		<autoOptimize>false</autoOptimize>

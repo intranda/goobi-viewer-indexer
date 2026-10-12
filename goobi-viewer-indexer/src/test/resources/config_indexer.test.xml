@@ -179,7 +179,10 @@
         <!-- If true, an optimize query will be sent to Solr after every indexed 
             object. -->
         <autoOptimize>false</autoOptimize>
-        
+
+        <!-- Large EAD files are streamed to Solr instead of serialized to temp files. Default is true. -->
+        <streamingWriteStrategy>false</streamingWriteStrategy>
+
         <!-- If more than 1, page documents will be generated in parallel threads. Default is 1. -->
         <threads>1</threads>
         

@@ -231,8 +231,8 @@ public class EadIndexer extends Indexer {
             checkOldDataFolders(dataFolders, new String[] { DataRepository.PARAM_ANNOTATIONS }, pi);
 
             if (writeStrategy == null) {
-                // Request appropriate write strategy
-                writeStrategy = AbstractWriteStrategy.create(eadFile, dataFolders, hotfolder);
+                // Request appropriate write strategy. EAD structure docs are final once added, so large files can be streamed to Solr.
+                writeStrategy = AbstractWriteStrategy.create(eadFile, dataFolders, hotfolder, true);
             } else {
                 logger.info("Solr write strategy injected by caller: {}", writeStrategy.getClass().getName());
             }
