@@ -465,6 +465,17 @@ public final class Configuration {
     }
 
     /**
+     * If true, large records without pages (currently EAD) that exceed the size thresholds are written with the streaming write strategy, which
+     * sends their documents to Solr in batches while they are created, instead of serializing every document to a temp file first. Default true.
+     *
+     * @return true if the streaming write strategy is enabled; false otherwise
+     * @should return correct value
+     */
+    public boolean isStreamingWriteStrategy() {
+        return getBoolean("performance.streamingWriteStrategy", true);
+    }
+
+    /**
      * <p>
      * getThreads. The top-level worker-thread count, interpreted per {@link #isSharedWorkerPool()}:
      * </p>

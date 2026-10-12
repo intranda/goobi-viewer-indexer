@@ -278,6 +278,15 @@ class ConfigurationTest extends AbstractTest {
     }
 
     /**
+     * @see Configuration#isStreamingWriteStrategy()
+     * @verifies return correct value
+     */
+    @Test
+    void isStreamingWriteStrategy_shouldReturnCorrectValue() {
+        assertFalse(SolrIndexerDaemon.getInstance().getConfiguration().isStreamingWriteStrategy());
+    }
+
+    /**
      * @see Configuration#isAuthorityDataCacheEnabled()
      * @verifies return correct value
      */
