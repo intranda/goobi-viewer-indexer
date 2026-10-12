@@ -20,6 +20,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -326,6 +327,28 @@ class HotfolderTest extends AbstractSolrEnabledTest {
             if (tempFile != null) {
                 FileUtils.delete(tempFile.toFile());
             }
+        }
+    }
+
+    /**
+     * @see Hotfolder#isDataFolderExportDone(Path)
+     * @verifies return false if data folder changes while measuring
+     */
+    @Test
+    void isDataFolderExportDone_shouldReturnFalseIfDataFolderChangesWhileMeasuring() throws Exception {
+        hotfolder = new Hotfolder(SolrIndexerDaemon.getInstance().getConfiguration().getHotfolderPath()) {
+            @Override
+            long getDataFolderTotalSize(String fileNameRoot) {
+                // Simulate files vanishing during the walk, as FileUtils.sizeOfDirectory() reports it during an ongoing copy
+                throw new UncheckedIOException(new IOException("File vanished while measuring"));
+            }
+        };
+        // A freshly written record file skips the quiet-period shortcut, so the sizes are measured
+        Path recordFile = Files.writeString(hotfolder.getHotfolderPath().resolve("foo.xml"), "<mets/>");
+        try {
+            assertFalse(hotfolder.isDataFolderExportDone(recordFile));
+        } finally {
+            Files.deleteIfExists(recordFile);
         }
     }
 

@@ -1385,6 +1385,7 @@ public class Hotfolder {
      * @param recordFile a {@link java.nio.file.Path} object.
      * @return a boolean.
      * @should return true if hotfolder content not changing
+     * @should return false if data folder changes while measuring
      */
     boolean isDataFolderExportDone(Path recordFile) {
         logger.debug("isDataFolderExportDone: {}", recordFile.getFileName());
@@ -1394,17 +1395,25 @@ public class Hotfolder {
             return true;
         }
 
-        long total1 = getDataFolderTotalSize(fileNameRoot);
-
+        long total1;
+        long total2;
         try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            logger.error("Error checking the hotfolder size.", e);
-            Thread.currentThread().interrupt();
+            total1 = getDataFolderTotalSize(fileNameRoot);
+
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                logger.error("Error checking the hotfolder size.", e);
+                Thread.currentThread().interrupt();
+                return false;
+            }
+
+            total2 = getDataFolderTotalSize(fileNameRoot);
+        } catch (UncheckedIOException e) {
+            // Entries vanishing while measuring mean the data folder is still being written
+            logger.debug("Data folder of '{}' changed while measuring: {}", recordFile.getFileName(), e.getMessage());
             return false;
         }
-
-        long total2 = getDataFolderTotalSize(fileNameRoot);
 
         logger.trace("Data export done: {}", total1 == total2);
         return total1 == total2;
@@ -1449,6 +1458,8 @@ public class Hotfolder {
      *
      * @param fileNameRoot record file name without extension
      * @return total size in bytes
+     * @throws UncheckedIOException if a data folder changes while it is being measured (e.g. files vanishing during an ongoing copy); deliberately
+     *             not swallowed here, since a partial total could wrongly match the next measurement
      * @should sum sizes of all data folders of the record
      * @should ignore data folders of other records
      */
