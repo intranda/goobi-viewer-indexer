@@ -145,6 +145,14 @@ public abstract class Indexer {
     static final String FOLDER_SUFFIX_MEDIA = "_media";
     static final String FOLDER_SUFFIX_TXTCROWD = "_txtcrowd";
 
+    /**
+     * Suffixes of all data folders that may accompany a record file in the hotfolder ({@code <fileNameRoot><suffix>}). Resolving these
+     * directly instead of globbing the hotfolder keeps per-record lookups independent of the number of files in the hotfolder.
+     */
+    public static final List<String> DATA_FOLDER_SUFFIXES = List.of("_tif", FOLDER_SUFFIX_MEDIA, "_txt", FOLDER_SUFFIX_TXTCROWD, "_wc", "_alto",
+            "_neralto", FOLDER_SUFFIX_ALTOCROWD, "_xml", "_pdf", "_mix", "_src", "_ugc", "_cms", "_mei", "_tei", "_annotations",
+            FOLDER_SUFFIX_DOWNLOADIMAGES);
+
     static final String LOG_COULD_NOT_BE_DELETED = "'{}' could not be deleted! Please delete it manually!";
     static final String LOG_FOUND_DATA_FOLDER = "Found data folder: {}";
 
@@ -1972,16 +1980,16 @@ public abstract class Indexer {
      * @return {@code Map<String, Path>}
      * @throws IOException
      * @should add data folder paths correctly
+     * @should prefer ner alto folder over alto folder
      */
     static Map<String, Path> checkDataFolders(Path hotfolderPath, String fileNameRoot) throws IOException {
         Map<String, Path> dataFolders = new HashMap<>();
 
-        try (DirectoryStream<Path> stream =
-                Files.newDirectoryStream(hotfolderPath, new StringBuilder(fileNameRoot).append("_*").toString())) {
-            for (Path path : stream) {
+        for (String suffix : DATA_FOLDER_SUFFIXES) {
+            Path path = hotfolderPath.resolve(fileNameRoot + suffix);
+            if (Files.exists(path)) {
                 logger.info(LOG_FOUND_DATA_FOLDER, path.getFileName());
-                String fileNameSansRoot = path.getFileName().toString().substring(fileNameRoot.length());
-                switch (fileNameSansRoot) {
+                switch (suffix) {
                     case "_tif", FOLDER_SUFFIX_MEDIA: // GBVMETSAdapter uses _media folders
                         dataFolders.put(DataRepository.PARAM_MEDIA, path);
                         break;

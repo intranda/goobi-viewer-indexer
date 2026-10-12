@@ -15,6 +15,7 @@
  */
 package io.goobi.viewer.indexer.helper;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -22,6 +23,8 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.attribute.FileTime;
+import java.util.List;
 
 import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.AfterEach;
@@ -324,5 +327,80 @@ class HotfolderTest extends AbstractSolrEnabledTest {
                 FileUtils.delete(tempFile.toFile());
             }
         }
+    }
+
+    /**
+     * @see Hotfolder#isUnmodifiedSince(Path,String,long)
+     * @verifies return true if nothing modified after threshold
+     */
+    @Test
+    void isUnmodifiedSince_shouldReturnTrueIfNothingModifiedAfterThreshold() throws Exception {
+        hotfolder = new Hotfolder(SolrIndexerDaemon.getInstance().getConfiguration().getHotfolderPath());
+        Path recordFile = Files.writeString(hotfolder.getHotfolderPath().resolve("foo.xml"), "<mets/>");
+        Path mediaFolder = Files.createDirectory(hotfolder.getHotfolderPath().resolve("foo_media"));
+        Path imageFile = Files.writeString(mediaFolder.resolve("00000001.tif"), "image");
+        long oldTime = System.currentTimeMillis() - 60_000;
+        for (Path path : List.of(recordFile, imageFile, mediaFolder)) {
+            Files.setLastModifiedTime(path, FileTime.fromMillis(oldTime));
+        }
+
+        assertTrue(hotfolder.isUnmodifiedSince(recordFile, "foo", oldTime + 1000));
+    }
+
+    /**
+     * @see Hotfolder#isUnmodifiedSince(Path,String,long)
+     * @verifies return false if record file modified after threshold
+     */
+    @Test
+    void isUnmodifiedSince_shouldReturnFalseIfRecordFileModifiedAfterThreshold() throws Exception {
+        hotfolder = new Hotfolder(SolrIndexerDaemon.getInstance().getConfiguration().getHotfolderPath());
+        Path recordFile = Files.writeString(hotfolder.getHotfolderPath().resolve("foo.xml"), "<mets/>");
+
+        assertFalse(hotfolder.isUnmodifiedSince(recordFile, "foo", System.currentTimeMillis() - 60_000));
+    }
+
+    /**
+     * @see Hotfolder#isUnmodifiedSince(Path,String,long)
+     * @verifies return false if data folder content modified after threshold
+     */
+    @Test
+    void isUnmodifiedSince_shouldReturnFalseIfDataFolderContentModifiedAfterThreshold() throws Exception {
+        hotfolder = new Hotfolder(SolrIndexerDaemon.getInstance().getConfiguration().getHotfolderPath());
+        Path recordFile = Files.writeString(hotfolder.getHotfolderPath().resolve("foo.xml"), "<mets/>");
+        Path mediaFolder = Files.createDirectory(hotfolder.getHotfolderPath().resolve("foo_media"));
+        Files.writeString(mediaFolder.resolve("00000001.tif"), "image");
+        long threshold = System.currentTimeMillis() - 60_000;
+        Files.setLastModifiedTime(recordFile, FileTime.fromMillis(threshold - 1000));
+        Files.setLastModifiedTime(mediaFolder, FileTime.fromMillis(threshold - 1000));
+
+        assertFalse(hotfolder.isUnmodifiedSince(recordFile, "foo", threshold));
+    }
+
+    /**
+     * @see Hotfolder#getDataFolderTotalSize(String)
+     * @verifies sum sizes of all data folders of the record
+     */
+    @Test
+    void getDataFolderTotalSize_shouldSumSizesOfAllDataFoldersOfTheRecord() throws Exception {
+        hotfolder = new Hotfolder(SolrIndexerDaemon.getInstance().getConfiguration().getHotfolderPath());
+        Path mediaFolder = Files.createDirectory(hotfolder.getHotfolderPath().resolve("foo_media"));
+        Files.writeString(mediaFolder.resolve("00000001.tif"), "1234567890");
+        Path altoFolder = Files.createDirectory(hotfolder.getHotfolderPath().resolve("foo_alto"));
+        Files.writeString(altoFolder.resolve("00000001.xml"), "12345");
+
+        assertEquals(15, hotfolder.getDataFolderTotalSize("foo"));
+    }
+
+    /**
+     * @see Hotfolder#getDataFolderTotalSize(String)
+     * @verifies ignore data folders of other records
+     */
+    @Test
+    void getDataFolderTotalSize_shouldIgnoreDataFoldersOfOtherRecords() throws Exception {
+        hotfolder = new Hotfolder(SolrIndexerDaemon.getInstance().getConfiguration().getHotfolderPath());
+        Path otherMediaFolder = Files.createDirectory(hotfolder.getHotfolderPath().resolve("foo2_media"));
+        Files.writeString(otherMediaFolder.resolve("00000001.tif"), "1234567890");
+
+        assertEquals(0, hotfolder.getDataFolderTotalSize("foo"));
     }
 }

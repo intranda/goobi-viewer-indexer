@@ -920,6 +920,20 @@ class IndexerTest extends AbstractSolrEnabledTest {
     }
 
     /**
+     * @see Indexer#checkDataFolders(Path,String)
+     * @verifies prefer ner alto folder over alto folder
+     */
+    @Test
+    void checkDataFolders_shouldPreferNerAltoFolderOverAltoFolder() throws Exception {
+        String fileNameRoot = "bar";
+        Files.createDirectory(hotfolder.getHotfolderPath().resolve(fileNameRoot + "_alto"));
+        Path nerAltoFolder = Files.createDirectory(hotfolder.getHotfolderPath().resolve(fileNameRoot + "_neralto"));
+
+        Map<String, Path> result = Indexer.checkDataFolders(hotfolder.getHotfolderPath(), fileNameRoot);
+        assertEquals(nerAltoFolder, result.get(DataRepository.PARAM_ALTO));
+    }
+
+    /**
      * @see Indexer#checkReindexSettings(Map,Map)
      * @verifies throw IllegalArgumentException if dataFolders null
      */

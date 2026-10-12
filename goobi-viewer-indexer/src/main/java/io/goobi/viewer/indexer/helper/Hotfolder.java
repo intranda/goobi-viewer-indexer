@@ -16,9 +16,9 @@
 package io.goobi.viewer.indexer.helper;
 
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.io.UnsupportedEncodingException;
 import java.nio.file.DirectoryStream;
-import java.nio.file.DirectoryStream.Filter;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -90,6 +90,8 @@ public class Hotfolder {
 
     private static final String SHUTDOWN_FILE = ".SHUTDOWN_INDEXER";
     private static final int WAIT_IF_FILE_EMPTY = 5000;
+    /** Records whose files have not been modified for this long are considered completely exported without measuring twice. */
+    private static final long EXPORT_QUIET_PERIOD_MILLIS = 10_000;
 
     /** Constant <code>ERROR_COULD_NOT_CREATE_DIR="Could not create directory: "</code> */
     public static final String ERROR_COULD_NOT_CREATE_DIR = "Could not create directory: ";
@@ -677,8 +679,8 @@ public class Hotfolder {
     /**
      * Polls the regular index queue for the next record whose data folders have finished exporting, re-queuing any that
      * are still exporting. Returns null if the queue is empty or every remaining file is still exporting (the caller
-     * should then stop for this pass). Note: {@link #isDataFolderExportDone(Path)} sleeps ~1s per checked file on the
-     * calling (scan) thread, so this throttles how fast records can be handed to the pool.
+     * should then stop for this pass). Note: {@link #isDataFolderExportDone(Path)} sleeps ~1s on the calling (scan) thread
+     * for each checked file that was modified recently, so this throttles how fast freshly exported records can be handed to the pool.
      *
      * @return an export-ready record file, or null if none is ready right now
      */
@@ -1376,20 +1378,23 @@ public class Hotfolder {
     /**
      * Checks whether the data folders for the given record file have finished being copied.
      *
+     * <p>If neither the record file nor any entry in its data folders has been modified within the last
+     * {@code EXPORT_QUIET_PERIOD_MILLIS} milliseconds, the export is considered finished right away. Otherwise the total data folder size is
+     * measured twice, one second apart, and the export is considered finished if it did not change.
+     *
      * @param recordFile a {@link java.nio.file.Path} object.
      * @return a boolean.
      * @should return true if hotfolder content not changing
      */
     boolean isDataFolderExportDone(Path recordFile) {
         logger.debug("isDataFolderExportDone: {}", recordFile.getFileName());
-        DataFolderSizeCounter counter = new DataFolderSizeCounter(recordFile.getFileName().toString());
-
-        long total1 = 0;
-        try (DirectoryStream<Path> stream = Files.newDirectoryStream(getHotfolderPath(), counter)) {
-            total1 = counter.getTotal();
-        } catch (IOException e) {
-            logger.error(e.getMessage(), e);
+        String fileNameRoot = FilenameUtils.getBaseName(recordFile.getFileName().toString());
+        if (isUnmodifiedSince(recordFile, fileNameRoot, System.currentTimeMillis() - EXPORT_QUIET_PERIOD_MILLIS)) {
+            logger.trace("Data export done (no recent modifications): {}", recordFile.getFileName());
+            return true;
         }
+
+        long total1 = getDataFolderTotalSize(fileNameRoot);
 
         try {
             Thread.sleep(1000);
@@ -1399,57 +1404,70 @@ public class Hotfolder {
             return false;
         }
 
-        counter.resetTotal();
-        long total2 = 0;
-        try (DirectoryStream<Path> stream = Files.newDirectoryStream(getHotfolderPath(), counter)) {
-            total2 = counter.getTotal();
-        } catch (IOException e) {
-            logger.error(e.getMessage(), e);
-        }
+        long total2 = getDataFolderTotalSize(fileNameRoot);
 
         logger.trace("Data export done: {}", total1 == total2);
         return total1 == total2;
     }
 
-    protected class DataFolderSizeCounter implements Filter<Path> {
-
-        private String recordFileName;
-        private long total = 0;
-
-        /**
-         * @param recordFileName
-         */
-        public DataFolderSizeCounter(String recordFileName) {
-            this.recordFileName = recordFileName;
+    /**
+     * Checks whether neither the given record file nor any entry in its data folders has been modified after the given point in time.
+     *
+     * @param recordFile record file in the hotfolder
+     * @param fileNameRoot record file name without extension
+     * @param thresholdMillis point in time (epoch milliseconds)
+     * @return true if nothing was modified after <code>thresholdMillis</code>; false otherwise
+     * @should return true if nothing modified after threshold
+     * @should return false if record file modified after threshold
+     * @should return false if data folder content modified after threshold
+     */
+    boolean isUnmodifiedSince(Path recordFile, String fileNameRoot, long thresholdMillis) {
+        if (recordFile.toFile().lastModified() > thresholdMillis) {
+            return false;
         }
-
-        /* (non-Javadoc)
-         * @see java.nio.file.DirectoryStream.Filter#accept(java.lang.Object)
-         */
-        @Override
-        public boolean accept(Path entry) throws IOException {
-            if (entry != null && entry.getFileName().startsWith(FilenameUtils.getBaseName(recordFileName) + "_")) {
-                try {
-                    if (Files.isRegularFile(entry)) {
-                        total += FileUtils.sizeOf(entry.toFile());
-                    } else if (Files.isDirectory(entry)) {
-                        total += FileUtils.sizeOfDirectory(entry.toFile());
-                    }
-                } catch (IllegalArgumentException e) {
-                    logger.error(e.getMessage());
-                }
+        for (String suffix : Indexer.DATA_FOLDER_SUFFIXES) {
+            Path dataFolder = getHotfolderPath().resolve(fileNameRoot + suffix);
+            if (!Files.exists(dataFolder)) {
+                continue;
             }
-
-            return false; // reject everything, only the count matters
+            try (Stream<Path> entries = Files.walk(dataFolder)) {
+                if (entries.anyMatch(p -> p.toFile().lastModified() > thresholdMillis)) {
+                    return false;
+                }
+            } catch (IOException | UncheckedIOException e) {
+                // Entries vanishing during the walk mean the folder is still being written
+                logger.debug("Could not check modification times in '{}': {}", dataFolder.getFileName(), e.getMessage());
+                return false;
+            }
         }
 
-        public long getTotal() {
-            return total;
+        return true;
+    }
+
+    /**
+     * Returns the combined size of all data folders (or same-named files) that belong to the given record.
+     *
+     * @param fileNameRoot record file name without extension
+     * @return total size in bytes
+     * @should sum sizes of all data folders of the record
+     * @should ignore data folders of other records
+     */
+    long getDataFolderTotalSize(String fileNameRoot) {
+        long total = 0;
+        for (String suffix : Indexer.DATA_FOLDER_SUFFIXES) {
+            Path path = getHotfolderPath().resolve(fileNameRoot + suffix);
+            try {
+                if (Files.isRegularFile(path)) {
+                    total += FileUtils.sizeOf(path.toFile());
+                } else if (Files.isDirectory(path)) {
+                    total += FileUtils.sizeOfDirectory(path.toFile());
+                }
+            } catch (IllegalArgumentException e) {
+                logger.error(e.getMessage());
+            }
         }
 
-        public void resetTotal() {
-            total = 0;
-        }
+        return total;
     }
 
     /**
