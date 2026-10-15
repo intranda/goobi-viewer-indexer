@@ -27,7 +27,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -83,6 +87,12 @@ public final class SolrSearchIndex {
     private volatile long lastCommitMillis = System.currentTimeMillis();
     /** Serializes commit decision + execution so at most one commit runs at a time. */
     private final ReentrantLock commitLock = new ReentrantLock();
+    /** Single background thread for batched commits (created on first use), so record workers do not block on hard commits. */
+    private ExecutorService commitExecutor;
+    /** True while a background commit is scheduled or running. */
+    private final AtomicBoolean commitScheduled = new AtomicBoolean();
+    /** Fatal error of a background commit, rethrown to the next caller of {@link #commitAfterRecord()} or {@link #commitPending()}. */
+    private volatile FatalIndexerException backgroundCommitFailure;
 
     /**
      * <p>
@@ -507,16 +517,22 @@ public final class SolrSearchIndex {
      * Registers that one record's documents have been written, and commits if the batched-commit policy is due.
      * <p>
      * Called once per successfully written record by the write strategies instead of an unconditional per-record commit.
-     * With {@code performance.commitBatchSize=1} (default) this commits after every record, reproducing the legacy
-     * behavior; with a larger batch size it commits only every N records (bounding hard-commit contention under
-     * record-level parallelism) or once {@code performance.commitMaxSeconds} has elapsed. Any remainder is flushed by
-     * {@link #commitPending()} on queue drain / shutdown, so nothing waits indefinitely.
+     * With {@code performance.commitBatchSize=1} (default) this commits synchronously after every record, reproducing the legacy
+     * behavior. With a larger batch size it commits every N records or once {@code performance.commitMaxSeconds} has elapsed; such a
+     * commit runs on a single background thread, so the calling record worker does not wait for the (potentially slow) hard commit. Any
+     * remainder is flushed by {@link #commitPending()} on queue drain / shutdown, so nothing waits indefinitely.
      *
-     * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException
+     * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException if this or a previous background commit failed
      */
     public void commitAfterRecord() throws FatalIndexerException {
-        if (isCommitDue(pendingRecords.incrementAndGet())) {
+        rethrowBackgroundCommitFailure();
+        if (!isCommitDue(pendingRecords.incrementAndGet())) {
+            return;
+        }
+        if (SolrIndexerDaemon.getInstance().getConfiguration().getCommitBatchSize() <= 1) {
             flushPending(false);
+        } else {
+            scheduleBackgroundCommit();
         }
     }
 
@@ -532,12 +548,64 @@ public final class SolrSearchIndex {
     }
 
     /**
-     * Commits any pending (uncommitted) records regardless of the batch thresholds. Called when the hotfolder queue
-     * drains and on shutdown so a sub-batch remainder is never left uncommitted.
+     * Schedules a commit on the background commit thread, unless one is already scheduled or running (records written in the meantime stay
+     * pending and are committed by the next commit).
+     */
+    private void scheduleBackgroundCommit() {
+        if (!commitScheduled.compareAndSet(false, true)) {
+            return;
+        }
+        try {
+            getCommitExecutor().execute(() -> {
+                try {
+                    flushPending(false);
+                } catch (FatalIndexerException e) {
+                    logger.error("Background commit failed: {}", e.getMessage());
+                    backgroundCommitFailure = e;
+                } finally {
+                    commitScheduled.set(false);
+                }
+            });
+        } catch (RejectedExecutionException e) {
+            commitScheduled.set(false);
+            logger.warn("Could not schedule background commit: {}", e.getMessage());
+        }
+    }
+
+    /**
+     * 
+     * @return The background commit executor (created on first use)
+     */
+    private synchronized ExecutorService getCommitExecutor() {
+        if (commitExecutor == null) {
+            commitExecutor = Executors.newSingleThreadExecutor(r -> {
+                Thread t = new Thread(r, "solr-commit");
+                t.setDaemon(true);
+                return t;
+            });
+        }
+        return commitExecutor;
+    }
+
+    /**
+     * 
+     * @throws FatalIndexerException if a background commit has failed
+     */
+    private void rethrowBackgroundCommitFailure() throws FatalIndexerException {
+        FatalIndexerException e = backgroundCommitFailure;
+        if (e != null) {
+            throw e;
+        }
+    }
+
+    /**
+     * Commits any pending (uncommitted) records regardless of the batch thresholds, after any running background commit has finished.
+     * Called when the hotfolder queue drains and on shutdown so a sub-batch remainder is never left uncommitted.
      *
-     * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException
+     * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException if this or a previous background commit failed
      */
     public void commitPending() throws FatalIndexerException {
+        rethrowBackgroundCommitFailure();
         if (pendingRecords.get() > 0) {
             flushPending(true);
         }
@@ -547,26 +615,16 @@ public final class SolrSearchIndex {
      * Commits everything buffered in Solr and resets the pending-record counter. Only one commit runs at a time (Solr serializes hard
      * commits anyway); a doc-level {@code add} always precedes the corresponding {@link #commitAfterRecord()}, so whatever is buffered is
      * committed here regardless of the exact counter value.
-     * <p>
-     * With batched commits ({@code commitBatchSize} &gt; 1), a non-forced call returns right away if another thread is already committing:
-     * while that commit runs, the pending counter stays above the threshold, so otherwise every worker finishing a record would block on
-     * the lock and the whole pool would stall for the duration of each commit. Records not covered by the running commit stay pending for
-     * the next one (or the flush on queue drain / shutdown).
      *
-     * @param force If true, commit any pending records regardless of the batch thresholds and wait for a running commit
+     * @param force If true, commit any pending records regardless of the batch thresholds
      * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException
      */
     private void flushPending(boolean force) throws FatalIndexerException {
-        if (force || SolrIndexerDaemon.getInstance().getConfiguration().getCommitBatchSize() <= 1) {
-            commitLock.lock();
-        } else if (!commitLock.tryLock()) {
-            return;
-        }
+        commitLock.lock();
         try {
             int flushed = pendingRecords.get();
             if (flushed == 0 || (!force && !isCommitDue(flushed))) {
-                // Another thread already flushed while this one was waiting for the lock; without this re-check every worker that saw the
-                // batch threshold reached would issue its own hard commit for just the few records added in the meantime.
+                // Another thread already flushed while this one was waiting for the lock
                 return;
             }
             doCommit(optimize);
