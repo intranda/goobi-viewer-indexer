@@ -279,7 +279,8 @@ public class DataRepository {
         Path dataSubdir = Paths.get(rootDir.toAbsolutePath().toString(), config);
         if (!Files.isDirectory(dataSubdir) && create) {
             try {
-                Files.createDirectory(dataSubdir);
+                // createDirectories() does not fail if a parallel record worker has just created the same directory
+                Files.createDirectories(dataSubdir);
                 logger.info("Created directory: {}", dataSubdir.toAbsolutePath());
             } catch (IOException e) {
                 logger.error("Could not create directory: {}", dataSubdir.toAbsolutePath());
