@@ -292,7 +292,8 @@ public class MetsIndexer extends Indexer {
      * @should read datecreated from mets with correct time zone
      * @should not add dateupdated if value already exists
      * @should index page metadata correctly
-     * 
+     * @should flag anchor for reconciliation even if anchor not yet visible in index
+     *
      */
     public IndexingResult index(Path metsFile, Map<String, Path> dataFolders, final ISolrWriteStrategy inWriteStrategy,
             int pageCountStart, boolean downloadExternalImages) {
@@ -566,10 +567,12 @@ public class MetsIndexer extends Indexer {
             // and a bulk import of many volumes re-indexes the anchor once per batch instead of once per volume.
             // When volume collections are copied up into anchors, volume metadata updates must flag the anchor too, since a
             // changed collection does not change the volume count but still requires the anchor to be re-merged.
-            if (indexObj.isVolume() && indexObj.getParent() != null
+            // Flag by the anchor PI from this volume's METS rather than the parent object: the parent is only created if the anchor
+            // doc is already visible in Solr, which it may not be yet (not committed, or indexed concurrently with this volume).
+            if (indexObj.isVolume() && StringUtils.isNotEmpty(indexObj.getParentPI())
                     && (!indexObj.isUpdate() || hotfolder.isAddVolumeCollectionsToAnchor())) {
-                logger.info("Volume of anchor '{}' - flagging anchor for reconciliation.", indexObj.getParent().getPi());
-                hotfolder.flagAnchorForReconciliation(indexObj.getParent().getPi());
+                logger.info("Volume of anchor '{}' - flagging anchor for reconciliation.", indexObj.getParentPI());
+                hotfolder.flagAnchorForReconciliation(indexObj.getParentPI());
             }
 
             if (indexObj.isAnchor()) {

@@ -1742,8 +1742,8 @@ public abstract class Indexer {
     }
 
     /**
-     * Prepares the given record for an update. Creation timestamp and representative thumbnail and anchor IDDOC are preserved. A new update timestamp
-     * is added, child docs are removed.
+     * Prepares the given record for an update. Creation timestamp and representative thumbnail are preserved. A new update timestamp is added,
+     * child docs are removed. The record is re-indexed with a new IDDOC (also anchors; their volumes link to them via the stable PI_PARENT).
      *
      * @param indexObj {@link io.goobi.viewer.indexer.model.IndexObject}
      * @throws java.io.IOException
@@ -1752,7 +1752,6 @@ public abstract class Indexer {
      * @should keep creation timestamp
      * @should set update timestamp correctly
      * @should keep representation thumbnail
-     * @should keep anchor IDDOC
      * @should delete anchor secondary docs
      */
     protected void prepareUpdate(IndexObject indexObj) throws IOException, SolrServerException, FatalIndexerException {

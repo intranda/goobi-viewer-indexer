@@ -606,6 +606,62 @@ class MetsIndexerTest extends AbstractSolrEnabledTest {
     }
 
     /**
+     * @see MetsIndexer#index(Path,Map,ISolrWriteStrategy,int,boolean)
+     * @verifies flag anchor for reconciliation even if anchor not yet visible in index
+     */
+    @Test
+    void index_shouldFlagAnchorForReconciliationEvenIfAnchorNotYetVisibleInIndex() throws Exception {
+        String piAnchor = "PPN559838239";
+        Map<String, Path> dataFolders = new HashMap<>();
+        MetsIndexer indexer = new MetsIndexer(hotfolder);
+
+        // Batched commits: the anchor is not committed (i.e. not visible in Solr) when its volume is indexed
+        int originalCommitBatchSize = SolrIndexerDaemon.getInstance().getConfiguration().getCommitBatchSize();
+        SolrIndexerDaemon.getInstance().getConfiguration().overrideValue("performance.commitBatchSize", 100);
+        try {
+            Assertions.assertNull(indexer.index(metsFileAnchor1, dataFolders, null, 1, false).getError());
+            Assertions.assertNull(indexer.index(metsFileVol1, dataFolders, null, 1, false).getError());
+            placeIndexedAnchorFile(piAnchor);
+            SolrIndexerDaemon.getInstance().getSearchIndex().commitPending();
+
+            hotfolder.getHighPriorityQueue().clear();
+            hotfolder.reconcilePendingAnchors();
+            assertEquals(1, hotfolder.getHighPriorityQueue().size(), "the new volume must have flagged its not yet visible anchor");
+            assertEquals(piAnchor + ".xml", hotfolder.getHighPriorityQueue().poll().getFileName().toString());
+        } finally {
+            SolrIndexerDaemon.getInstance().getConfiguration().overrideValue("performance.commitBatchSize", originalCommitBatchSize);
+        }
+    }
+
+    /**
+     * @see MetsIndexer#index(Path,Map,ISolrWriteStrategy,int,boolean)
+     * @verifies flag anchor for reconciliation even if anchor not yet visible in index
+     */
+    @Test
+    void index_shouldFlagAnchorForReconciliationIfVolumeIsIndexedBeforeAnchor() throws Exception {
+        String piAnchor = "PPN559838239";
+        Map<String, Path> dataFolders = new HashMap<>();
+        MetsIndexer indexer = new MetsIndexer(hotfolder);
+
+        // Batched commits, volume first: the anchor's own indexing doesn't see the uncommitted volume, so it stores a stale count
+        int originalCommitBatchSize = SolrIndexerDaemon.getInstance().getConfiguration().getCommitBatchSize();
+        SolrIndexerDaemon.getInstance().getConfiguration().overrideValue("performance.commitBatchSize", 100);
+        try {
+            Assertions.assertNull(indexer.index(metsFileVol1, dataFolders, null, 1, false).getError());
+            Assertions.assertNull(indexer.index(metsFileAnchor1, dataFolders, null, 1, false).getError());
+            placeIndexedAnchorFile(piAnchor);
+            SolrIndexerDaemon.getInstance().getSearchIndex().commitPending();
+
+            hotfolder.getHighPriorityQueue().clear();
+            hotfolder.reconcilePendingAnchors();
+            assertEquals(1, hotfolder.getHighPriorityQueue().size(), "the anchor's stale volume count must be reconciled");
+            assertEquals(piAnchor + ".xml", hotfolder.getHighPriorityQueue().poll().getFileName().toString());
+        } finally {
+            SolrIndexerDaemon.getInstance().getConfiguration().overrideValue("performance.commitBatchSize", originalCommitBatchSize);
+        }
+    }
+
+    /**
      * @see Hotfolder#scan()
      * @verifies commit pending records before reconciling anchors
      */
@@ -619,14 +675,11 @@ class MetsIndexerTest extends AbstractSolrEnabledTest {
         int originalCommitBatchSize = SolrIndexerDaemon.getInstance().getConfiguration().getCommitBatchSize();
         SolrIndexerDaemon.getInstance().getConfiguration().overrideValue("performance.commitBatchSize", 100);
         try {
-            // Anchor first (stores NUMVOLUMES=0), then two new volumes
+            // Anchor first (stores NUMVOLUMES=0), then two new volumes, which flag the anchor for reconciliation
             Assertions.assertNull(indexer.index(metsFileAnchor1, dataFolders, null, 1, false).getError());
             Assertions.assertNull(indexer.index(metsFileVol1, dataFolders, null, 1, false).getError());
             Assertions.assertNull(indexer.index(metsFileVol2, dataFolders, null, 1, false).getError());
             placeIndexedAnchorFile(piAnchor);
-            // A volume only flags its anchor if the anchor doc is already visible in Solr, which it isn't while uncommitted, so flag
-            // explicitly (as in reconcilePendingAnchors_shouldSkipUpToDateAnchorAndReindexOnVolumeDrop)
-            hotfolder.flagAnchorForReconciliation(piAnchor);
 
             // With both queues empty, scan() drains: it must commit the pending records first, so that the reconciliation finds the
             // anchor and counts both volumes. Otherwise the uncommitted anchor is skipped as "not yet indexed" and never re-checked.
