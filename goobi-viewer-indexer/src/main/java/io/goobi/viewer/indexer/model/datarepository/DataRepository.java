@@ -538,9 +538,9 @@ public class DataRepository {
         if (oldDataFolder.toFile().isDirectory()) {
             Path newDataDir = Paths.get(toRepository.getDir(type).toAbsolutePath().toString(), pi);
             try {
-                int copied = FileTools.copyDirectory(oldDataFolder, newDataDir);
+                int copied = FileTools.moveOrCopyDirectoryContents(oldDataFolder, newDataDir);
                 if (copied > 0) {
-                    logger.info("Copied {} files to repository directory: {}", copied, newDataDir.toAbsolutePath());
+                    logger.info("Transferred {} files to repository directory: {}", copied, newDataDir.toAbsolutePath());
                 }
                 if (Utils.deleteDirectory(oldDataFolder)) {
                     logger.info("Old repository directory deleted: {}", oldDataFolder);
@@ -759,9 +759,9 @@ public class DataRepository {
 
         int counter = 0;
         if (!DataRepository.PARAM_DOWNLOAD_IMAGES_TRIGGER.equals(paramName)) {
-            logger.info("Copying {} files from '{}' to '{}'...", paramName, srcFolder, getDir(paramName).toAbsolutePath());
-            counter = FileTools.copyDirectory(srcFolder, new File(getDir(paramName).toFile(), identifier).toPath());
-            logger.info("{} {} files copied.", counter, paramName);
+            logger.info("Transferring {} files from '{}' to '{}'...", paramName, srcFolder, getDir(paramName).toAbsolutePath());
+            counter = FileTools.moveOrCopyDirectoryContents(srcFolder, new File(getDir(paramName).toFile(), identifier).toPath());
+            logger.info("{} {} files transferred.", counter, paramName);
         }
         if (!Utils.deleteDirectory(srcFolder)) {
             logger.warn(StringConstants.LOG_COULD_NOT_BE_DELETED, srcFolder.toAbsolutePath());

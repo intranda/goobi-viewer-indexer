@@ -138,7 +138,7 @@ public class DublinCoreIndexer extends Indexer {
                     hotfolder.getDataRepositoryStrategy().getAllDataRepositories());
 
             // Delete unsupported data folders
-            FileTools.deleteUnsupportedDataFolders(hotfolder.getHotfolderPath(), fileNameRoot);
+            hotfolder.deleteUnsupportedDataFolders(fileNameRoot);
 
             try {
                 Files.delete(dcFile);

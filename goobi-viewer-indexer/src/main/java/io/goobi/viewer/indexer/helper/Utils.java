@@ -16,7 +16,6 @@
 package io.goobi.viewer.indexer.helper;
 
 import java.io.IOException;
-import java.io.StringWriter;
 import java.io.UncheckedIOException;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
@@ -39,6 +38,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
 import org.apache.commons.io.FileUtils;
@@ -46,7 +46,6 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpStatus;
 import org.apache.http.NameValuePair;
-import org.apache.http.client.CookieStore;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -62,6 +61,7 @@ import org.apache.http.entity.ContentType;
 import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
+import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.impl.cookie.BasicClientCookie;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
@@ -95,6 +95,37 @@ public final class Utils {
     private static final Logger logger = LogManager.getLogger(Utils.class);
 
     private static final int HTTP_TIMEOUT = 30000;
+
+    /**
+     * Lazily created HTTP client shared by all requests. It pools and keeps alive connections, so that the per-record calls to the Goobi
+     * viewer (cache invalidation, version/identifier submission) do not each open a new TCP connection. With many small records indexed
+     * in parallel, one new connection per request quickly piles up thousands of client sockets in TIME_WAIT, which slows down or
+     * exhausts the ephemeral ports. Cookies are not shared between requests (each request gets its own context and cookie store).
+     */
+    private static final class SharedHttpClientHolder {
+
+        private static final CloseableHttpClient CLIENT = HttpClients.custom()
+                .setDefaultRequestConfig(RequestConfig.custom()
+                        .setSocketTimeout(HTTP_TIMEOUT)
+                        .setConnectTimeout(HTTP_TIMEOUT)
+                        .setConnectionRequestTimeout(HTTP_TIMEOUT)
+                        .build())
+                .setConnectionManager(createConnectionManager())
+                .evictIdleConnections(30, TimeUnit.SECONDS)
+                .build();
+
+        private SharedHttpClientHolder() {
+        }
+
+        private static PoolingHttpClientConnectionManager createConnectionManager() {
+            PoolingHttpClientConnectionManager cm = new PoolingHttpClientConnectionManager();
+            cm.setMaxTotal(64);
+            cm.setDefaultMaxPerRoute(32);
+            // Re-validate connections that were idle for a while, in case the server has closed them in the meantime
+            cm.setValidateAfterInactivity(2000);
+            return cm;
+        }
+    }
 
     private static final String HTTP_HEADER_CONTENT_TYPE = "Content-Type";
 
@@ -322,6 +353,15 @@ public final class Utils {
     }
 
     /**
+     * @return New request context with its own (empty) cookie store, so that cookies are not shared between requests of the shared client
+     */
+    private static HttpClientContext newHttpContext() {
+        HttpClientContext context = HttpClientContext.create();
+        context.setCookieStore(new BasicCookieStore());
+        return context;
+    }
+
+    /**
      * <p>
      * getWebContentGET.
      * </p>
@@ -332,21 +372,14 @@ public final class Utils {
      * @throws io.goobi.viewer.indexer.exceptions.HTTPException if any.
      */
     public static String getWebContentGET(String urlString) throws IOException, HTTPException {
-        RequestConfig defaultRequestConfig = RequestConfig.custom()
-                .setSocketTimeout(HTTP_TIMEOUT)
-                .setConnectTimeout(HTTP_TIMEOUT)
-                .setConnectionRequestTimeout(HTTP_TIMEOUT)
-                .build();
-        try (CloseableHttpClient httpClient = HttpClients.custom().setDefaultRequestConfig(defaultRequestConfig).build()) {
-            HttpGet get = new HttpGet(encodeIllegalUriChars(urlString));
-            try (CloseableHttpResponse response = httpClient.execute(get); StringWriter writer = new StringWriter()) {
-                int code = response.getStatusLine().getStatusCode();
-                if (code == HttpStatus.SC_OK) {
-                    return EntityUtils.toString(response.getEntity(), TextHelper.DEFAULT_CHARSET);
-                }
-                logger.trace("{}: {}", code, response.getStatusLine().getReasonPhrase());
-                throw new HTTPException(code, response.getStatusLine().getReasonPhrase());
+        HttpGet get = new HttpGet(encodeIllegalUriChars(urlString));
+        try (CloseableHttpResponse response = SharedHttpClientHolder.CLIENT.execute(get, newHttpContext())) {
+            int code = response.getStatusLine().getStatusCode();
+            if (code == HttpStatus.SC_OK) {
+                return EntityUtils.toString(response.getEntity(), TextHelper.DEFAULT_CHARSET);
             }
+            logger.trace("{}: {}", code, response.getStatusLine().getReasonPhrase());
+            throw new HTTPException(code, response.getStatusLine().getReasonPhrase());
         }
     }
 
@@ -441,66 +474,55 @@ public final class Utils {
                 nameValuePairs.add(new BasicNameValuePair(entry.getKey(), entry.getValue()));
             }
         }
-        HttpClientContext context = null;
-        CookieStore cookieStore = new BasicCookieStore();
+        HttpClientContext context = newHttpContext();
         if (cookies != null && !cookies.isEmpty()) {
-            context = HttpClientContext.create();
             for (Entry<String, String> entry : cookies.entrySet()) {
                 BasicClientCookie cookie = new BasicClientCookie(entry.getKey(), entry.getValue());
                 cookie.setPath("/");
                 cookie.setDomain("0.0.0.0");
-                cookieStore.addCookie(cookie);
+                context.getCookieStore().addCookie(cookie);
             }
-            context.setCookieStore(cookieStore);
         }
 
-        RequestConfig defaultRequestConfig = RequestConfig.custom()
-                .setSocketTimeout(HTTP_TIMEOUT)
-                .setConnectTimeout(HTTP_TIMEOUT)
-                .setConnectionRequestTimeout(HTTP_TIMEOUT)
-                .build();
-        try (CloseableHttpClient httpClient = HttpClients.custom().setDefaultRequestConfig(defaultRequestConfig).build()) {
-            HttpRequestBase requestBase;
-            switch (method.toUpperCase()) {
-                case HTTP_METHOD_DELETE:
-                    requestBase = new HttpDelete(url);
-                    break;
-                case "POST":
-                    requestBase = new HttpPost(url);
-                    break;
-                case "PUT":
-                    requestBase = new HttpPut(url);
-                    break;
-                default:
-                    return "";
+        HttpRequestBase requestBase;
+        switch (method.toUpperCase()) {
+            case HTTP_METHOD_DELETE:
+                requestBase = new HttpDelete(url);
+                break;
+            case "POST":
+                requestBase = new HttpPost(url);
+                break;
+            case "PUT":
+                requestBase = new HttpPut(url);
+                break;
+            default:
+                return "";
+        }
+        if (headerParams != null) {
+            for (Entry<String, String> entry : headerParams.entrySet()) {
+                requestBase.setHeader(entry.getKey(), entry.getValue());
             }
-            if (headerParams != null) {
-                for (Entry<String, String> entry : headerParams.entrySet()) {
-                    requestBase.setHeader(entry.getKey(), entry.getValue());
-                }
+        }
+        Charset.forName(TextHelper.DEFAULT_CHARSET);
+        // TODO allow combinations of params + body
+        if (requestBase instanceof HttpPost || requestBase instanceof HttpPut) {
+            if (StringUtils.isNotEmpty(body)) {
+                ((HttpEntityEnclosingRequestBase) requestBase).setEntity(new ByteArrayEntity(body.getBytes(TextHelper.DEFAULT_CHARSET)));
+            } else {
+                ((HttpEntityEnclosingRequestBase) requestBase).setEntity(new UrlEncodedFormEntity(nameValuePairs));
             }
-            Charset.forName(TextHelper.DEFAULT_CHARSET);
-            // TODO allow combinations of params + body
-            if (requestBase instanceof HttpPost || requestBase instanceof HttpPut) {
-                if (StringUtils.isNotEmpty(body)) {
-                    ((HttpEntityEnclosingRequestBase) requestBase).setEntity(new ByteArrayEntity(body.getBytes(TextHelper.DEFAULT_CHARSET)));
-                } else {
-                    ((HttpEntityEnclosingRequestBase) requestBase).setEntity(new UrlEncodedFormEntity(nameValuePairs));
-                }
+        }
+        try (CloseableHttpResponse response = SharedHttpClientHolder.CLIENT.execute(requestBase, context)) {
+            int code = response.getStatusLine().getStatusCode();
+            if (code == HttpStatus.SC_OK) {
+                logger.trace("{}: {}", code, response.getStatusLine().getReasonPhrase());
+                return EntityUtils.toString(response.getEntity(), TextHelper.DEFAULT_CHARSET);
             }
-            try (CloseableHttpResponse response = (context == null ? httpClient.execute(requestBase) : httpClient.execute(requestBase, context));
-                    StringWriter writer = new StringWriter()) {
-                int code = response.getStatusLine().getStatusCode();
-                if (code == HttpStatus.SC_OK) {
-                    logger.trace("{}: {}", code, response.getStatusLine().getReasonPhrase());
-                    return EntityUtils.toString(response.getEntity(), TextHelper.DEFAULT_CHARSET);
-                }
-                if (logger.isErrorEnabled()) {
-                    logger.error("Error calling URL '{}'; {}: {}\n{}", url, code, response.getStatusLine().getReasonPhrase(),
-                            EntityUtils.toString(response.getEntity(), TextHelper.DEFAULT_CHARSET));
-                }
-                throw new HTTPException(code, response.getStatusLine().getReasonPhrase());
+            if (logger.isErrorEnabled()) {
+                logger.error("Error calling URL '{}'; {}: {}\n{}", url, code, response.getStatusLine().getReasonPhrase(),
+                        EntityUtils.toString(response.getEntity(), TextHelper.DEFAULT_CHARSET));
             }
+            throw new HTTPException(code, response.getStatusLine().getReasonPhrase());
         }
     }
 

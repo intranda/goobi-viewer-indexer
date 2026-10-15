@@ -221,7 +221,7 @@ public class MetsIndexer extends Indexer {
                     hotfolder.getDataRepositoryStrategy().getAllDataRepositories());
 
             // Delete unsupported data folders
-            FileTools.deleteUnsupportedDataFolders(hotfolder.getHotfolderPath(), fileNameRoot);
+            hotfolder.deleteUnsupportedDataFolders(fileNameRoot);
 
             // success for goobi
             Path successFile = Paths.get(hotfolder.getSuccessFolder().toAbsolutePath().toString(), metsFile.getFileName().toString());

@@ -22,6 +22,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -108,6 +109,9 @@ public class JDomXP {
 
     private static final String XPATH_TEXT = "/text()"; //NOSONAR XPath expression, not URI
 
+    /** Maximum number of compiled XPath expressions cached per thread. */
+    static final int XPATH_CACHE_MAX_ENTRIES = 4096;
+
     /**
      * Per-thread cache of compiled XPath expressions, keyed by return-type filter, instance-namespace signature and the
      * (normalized) expression string. Compiling an expression re-parses the XPath and re-binds all ~18 configuration
@@ -115,10 +119,11 @@ public class JDomXP {
      * of it. JDOM {@link XPathExpression} instances are reusable across evaluations but are <b>not</b> thread-safe, and
      * page-document generation runs on a {@link java.util.concurrent.ForkJoinPool}, so the cache is held per thread.
      * <p>
-     * Lifetime is one record: the per-record pools are closed after each record (discarding their threads), and the
-     * long-lived hotfolder thread releases its entry via {@link #clearXPathCache()} at the end of every record.
+     * The cache is a bounded LRU map, so it is kept across records on long-lived threads (configured expressions are the same for every
+     * record and need not be recompiled) without growing indefinitely through record-specific expressions (e.g. containing DMDIDs).
      */
-    private static final ThreadLocal<Map<String, XPathExpression<Object>>> XPATH_CACHE = ThreadLocal.withInitial(HashMap::new);
+    private static final ThreadLocal<Map<String, XPathExpression<Object>>> XPATH_CACHE =
+            ThreadLocal.withInitial(() -> newLruCache(XPATH_CACHE_MAX_ENTRIES));
 
     private Document doc;
 
@@ -203,6 +208,24 @@ public class JDomXP {
      */
     public static void clearXPathCache() {
         XPATH_CACHE.remove();
+    }
+
+    /**
+     * Creates a non-thread-safe map that evicts its least recently used entry once it holds more than the given number of entries.
+     *
+     * @param maxEntries maximum number of entries
+     * @return new LRU map
+     */
+    static <K, V> Map<K, V> newLruCache(final int maxEntries) {
+        return new LinkedHashMap<>(256, 0.75f, true) {
+
+            private static final long serialVersionUID = 1L;
+
+            @Override
+            protected boolean removeEldestEntry(Map.Entry<K, V> eldest) {
+                return size() > maxEntries;
+            }
+        };
     }
 
     /**

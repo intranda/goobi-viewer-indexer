@@ -19,8 +19,10 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.io.UnsupportedEncodingException;
 import java.nio.file.DirectoryStream;
+import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.PathMatcher;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
@@ -41,7 +43,11 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 import org.apache.commons.io.FileUtils;
@@ -89,6 +95,11 @@ public class Hotfolder {
     private static final Logger logger = LogManager.getLogger(Hotfolder.class);
 
     private static final String SHUTDOWN_FILE = ".SHUTDOWN_INDEXER";
+    /** Matches the file names of record and command files picked up from the hotfolder. */
+    private static final PathMatcher RECORD_FILE_MATCHER =
+            FileSystems.getDefault().getPathMatcher("glob:*.{xml,json,delete,purge,docupdate,UPDATED}");
+    /** Matches potential data folder names ("<root>_<suffix>"); group 1 is the record file name root. */
+    private static final Pattern DATA_FOLDER_NAME_PATTERN = Pattern.compile("(.+)_[a-z]+");
     private static final int WAIT_IF_FILE_EMPTY = 5000;
     /** Records whose files have not been modified for this long are considered completely exported without measuring twice. */
     private static final long EXPORT_QUIET_PERIOD_MILLIS = 10_000;
@@ -178,6 +189,17 @@ public class Hotfolder {
     private final List<Future<Boolean>> inFlightRecords = new ArrayList<>();
     /** Upper bound on submitted-but-unfinished records; beyond it the scan thread blocks on the oldest for backpressure. */
     private int maxInFlightRecords = 1;
+    /** Released by each parallel record when it finishes, so the scan thread can wait for a free slot instead of polling. */
+    private final Semaphore recordCompletions = new Semaphore(0);
+    /** True if the last {@link #scan()} indexed, submitted or awaited a record (i.e. the caller should not sleep). */
+    private boolean madeProgress = false;
+    /**
+     * Names of hotfolder entries that may be data folders, by record file name root, collected during the last hotfolder listing for each
+     * record file found in it. Used by {@link #deleteUnsupportedDataFolders(String)} to avoid a full hotfolder listing per record.
+     */
+    private final ConcurrentMap<String, List<String>> dataFolderCandidates = new ConcurrentHashMap<>();
+    /** Record files submitted to {@link #recordExecutor} that have not finished yet (excluded when refilling the queue). */
+    private final Set<Path> inFlightRecordFiles = ConcurrentHashMap.newKeySet();
 
     /**
      * Zero-arg constructor for tests.
@@ -540,12 +562,14 @@ public class Hotfolder {
      */
     public boolean scan() throws FatalIndexerException {
         logger.debug("scan ({})", getHotfolderPath().getFileName());
+        madeProgress = false;
         if (!Files.isDirectory(getHotfolderPath())) {
             logger.error("Hotfolder not found in file system: {}", hotfolderPath);
             return false;
         }
         Path fileToReindex = highPriorityIndexQueue.poll();
         if (fileToReindex != null) {
+            madeProgress = true;
             logger.info("Found file '{}' (priority queue).", fileToReindex.getFileName());
             if (recordExecutor != null && !ownsRecordExecutor) {
                 pruneCompletedRecords();
@@ -580,6 +604,7 @@ public class Hotfolder {
                     if (recordFile != null) {
                         logger.info("Processing {} from memory queue ({})...", recordFile.getFileName(), getHotfolderPath().getFileName());
                         doIndex(recordFile);
+                        madeProgress = true;
                     }
                 } else {
                     // Parallel: fill the pool with as many export-ready records as capacity allows this pass, so records
@@ -591,15 +616,33 @@ public class Hotfolder {
                             break; // remaining queued files are still exporting
                         }
                         submitRecord(recordFile);
+                        madeProgress = true;
+                    }
+                    if (inFlightRecords.size() >= maxInFlightRecords && !indexQueue.isEmpty()) {
+                        // Pool is full and more records are waiting: wait (bounded, so the shutdown file and the priority queue
+                        // are still checked regularly) until any record finishes, then return so the caller refills the free
+                        // slot right away instead of sleeping for the full scan interval with idle workers.
+                        awaitAnyRecordCompletion();
+                        madeProgress = true;
                     }
                 }
                 return true; // always break so the loop restarts (refill/rescan)
             }
 
-            // Both queues have drained. Wait for any records still indexing in parallel to finish, then reconcile any
-            // anchors whose volume count changed during this batch. Coalescing here means a bulk import re-indexes each
-            // anchor at most once per batch (per queue drain) instead of once per volume; awaiting first keeps the
-            // reconcile from racing an in-flight volume of the same anchor.
+            // The queue is empty but records are still indexing in parallel: refill the queue from the hotfolder right away (skipping
+            // the files still in flight), so the workers keep going instead of idling through a full drain after every queue load.
+            if (recordExecutor != null) {
+                pruneCompletedRecords();
+                if (!inFlightRecords.isEmpty() && listNewFiles() > 0) {
+                    madeProgress = true;
+                    return true;
+                }
+            }
+
+            // Both queues have drained and the hotfolder holds no further records. Wait for any records still indexing in
+            // parallel to finish, then reconcile any anchors whose volume count changed during this batch. Coalescing here
+            // means a bulk import re-indexes each anchor at most once per batch (until the hotfolder runs empty) instead of
+            // once per volume; awaiting first keeps the reconcile from racing an in-flight volume of the same anchor.
             awaitInFlightRecords();
             reconcilePendingAnchors();
 
@@ -607,28 +650,7 @@ public class Hotfolder {
             // sub-batch remainder is committed promptly rather than waiting for the next batch.
             SolrIndexerDaemon.getInstance().getSearchIndex().commitPending();
 
-            logger.debug("Hotfolder ({}): Listing files...", getHotfolderPath().getFileName());
-            List<Path> newFiles = new ArrayList<>();
-            try (DirectoryStream<Path> stream = Files.newDirectoryStream(hotfolderPath, "*.{xml,json,delete,purge,docupdate,UPDATED}")) {
-                for (Path path : stream) {
-                    if (!path.getFileName().toString().endsWith(MetsIndexer.ANCHOR_UPDATE_EXTENSION) && !indexQueue.contains(path)) {
-                        newFiles.add(path);
-                    }
-                }
-            } catch (IOException e) {
-                logger.error(e.getMessage(), e);
-            }
-            if (prioritizeLargeImageFolders && !newFiles.isEmpty()) {
-                newFiles.sort((a, b) -> Long.compare(getDataFolderSize(b), getDataFolderSize(a)));
-            }
-            for (Path recordFile : newFiles) {
-                if (indexQueue.offer(recordFile)) {
-                    logger.info("Added file from '{}' to index queue: {}", getHotfolderPath().getFileName(), recordFile.getFileName());
-                } else {
-                    logger.debug("Queue full ({})", getHotfolderPath().getFileName());
-                    break;
-                }
-            }
+            listNewFiles();
         }
 
         return !highPriorityIndexQueue.isEmpty() || !indexQueue.isEmpty();
@@ -677,6 +699,54 @@ public class Hotfolder {
     }
 
     /**
+     * Lists the hotfolder and adds record files that are neither queued nor currently being indexed to the index queue (up to its
+     * capacity). The same pass collects the names of potential data folders ("&lt;root&gt;_&lt;suffix&gt;") per record file name root, so
+     * that deleting a record's leftover data folders later does not have to list the entire hotfolder again per record.
+     *
+     * @return number of files added to the queue
+     */
+    private int listNewFiles() {
+        logger.debug("Hotfolder ({}): Listing files...", getHotfolderPath().getFileName());
+        List<Path> newFiles = new ArrayList<>();
+        Map<String, List<String>> dataFolderNames = new HashMap<>();
+        try (DirectoryStream<Path> stream = Files.newDirectoryStream(hotfolderPath)) {
+            for (Path path : stream) {
+                String fileName = path.getFileName().toString();
+                if (RECORD_FILE_MATCHER.matches(path.getFileName())) {
+                    if (!fileName.endsWith(MetsIndexer.ANCHOR_UPDATE_EXTENSION) && !inFlightRecordFiles.contains(path)
+                            && !indexQueue.contains(path)) {
+                        newFiles.add(path);
+                    }
+                } else {
+                    Matcher m = DATA_FOLDER_NAME_PATTERN.matcher(fileName);
+                    if (m.matches()) {
+                        dataFolderNames.computeIfAbsent(m.group(1), k -> new ArrayList<>(1)).add(fileName);
+                    }
+                }
+            }
+        } catch (IOException e) {
+            logger.error(e.getMessage(), e);
+        }
+        if (prioritizeLargeImageFolders && !newFiles.isEmpty()) {
+            newFiles.sort((a, b) -> Long.compare(getDataFolderSize(b), getDataFolderSize(a)));
+        }
+        int added = 0;
+        for (Path recordFile : newFiles) {
+            if (indexQueue.offer(recordFile)) {
+                added++;
+                String root = FilenameUtils.getBaseName(recordFile.getFileName().toString());
+                dataFolderCandidates.put(root, dataFolderNames.getOrDefault(root, Collections.emptyList()));
+                logger.info("Added file from '{}' to index queue: {}", getHotfolderPath().getFileName(), recordFile.getFileName());
+            } else {
+                logger.debug("Queue full ({})", getHotfolderPath().getFileName());
+                break;
+            }
+        }
+
+        return added;
+    }
+
+    /**
      * Polls the regular index queue for the next record whose data folders have finished exporting, re-queuing any that
      * are still exporting. Returns null if the queue is empty or every remaining file is still exporting (the caller
      * should then stop for this pass). Note: {@link #isDataFolderExportDone(Path)} sleeps ~1s on the calling (scan) thread
@@ -721,7 +791,49 @@ public class Hotfolder {
             pruneCompletedRecords();
         }
         logger.info("Submitting {} for parallel indexing ({})...", recordFile.getFileName(), getHotfolderPath().getFileName());
-        inFlightRecords.add(recordExecutor.submit(() -> doIndex(recordFile)));
+        inFlightRecordFiles.add(recordFile);
+        inFlightRecords.add(recordExecutor.submit(() -> {
+            try {
+                return doIndex(recordFile);
+            } finally {
+                inFlightRecordFiles.remove(recordFile);
+                recordCompletions.release();
+            }
+        }));
+    }
+
+    /**
+     * Blocks until any in-flight record finishes, but at most one second. A permit left over from a record that was already
+     * pruned only causes one extra (cheap) scan pass.
+     */
+    private void awaitAnyRecordCompletion() {
+        try {
+            if (recordCompletions.tryAcquire(1, TimeUnit.SECONDS)) {
+                logger.trace("A record finished, refilling the pool.");
+            }
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+    }
+
+    /**
+     * Deletes any data folders of the given record that are still left in the hotfolder after indexing (i.e. unsupported ones). If the
+     * record file was found by the last hotfolder listing, only the entry names collected by that listing are checked; otherwise (e.g.
+     * re-indexing from the priority queue) the entire hotfolder is listed.
+     *
+     * @param fileNameRoot Record file name without extension
+     * @throws IOException
+     */
+    public void deleteUnsupportedDataFolders(String fileNameRoot) throws IOException {
+        FileTools.deleteUnsupportedDataFolders(hotfolderPath, fileNameRoot, dataFolderCandidates.remove(fileNameRoot));
+    }
+
+    /**
+     * @return true if the last {@link #scan()} made progress (indexed, submitted or awaited a record), in which case
+     *         the caller should scan again right away instead of sleeping
+     */
+    public boolean isMadeProgress() {
+        return madeProgress;
     }
 
     /**
@@ -916,14 +1028,8 @@ public class Hotfolder {
             reindexSettings.put(DataRepository.PARAM_ALTO, false);
             reindexSettings.put(DataRepository.PARAM_MIX, false);
             reindexSettings.put(DataRepository.PARAM_UGC, false);
-            boolean ret;
-            try {
-                ret = handleSourceFile(recordFile, reindexSettings);
-            } finally {
-                // Release this long-lived thread's compiled XPath caches so they don't accumulate across records
-                JDomXP.clearXPathCache();
-                XmlTools.clearXPathCache();
-            }
+            // Note: the per-thread compiled XPath caches (JDomXP, XmlTools) are deliberately kept across records; they are bounded LRU maps
+            boolean ret = handleSourceFile(recordFile, reindexSettings);
             if (secondaryAppender != null && emailConfigurationComplete) {
                 checkAndSendErrorReport(recordFile.getFileName() + ": Indexing failed (" + Version.asString() + ")",
                         secondaryAppender.getLog(recordKey));
@@ -933,6 +1039,8 @@ public class Hotfolder {
         } finally {
             // Release this record's data-repository reservation (no-op for strategies that do not reserve).
             dataRepositoryStrategy.releaseReservation();
+            // Drop the data folder candidates collected for this record if indexing did not consume them (e.g. on failure)
+            dataFolderCandidates.remove(FilenameUtils.getBaseName(recordKey));
             resetSecondaryLog(recordKey);
             ThreadContext.remove(SecondaryAppender.MDC_KEY);
             ThreadContext.remove(SecondaryAppender.MDC_KEY_ID);

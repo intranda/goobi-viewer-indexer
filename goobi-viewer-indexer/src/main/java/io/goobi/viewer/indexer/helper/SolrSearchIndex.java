@@ -29,6 +29,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.locks.ReentrantLock;
 
 import org.apache.commons.configuration2.ex.ConfigurationException;
 import org.apache.commons.lang3.StringUtils;
@@ -81,7 +82,7 @@ public final class SolrSearchIndex {
     /** Epoch millis of the last commit, for the time-based commit trigger. */
     private volatile long lastCommitMillis = System.currentTimeMillis();
     /** Serializes commit decision + execution so at most one commit runs at a time. */
-    private final Object commitLock = new Object();
+    private final ReentrantLock commitLock = new ReentrantLock();
 
     /**
      * <p>
@@ -514,14 +515,20 @@ public final class SolrSearchIndex {
      * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException
      */
     public void commitAfterRecord() throws FatalIndexerException {
-        int pending = pendingRecords.incrementAndGet();
+        if (isCommitDue(pendingRecords.incrementAndGet())) {
+            flushPending(false);
+        }
+    }
+
+    /**
+     * 
+     * @param pending Number of records written but not yet committed
+     * @return true if the batched-commit policy requires a commit now; false otherwise
+     */
+    private boolean isCommitDue(int pending) {
         int batchSize = SolrIndexerDaemon.getInstance().getConfiguration().getCommitBatchSize();
         int maxSeconds = SolrIndexerDaemon.getInstance().getConfiguration().getCommitMaxSeconds();
-        boolean due = pending >= batchSize
-                || (maxSeconds > 0 && System.currentTimeMillis() - lastCommitMillis >= maxSeconds * 1000L);
-        if (due) {
-            flushPending();
-        }
+        return pending >= batchSize || (maxSeconds > 0 && System.currentTimeMillis() - lastCommitMillis >= maxSeconds * 1000L);
     }
 
     /**
@@ -532,28 +539,45 @@ public final class SolrSearchIndex {
      */
     public void commitPending() throws FatalIndexerException {
         if (pendingRecords.get() > 0) {
-            flushPending();
+            flushPending(true);
         }
     }
 
     /**
-     * Commits everything buffered in Solr and resets the pending-record counter. Synchronized so only one commit runs at
-     * a time (Solr serializes hard commits anyway); a doc-level {@code add} always precedes the corresponding
-     * {@link #commitAfterRecord()}, so whatever is buffered is committed here regardless of the exact counter value.
+     * Commits everything buffered in Solr and resets the pending-record counter. Only one commit runs at a time (Solr serializes hard
+     * commits anyway); a doc-level {@code add} always precedes the corresponding {@link #commitAfterRecord()}, so whatever is buffered is
+     * committed here regardless of the exact counter value.
+     * <p>
+     * With batched commits ({@code commitBatchSize} &gt; 1), a non-forced call returns right away if another thread is already committing:
+     * while that commit runs, the pending counter stays above the threshold, so otherwise every worker finishing a record would block on
+     * the lock and the whole pool would stall for the duration of each commit. Records not covered by the running commit stay pending for
+     * the next one (or the flush on queue drain / shutdown).
      *
+     * @param force If true, commit any pending records regardless of the batch thresholds and wait for a running commit
      * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException
      */
-    private void flushPending() throws FatalIndexerException {
-        synchronized (commitLock) {
+    private void flushPending(boolean force) throws FatalIndexerException {
+        if (force || SolrIndexerDaemon.getInstance().getConfiguration().getCommitBatchSize() <= 1) {
+            commitLock.lock();
+        } else if (!commitLock.tryLock()) {
+            return;
+        }
+        try {
             int flushed = pendingRecords.get();
-            if (flushed == 0) {
-                return; // another thread already flushed
+            if (flushed == 0 || (!force && !isCommitDue(flushed))) {
+                // Another thread already flushed while this one was waiting for the lock; without this re-check every worker that saw the
+                // batch threshold reached would issue its own hard commit for just the few records added in the meantime.
+                return;
             }
             doCommit(optimize);
-            pendingRecords.set(0);
+            // Only subtract what this commit covered: records counted by other workers while the commit was running may not be
+            // included in it and must stay pending (resetting to 0 would lose them, so commitPending() would skip them).
+            pendingRecords.addAndGet(-flushed);
             lastCommitMillis = System.currentTimeMillis();
             logger.info("Committed {} record(s) to Solr (commitBatchSize={}).", flushed,
                     SolrIndexerDaemon.getInstance().getConfiguration().getCommitBatchSize());
+        } finally {
+            commitLock.unlock();
         }
     }
 

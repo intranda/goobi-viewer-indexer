@@ -279,10 +279,18 @@ public final class SolrIndexerDaemon {
         // main loop
         logger.info("Program started, monitoring hotfolder(s)...");
         while (running) {
+            boolean madeProgress = false;
             for (Hotfolder hotfolder : hotfolders) {
-                if (hotfolder.scan()) {
+                boolean pending = hotfolder.scan();
+                madeProgress |= hotfolder.isMadeProgress();
+                if (pending) {
                     break;
                 }
+            }
+            // Only pause while idle (or while waiting for records that are still being exported); with work pending, scan
+            // again right away so the worker pool is refilled as soon as a slot frees up.
+            if (madeProgress) {
+                continue;
             }
             try {
                 Thread.sleep(sleepInterval);

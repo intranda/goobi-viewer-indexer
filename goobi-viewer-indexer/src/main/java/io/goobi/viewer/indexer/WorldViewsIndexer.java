@@ -156,7 +156,7 @@ public class WorldViewsIndexer extends Indexer {
                     hotfolder.getDataRepositoryStrategy().getAllDataRepositories());
 
             // Delete unsupported data folders
-            FileTools.deleteUnsupportedDataFolders(hotfolder.getHotfolderPath(), fileNameRoot);
+            hotfolder.deleteUnsupportedDataFolders(fileNameRoot);
 
             // Create success file for Goobi workflow
             Path successFile = Paths.get(hotfolder.getSuccessFolder().toAbsolutePath().toString(), mainFile.getFileName().toString());

@@ -122,7 +122,7 @@ public class CmsPageIndexer extends Indexer {
                     hotfolder.getDataRepositoryStrategy().getAllDataRepositories());
 
             // Delete unsupported data folders
-            FileTools.deleteUnsupportedDataFolders(hotfolder.getHotfolderPath(), sourceFileNameRoot);
+            hotfolder.deleteUnsupportedDataFolders(sourceFileNameRoot);
 
             try {
                 Files.delete(cmsFile);

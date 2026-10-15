@@ -25,7 +25,6 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -219,9 +218,10 @@ public final class XmlTools {
      * Per-thread cache of compiled XPath expressions, keyed by return-type filter, namespace signature and the
      * (normalized) expression string. JDOM {@link XPathExpression} instances are reusable but not thread-safe, so the
      * cache is held per thread. See {@link JDomXP} for the rationale (compilation is the dominant per-record XPath cost)
-     * and the cache lifetime; long-lived threads release their entry via {@link #clearXPathCache()}.
+     * and the (bounded) cache size.
      */
-    private static final ThreadLocal<Map<String, XPathExpression<Object>>> XPATH_CACHE = ThreadLocal.withInitial(HashMap::new);
+    private static final ThreadLocal<Map<String, XPathExpression<Object>>> XPATH_CACHE =
+            ThreadLocal.withInitial(() -> JDomXP.newLruCache(JDomXP.XPATH_CACHE_MAX_ENTRIES));
 
     /**
      * XPath evaluation with a given return type filter.
