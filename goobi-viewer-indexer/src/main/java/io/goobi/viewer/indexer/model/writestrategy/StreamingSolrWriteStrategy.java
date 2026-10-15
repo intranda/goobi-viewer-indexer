@@ -19,6 +19,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.Semaphore;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
@@ -44,7 +48,9 @@ import io.goobi.viewer.indexer.model.SolrConstants.DocType;
  * {@link #writeDocs(boolean)} completes, {@link #cleanup()} deletes all documents that were already sent, so that a later commit cannot persist a
  * partial record.
  * <p>
- * Thread-safe: documents may be added concurrently (e.g. by parallel EAD child node indexing).
+ * Thread-safe: documents may be added concurrently (e.g. by parallel EAD child node indexing). Full batches are sent to Solr by background
+ * sender threads (at most {@link #MAX_BATCHES_IN_FLIGHT} at a time), outside of the lock, so adding documents does not wait for Solr; only
+ * when that many batches are already being sent does the adding thread wait for one of them.
  */
 public class StreamingSolrWriteStrategy extends LazySolrWriteStrategy {
 
@@ -54,6 +60,8 @@ public class StreamingSolrWriteStrategy extends LazySolrWriteStrategy {
     static final int DEFAULT_BATCH_SIZE = 1000;
     /** Number of IDs per delete request when removing the documents of a failed record. */
     private static final int DELETE_BATCH_SIZE = 10000;
+    /** Maximum number of batches that are being sent to Solr at the same time (also bounds the memory used by batches in transit). */
+    static final int MAX_BATCHES_IN_FLIGHT = 4;
 
     private final int batchSize;
     private final boolean accumulateSuperFields;
@@ -67,6 +75,12 @@ public class StreamingSolrWriteStrategy extends LazySolrWriteStrategy {
     private FatalIndexerException flushError;
     /** True once all documents of the record have been sent; afterwards {@link #cleanup()} no longer deletes them. */
     private volatile boolean complete = false;
+    /** One permit per batch that may be in transit; a sending batch holds a permit until its request has finished. */
+    private final Semaphore sendPermits = new Semaphore(MAX_BATCHES_IN_FLIGHT);
+    /** Background sender threads (created on first use, shut down by {@link #cleanup()}). Guarded by {@link #lock}. */
+    private ExecutorService sender;
+    /** Set by {@link #cleanup()}; afterwards no further batches are sent. Guarded by {@link #lock}. */
+    private boolean closed = false;
 
     /**
      * Constructor. The batch size is taken from <code>performance.serializingWriteStrategyBatchSize</code>.
@@ -106,9 +120,10 @@ public class StreamingSolrWriteStrategy extends LazySolrWriteStrategy {
             }
         }
 
+        List<List<SolrInputDocument>> fullBatches = new ArrayList<>(1);
         synchronized (lock) {
-            if (flushError != null) {
-                // Indexing has already failed; writeDocs() will report it, so don't buffer any more documents
+            if (flushError != null || closed) {
+                // Indexing has already failed (writeDocs() will report it) or the strategy was cleaned up, so don't buffer any more documents
                 return;
             }
             for (SolrInputDocument doc : docs) {
@@ -119,35 +134,116 @@ public class StreamingSolrWriteStrategy extends LazySolrWriteStrategy {
                 sanitizeDoc(doc);
                 batch.add(doc);
                 if (batch.size() >= batchSize) {
-                    flushBatch();
+                    fullBatches.add(takeBatch());
                 }
             }
+        }
+        // Send outside of the lock, so that other threads can keep adding documents meanwhile
+        for (List<SolrInputDocument> fullBatch : fullBatches) {
+            sendInBackground(fullBatch);
         }
     }
 
     /**
-     * Sends the buffered documents to Solr. Must be called while holding {@link #lock}. A failure is recorded in {@link #flushError} rather than
-     * thrown, since it may happen inside {@link #addDocs(List)}.
+     * Removes the buffered documents from the batch and records their IDDOCs, so that {@link #cleanup()} also removes the documents of a batch
+     * that is only partially written. Must be called while holding {@link #lock}.
+     *
+     * @return The documents to send; empty if there are none or indexing has already failed
      */
-    private void flushBatch() {
+    private List<SolrInputDocument> takeBatch() {
         if (batch.isEmpty() || flushError != null) {
-            return;
+            batch.clear();
+            return List.of();
         }
         List<SolrInputDocument> docs = new ArrayList<>(batch);
         batch.clear();
-        // Record the IDDOCs before sending, so that cleanup() also removes the docs of a partially written batch
         for (SolrInputDocument doc : docs) {
             Object iddoc = doc.getFieldValue(SolrConstants.IDDOC);
             if (iddoc != null) {
                 sentIddocs.add(String.valueOf(iddoc));
             }
         }
+        return docs;
+    }
+
+    /**
+     * Sends the given documents to Solr on a background sender thread. Waits if {@link #MAX_BATCHES_IN_FLIGHT} batches are already being sent.
+     * A failure is recorded in {@link #flushError} (and reported by {@link #writeDocs(boolean)}) rather than thrown. Must not be called while
+     * holding {@link #lock}.
+     *
+     * @param docs Documents to send
+     */
+    private void sendInBackground(List<SolrInputDocument> docs) {
+        if (docs.isEmpty()) {
+            return;
+        }
+        sendPermits.acquireUninterruptibly();
+        synchronized (lock) {
+            // Checked together with the hand-over, so that cleanup() (which sets closed and then waits for all permits) either waits for this
+            // batch or this batch is never sent, i.e. no documents can reach Solr after cleanup() has deleted those of a failed record
+            if (closed) {
+                sendPermits.release();
+                return;
+            }
+            try {
+                getSender().execute(() -> {
+                    try {
+                        send(docs);
+                    } finally {
+                        sendPermits.release();
+                    }
+                });
+            } catch (RejectedExecutionException e) {
+                sendPermits.release();
+                logger.error("Could not send {} documents to Solr: {}", docs.size(), e.getMessage());
+                if (flushError == null) {
+                    flushError = new FatalIndexerException("Could not send documents to Solr: " + e.getMessage());
+                }
+            }
+        }
+    }
+
+    /**
+     * 
+     * @param docs Documents to send
+     */
+    private void send(List<SolrInputDocument> docs) {
         try {
             searchIndex.writeToIndex(docs);
-            logger.debug("Sent {} documents to Solr ({} so far).", docs.size(), sentIddocs.size());
+            logger.debug("Sent {} documents to Solr.", docs.size());
         } catch (FatalIndexerException e) {
-            flushError = e;
+            synchronized (lock) {
+                if (flushError == null) {
+                    flushError = e;
+                }
+            }
         }
+    }
+
+    /**
+     * 
+     * Must be called while holding {@link #lock}.
+     *
+     * @return Background sender executor (created on first use)
+     */
+    private ExecutorService getSender() {
+        // Called while holding lock
+        if (sender == null) {
+            sender = Executors.newFixedThreadPool(MAX_BATCHES_IN_FLIGHT, r -> {
+                Thread t = new Thread(r, "solr-batch-sender");
+                t.setDaemon(true);
+                return t;
+            });
+        }
+        return sender;
+    }
+
+    /**
+     * Blocks until all batches handed to the background sender threads have been sent (or have failed).
+     */
+    private void awaitPendingSends() {
+        sendPermits.acquireUninterruptibly(MAX_BATCHES_IN_FLIGHT);
+        sendPermits.release(MAX_BATCHES_IN_FLIGHT);
     }
 
     /** {@inheritDoc} */
@@ -158,9 +254,14 @@ public class StreamingSolrWriteStrategy extends LazySolrWriteStrategy {
         }
         String pi = (String) rootDoc.getFieldValue(SolrConstants.PI);
 
+        // Send the remaining buffered structure docs and wait until all batches have reached Solr
+        List<SolrInputDocument> remaining;
         synchronized (lock) {
-            // Send the remaining buffered structure docs
-            flushBatch();
+            remaining = takeBatch();
+        }
+        sendInBackground(remaining);
+        awaitPendingSends();
+        synchronized (lock) {
             if (flushError != null) {
                 throw flushError;
             }
@@ -264,6 +365,17 @@ public class StreamingSolrWriteStrategy extends LazySolrWriteStrategy {
      */
     @Override
     public void cleanup() {
+        synchronized (lock) {
+            closed = true;
+        }
+        // Batches still in transit must have reached Solr before their documents can be deleted again (and the sender threads can go)
+        awaitPendingSends();
+        synchronized (lock) {
+            if (sender != null) {
+                sender.shutdown();
+                sender = null;
+            }
+        }
         List<String> toDelete;
         synchronized (lock) {
             toDelete = complete ? List.of() : new ArrayList<>(sentIddocs);
@@ -288,7 +400,7 @@ public class StreamingSolrWriteStrategy extends LazySolrWriteStrategy {
     /**
      * For unit testing purposes.
      *
-     * @return Number of documents sent to Solr so far
+     * @return Number of documents handed over for sending to Solr so far (possibly still in transit)
      */
     int getSentDocsCount() {
         synchronized (lock) {
