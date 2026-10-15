@@ -348,7 +348,7 @@ public abstract class Indexer {
                 // Clear cache for record
                 String msg = Utils.removeRecordImagesFromCache(pi);
                 if (msg != null) {
-                    logger.info(msg);
+                    logger.debug(msg);
                 }
 
                 return true;
@@ -1987,7 +1987,7 @@ public abstract class Indexer {
         for (String suffix : DATA_FOLDER_SUFFIXES) {
             Path path = hotfolderPath.resolve(fileNameRoot + suffix);
             if (Files.exists(path)) {
-                logger.info(LOG_FOUND_DATA_FOLDER, path.getFileName());
+                logger.debug(LOG_FOUND_DATA_FOLDER, path.getFileName());
                 switch (suffix) {
                     case "_tif", FOLDER_SUFFIX_MEDIA: // GBVMETSAdapter uses _media folders
                         dataFolders.put(DataRepository.PARAM_MEDIA, path);

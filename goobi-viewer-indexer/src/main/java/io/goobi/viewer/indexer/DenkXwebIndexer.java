@@ -154,7 +154,7 @@ public class DenkXwebIndexer extends Indexer {
                 if (imageCounter > 0) {
                     String msg = Utils.removeRecordImagesFromCache(identifier);
                     if (msg != null) {
-                        logger.info(msg);
+                        logger.debug(msg);
                     }
                 }
 
@@ -167,7 +167,7 @@ public class DenkXwebIndexer extends Indexer {
                     }
                 }
                 prerenderPagePdfsIfRequired(identifier);
-                logger.info("Successfully finished indexing '{}'.", identifier);
+                logger.info("Successfully prepared '{}'. It will be added to the index with the next commit batch", identifier);
 
                 // Remove this file from lower priority hotfolders to avoid overriding changes with older version
                 SolrIndexerDaemon.getInstance().removeRecordFileFromLowerPriorityHotfolders(identifier, hotfolder);
@@ -326,7 +326,7 @@ public class DenkXwebIndexer extends Indexer {
 
             // Set image file names belonging to this record
             ret.setMediaImageFileNames(imgFileNames);
-            logger.info("Finished writing data for '{}' to Solr.", pi);
+            logger.debug("Finished writing data for '{}' to Solr.", pi);
         } catch (FatalIndexerException | IndexerException | IOException | JDOMException | SolrServerException e) {
             if ("No image resource sets found.".equals(e.getMessage())) {
                 logger.error("Indexing of '{}' could not be finished due to an error: {}", pi, e.getMessage());
@@ -390,7 +390,7 @@ public class DenkXwebIndexer extends Indexer {
             return;
         }
 
-        logger.info("Generating {} page documents (count starts at {})...", eleImageList.size(), pageCountStart);
+        logger.debug("Generating {} page documents (count starts at {})...", eleImageList.size(), pageCountStart);
 
         // TODO lambda instead of loop (find a way to preserve order first)
         //        eleImageList.parallelStream().forEach(

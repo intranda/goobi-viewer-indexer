@@ -759,9 +759,9 @@ public class DataRepository {
 
         int counter = 0;
         if (!DataRepository.PARAM_DOWNLOAD_IMAGES_TRIGGER.equals(paramName)) {
-            logger.info("Transferring {} files from '{}' to '{}'...", paramName, srcFolder, getDir(paramName).toAbsolutePath());
+            logger.debug("Transferring {} files from '{}' to '{}'...", paramName, srcFolder, getDir(paramName).toAbsolutePath());
             counter = FileTools.moveOrCopyDirectoryContents(srcFolder, new File(getDir(paramName).toFile(), identifier).toPath());
-            logger.info("{} {} files transferred.", counter, paramName);
+            logger.debug("{} {} files transferred.", counter, paramName);
         }
         if (!Utils.deleteDirectory(srcFolder)) {
             logger.warn(StringConstants.LOG_COULD_NOT_BE_DELETED, srcFolder.toAbsolutePath());

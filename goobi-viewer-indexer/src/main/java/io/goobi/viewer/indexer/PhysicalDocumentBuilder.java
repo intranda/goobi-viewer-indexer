@@ -246,8 +246,8 @@ public class PhysicalDocumentBuilder {
             return Collections.emptyList();
         }
 
-        logger.info("Image file groups selected: {}", useFileGroups);
-        logger.info("Generating {} page documents (count starts at {})...", eleStructMapPhysicalList.size(), pageCountStart);
+        logger.debug("Image file groups selected: {}", useFileGroups);
+        logger.debug("Generating {} page documents (count starts at {})...", eleStructMapPhysicalList.size(), pageCountStart);
 
         Collection<PhysicalElement> pages = Collections.synchronizedList(new ArrayList<PhysicalElement>());
         boolean sharedWorkerPool = SolrIndexerDaemon.getInstance().getConfiguration().isSharedWorkerPool();
@@ -313,7 +313,7 @@ public class PhysicalDocumentBuilder {
                 }
             }
         }
-        logger.info("Generated {} pages.", pages.size());
+        logger.debug("Generated {} pages.", pages.size());
         return pages;
     }
 

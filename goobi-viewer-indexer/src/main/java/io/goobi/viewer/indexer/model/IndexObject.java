@@ -550,7 +550,7 @@ public class IndexObject {
         // Set DATECREATED, if new record
         if (dateCreated == -1) {
             setDateCreated(millis);
-            logger.info("Using creation timestamp from METS: {}", getDateCreated());
+            logger.debug("Using creation timestamp from METS: {}", getDateCreated());
         }
 
         // Add new DATEUPDATED value

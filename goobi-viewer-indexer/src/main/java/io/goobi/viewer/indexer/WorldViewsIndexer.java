@@ -141,7 +141,7 @@ public class WorldViewsIndexer extends Indexer {
                     hotfolder.getDataRepositoryStrategy().getAllDataRepositories()) > 0) {
                 String msg = Utils.removeRecordImagesFromCache(baseFileName);
                 if (msg != null) {
-                    logger.info(msg);
+                    logger.debug(msg);
                 }
             }
 
@@ -184,7 +184,7 @@ public class WorldViewsIndexer extends Indexer {
                 }
             }
             prerenderPagePdfsIfRequired(pi);
-            logger.info("Successfully finished indexing '{}'.", mainFile.getFileName());
+            logger.info("Successfully prepared '{}'. It will be added to the index with the next commit batch", mainFile.getFileName());
 
             // Remove this file from lower priority hotfolders to avoid overriding changes with older version
             SolrIndexerDaemon.getInstance().removeRecordFileFromLowerPriorityHotfolders(pi, hotfolder);
@@ -409,7 +409,7 @@ public class WorldViewsIndexer extends Indexer {
             if (indexObj.isVolume() && !indexObj.isUpdate() && indexObj.getParent() != null) {
                 hotfolder.flagAnchorForReconciliation(indexObj.getParent().getPi());
             }
-            logger.info("Finished writing data for '{}' to Solr.", pi);
+            logger.debug("Finished writing data for '{}' to Solr.", pi);
         } catch (InterruptedException e) {
             logger.error("Indexing of '{}' could not be finished due to an error.", mainFile.getFileName());
             logger.error(e.getMessage(), e);
@@ -714,7 +714,7 @@ public class WorldViewsIndexer extends Indexer {
             int pageCountStart) throws InterruptedException {
         // Get all physical elements
         List<Element> eleListImages = xp.evaluateToElements("worldviews/resource/images/image", null);
-        logger.info("Generating {} page documents (count starts at {})...", eleListImages.size(), pageCountStart);
+        logger.debug("Generating {} page documents (count starts at {})...", eleListImages.size(), pageCountStart);
 
         if (SolrIndexerDaemon.getInstance().getConfiguration().getPageThreads() > 1) {
             // Generate each page document in its own thread

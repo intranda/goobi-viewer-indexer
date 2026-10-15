@@ -748,7 +748,7 @@ public class Hotfolder {
                 added++;
                 String root = FilenameUtils.getBaseName(recordFile.getFileName().toString());
                 dataFolderCandidates.put(root, dataFolderNames.getOrDefault(root, Collections.emptyList()));
-                logger.info("Added file from '{}' to index queue: {}", getHotfolderPath().getFileName(), recordFile.getFileName());
+                logger.debug("Added file from '{}' to index queue: {}", getHotfolderPath().getFileName(), recordFile.getFileName());
             } else {
                 logger.debug("Queue full ({})", getHotfolderPath().getFileName());
                 break;
@@ -802,7 +802,7 @@ public class Hotfolder {
             awaitOldestRecord();
             pruneCompletedRecords();
         }
-        logger.info("Submitting {} for parallel indexing ({})...", recordFile.getFileName(), getHotfolderPath().getFileName());
+        logger.debug("Submitting {} for parallel indexing ({})...", recordFile.getFileName(), getHotfolderPath().getFileName());
         inFlightRecordFiles.add(recordFile);
         inFlightRecords.add(recordExecutor.submit(() -> {
             try {
@@ -1137,7 +1137,7 @@ public class Hotfolder {
                 // Check file format and start the appropriate indexing routine
                 List<String> identifiers = Collections.emptyList();
                 FileFormat fileType = JDomXP.determineFileFormat(sourceFile.toFile());
-                logger.info("Document format detected: {}", fileType.name());
+                logger.debug("Document format detected: {}", fileType.name());
                 switch (fileType) {
                     case METS:
                         if (metsEnabled) {

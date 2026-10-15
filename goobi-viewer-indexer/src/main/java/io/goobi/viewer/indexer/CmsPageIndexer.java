@@ -113,7 +113,7 @@ public class CmsPageIndexer extends Indexer {
                     hotfolder.getDataRepositoryStrategy().getAllDataRepositories()) > 0) {
                 String msg = Utils.removeRecordImagesFromCache(baseFileName);
                 if (msg != null) {
-                    logger.info(msg);
+                    logger.debug(msg);
                 }
             }
 
@@ -325,7 +325,7 @@ public class CmsPageIndexer extends Indexer {
 
             logger.debug("Writing document to index...");
             useWriteStrategy.writeDocs(SolrIndexerDaemon.getInstance().getConfiguration().isAggregateRecords());
-            logger.info("Successfully finished indexing '{}'.", cmsFile.getFileName());
+            logger.info("Successfully prepared '{}'. It will be added to the index with the next commit batch", cmsFile.getFileName());
         } catch (IOException | IndexerException | FatalIndexerException | SolrServerException | JDOMException e) {
             logger.error("Indexing of '{}' could not be finished due to an error.", cmsFile.getFileName());
             logger.error(e.getMessage(), e);

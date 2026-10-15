@@ -122,7 +122,7 @@ public class DocUpdateIndexer extends Indexer {
                 }
             });) {
                 for (Path path : stream) {
-                    logger.info(LOG_FOUND_DATA_FOLDER, path.getFileName());
+                    logger.debug(LOG_FOUND_DATA_FOLDER, path.getFileName());
                     Utils.deleteDirectory(path);
                 }
             }

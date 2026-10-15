@@ -343,9 +343,9 @@ public final class Utils {
             headerParams.put(HTTP_HEADER_CONTENT_TYPE, ContentType.APPLICATION_JSON.getMimeType());
             headerParams.put("token", SolrIndexerDaemon.getInstance().getConfiguration().getViewerAuthorizationToken());
             getWebContentPUT(url, HashMap.newHashMap(0), null, json.toString(), headerParams);
-            logger.info("Version and file count ({}) submitted to Goobi viewer.", fileCount);
+            logger.debug("Version and file count ({}) submitted to Goobi viewer.", fileCount);
             if (!identifiers.isEmpty()) {
-                logger.info("Record identifier(s) submitted to Goobi viewer.");
+                logger.debug("Record identifier(s) submitted to Goobi viewer.");
             }
         } catch (IOException | HTTPException e) {
             logger.warn("Version could not be submitted to Goobi viewer: {}", e.getMessage());
@@ -690,7 +690,10 @@ public final class Utils {
             }
             throw new IOException("No JSON response");
         } catch (IOException | HTTPException e) {
-            return "Could not clear viewer cache: " + e.getMessage();
+            // Logged here at WARN level since callers only log the returned message at DEBUG level
+            String msg = "Could not clear viewer cache: " + e.getMessage();
+            logger.warn(msg);
+            return msg;
         }
     }
 

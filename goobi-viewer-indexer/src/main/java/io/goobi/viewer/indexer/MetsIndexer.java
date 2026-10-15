@@ -206,7 +206,7 @@ public class MetsIndexer extends Indexer {
                     hotfolder.getDataRepositoryStrategy().getAllDataRepositories()) > 0) {
                 String msg = Utils.removeRecordImagesFromCache(FilenameUtils.getBaseName(newMetsFileName));
                 if (msg != null) {
-                    logger.info(msg);
+                    logger.debug(msg);
                 }
             }
 
@@ -249,7 +249,7 @@ public class MetsIndexer extends Indexer {
                 }
             }
             prerenderPagePdfsIfRequired(result.getPi());
-            logger.info("Successfully finished indexing '{}'.", metsFile.getFileName());
+            logger.info("Successfully prepared '{}'. It will be added to the index with the next commit batch", metsFile.getFileName());
 
             // Remove this file from lower priority hotfolders to avoid overriding changes with older version
             SolrIndexerDaemon.getInstance().removeRecordFileFromLowerPriorityHotfolders(result.getPi(), hotfolder);
@@ -314,7 +314,7 @@ public class MetsIndexer extends Indexer {
             IndexObject indexObj = new IndexObject(getNextIddoc());
             logger.debug("IDDOC: {}", indexObj.getIddoc());
             indexObj.setVolume(isVolume());
-            logger.info("Document is volume: {}", indexObj.isVolume());
+            logger.debug("Document is volume: {}", indexObj.isVolume());
             indexObj.setAnchor(isAnchor());
             Element structNode = findStructNode(indexObj);
             if (structNode == null) {
@@ -626,7 +626,7 @@ public class MetsIndexer extends Indexer {
             writeStrategy.setRootDoc(rootDoc);
 
             writeStrategy.writeDocs(SolrIndexerDaemon.getInstance().getConfiguration().isAggregateRecords());
-            logger.info("Finished writing data for '{}' to Solr.", pi);
+            logger.debug("Finished writing data for '{}' to Solr.", pi);
         } catch (InterruptedException e) {
             logger.error("Indexing of '{}' could not be finished due to an error.", metsFile.getFileName());
             logger.error(e.getMessage(), e);
@@ -695,10 +695,10 @@ public class MetsIndexer extends Indexer {
     }
 
     public void collectFileGroupInfo() {
-        logger.info("Buidling fileId->fileGrp map...");
+        logger.debug("Buidling fileId->fileGrp map...");
         String xpathFileGrpList = "/mets:mets/mets:fileSec/mets:fileGrp"; //NOSONAR XPath expression, not parameter
         eleListAllFileGroups = xp.evaluateToElements(xpathFileGrpList, null);
-        logger.info("Found {} file groups in document.", eleListAllFileGroups.size());
+        logger.debug("Found {} file groups in document.", eleListAllFileGroups.size());
         fileIdToFileGrpMap.clear();
         for (Element eleFileGroup : eleListAllFileGroups) {
             String fileGrp = eleFileGroup.getAttributeValue("USE");
