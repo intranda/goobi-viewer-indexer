@@ -218,9 +218,10 @@ public final class XmlTools {
      * Per-thread cache of compiled XPath expressions, keyed by return-type filter, namespace signature and the
      * (normalized) expression string. JDOM {@link XPathExpression} instances are reusable but not thread-safe, so the
      * cache is held per thread. See {@link JDomXP} for the rationale (compilation is the dominant per-record XPath cost)
-     * and the (bounded) cache size.
+     * and the (bounded) cache size. Like the JDomXP cache, it is deliberately kept for the lifetime of the thread.
      */
-    private static final ThreadLocal<Map<String, XPathExpression<Object>>> XPATH_CACHE =
+    // Bounded per-thread cache, intentionally kept for the lifetime of the thread (see JDomXP.XPATH_CACHE)
+    private static final ThreadLocal<Map<String, XPathExpression<Object>>> XPATH_CACHE = //NOSONAR java:S5164 bounded, kept on purpose
             ThreadLocal.withInitial(() -> JDomXP.newLruCache(JDomXP.XPATH_CACHE_MAX_ENTRIES));
 
     /**

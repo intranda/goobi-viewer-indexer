@@ -559,6 +559,7 @@ public class Hotfolder {
      *
      * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException
      * @return a boolean
+     * @should commit pending records before reconciling anchors
      */
     public boolean scan() throws FatalIndexerException {
         logger.debug("scan ({})", getHotfolderPath().getFileName());
@@ -644,11 +645,13 @@ public class Hotfolder {
             // means a bulk import re-indexes each anchor at most once per batch (until the hotfolder runs empty) instead of
             // once per volume; awaiting first keeps the reconcile from racing an in-flight volume of the same anchor.
             awaitInFlightRecords();
-            reconcilePendingAnchors();
 
             // Flush any records still pending under the batched-commit policy now that the queue has drained, so a
-            // sub-batch remainder is committed promptly rather than waiting for the next batch.
+            // sub-batch remainder is committed promptly rather than waiting for the next batch. This must happen before the
+            // reconciliation, which counts the indexed volumes with a Solr query: uncommitted volumes (or an uncommitted anchor)
+            // would not be found, and the anchor would be dropped from the pending set with an outdated volume count.
             SolrIndexerDaemon.getInstance().getSearchIndex().commitPending();
+            reconcilePendingAnchors();
 
             listNewFiles();
         }
@@ -702,19 +705,28 @@ public class Hotfolder {
      * Lists the hotfolder and adds record files that are neither queued nor currently being indexed to the index queue (up to its
      * capacity). The same pass collects the names of potential data folders ("&lt;root&gt;_&lt;suffix&gt;") per record file name root, so
      * that deleting a record's leftover data folders later does not have to list the entire hotfolder again per record.
+     * <p>
+     * Files that are already in the priority queue (e.g. an anchor written by {@link MetsIndexer} for immediate re-indexing) are skipped,
+     * so they are not indexed a second time from the regular queue.
      *
      * @return number of files added to the queue
+     * @should not queue files already in the priority queue
      */
-    private int listNewFiles() {
+    int listNewFiles() {
         logger.debug("Hotfolder ({}): Listing files...", getHotfolderPath().getFileName());
         List<Path> newFiles = new ArrayList<>();
         Map<String, List<String>> dataFolderNames = new HashMap<>();
+        // Compare by file name: priority queue entries may be absolute paths, while the listing yields paths relative to hotfolderPath
+        Set<Path> priorityFileNames = new HashSet<>();
+        for (Path priorityFile : highPriorityIndexQueue) {
+            priorityFileNames.add(priorityFile.getFileName());
+        }
         try (DirectoryStream<Path> stream = Files.newDirectoryStream(hotfolderPath)) {
             for (Path path : stream) {
                 String fileName = path.getFileName().toString();
                 if (RECORD_FILE_MATCHER.matches(path.getFileName())) {
                     if (!fileName.endsWith(MetsIndexer.ANCHOR_UPDATE_EXTENSION) && !inFlightRecordFiles.contains(path)
-                            && !indexQueue.contains(path)) {
+                            && !indexQueue.contains(path) && !priorityFileNames.contains(path.getFileName())) {
                         newFiles.add(path);
                     }
                 } else {

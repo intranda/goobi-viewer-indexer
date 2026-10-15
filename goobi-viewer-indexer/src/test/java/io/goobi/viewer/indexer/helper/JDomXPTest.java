@@ -16,6 +16,7 @@
 package io.goobi.viewer.indexer.helper;
 
 import java.io.File;
+import java.util.Map;
 
 import org.jdom2.Namespace;
 import org.junit.jupiter.api.Assertions;
@@ -74,5 +75,24 @@ class JDomXPTest extends AbstractTest {
         Assertions.assertEquals(globalBefore, globalAfter);
         // The global 'ead' prefix must remain bound to EAD2 - the instance binding must not leak into shared state.
         Assertions.assertEquals(EadIndexer.NAMESPACE_EAD2, globalAfter);
+    }
+
+    /**
+     * @see JDomXP#newLruCache(int)
+     * @verifies evict least recently used entry beyond max entries
+     */
+    @Test
+    void newLruCache_shouldEvictLeastRecentlyUsedEntryBeyondMaxEntries() {
+        Map<String, String> cache = JDomXP.newLruCache(2);
+        cache.put("a", "A");
+        cache.put("b", "B");
+        // Accessing "a" makes "b" the least recently used entry
+        Assertions.assertEquals("A", cache.get("a"));
+        cache.put("c", "C");
+
+        Assertions.assertEquals(2, cache.size());
+        Assertions.assertTrue(cache.containsKey("a"));
+        Assertions.assertTrue(cache.containsKey("c"));
+        Assertions.assertFalse(cache.containsKey("b"));
     }
 }

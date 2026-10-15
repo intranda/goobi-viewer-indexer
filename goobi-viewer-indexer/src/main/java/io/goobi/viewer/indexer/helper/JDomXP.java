@@ -109,8 +109,13 @@ public class JDomXP {
 
     private static final String XPATH_TEXT = "/text()"; //NOSONAR XPath expression, not URI
 
-    /** Maximum number of compiled XPath expressions cached per thread. */
-    static final int XPATH_CACHE_MAX_ENTRIES = 4096;
+    /**
+     * Maximum number of compiled XPath expressions cached per thread. Must stay above the number of distinct expressions a single record
+     * uses, otherwise the LRU evicts entries that are still needed and almost every expression gets recompiled: the shipped
+     * config_indexer.xml contains 364 distinct XPath expressions (some used with several return-type filters, which are separate cache
+     * keys), plus hard-coded ones. Record-specific expressions (e.g. containing DMDIDs or file IDs) are used once and drop out at the tail.
+     */
+    static final int XPATH_CACHE_MAX_ENTRIES = 1024;
 
     /**
      * Per-thread cache of compiled XPath expressions, keyed by return-type filter, instance-namespace signature and the
@@ -121,8 +126,11 @@ public class JDomXP {
      * <p>
      * The cache is a bounded LRU map, so it is kept across records on long-lived threads (configured expressions are the same for every
      * record and need not be recompiled) without growing indefinitely through record-specific expressions (e.g. containing DMDIDs).
+     * It is deliberately not removed after each record: its size is bounded by {@link #XPATH_CACHE_MAX_ENTRIES}, and it goes away with the
+     * (pool) thread that owns it.
      */
-    private static final ThreadLocal<Map<String, XPathExpression<Object>>> XPATH_CACHE =
+    // Bounded per-thread cache, intentionally kept for the lifetime of the thread (see Javadoc)
+    private static final ThreadLocal<Map<String, XPathExpression<Object>>> XPATH_CACHE = //NOSONAR java:S5164 bounded, kept on purpose
             ThreadLocal.withInitial(() -> newLruCache(XPATH_CACHE_MAX_ENTRIES));
 
     private Document doc;
@@ -215,6 +223,7 @@ public class JDomXP {
      *
      * @param maxEntries maximum number of entries
      * @return new LRU map
+     * @should evict least recently used entry beyond max entries
      */
     static <K, V> Map<K, V> newLruCache(final int maxEntries) {
         return new LinkedHashMap<>(256, 0.75f, true) {

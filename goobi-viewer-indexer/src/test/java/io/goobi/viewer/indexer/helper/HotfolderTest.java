@@ -353,6 +353,26 @@ class HotfolderTest extends AbstractSolrEnabledTest {
     }
 
     /**
+     * @see Hotfolder#listNewFiles()
+     * @verifies not queue files already in the priority queue
+     */
+    @Test
+    void listNewFiles_shouldNotQueueFilesAlreadyInThePriorityQueue() throws Exception {
+        hotfolder = new Hotfolder(SolrIndexerDaemon.getInstance().getConfiguration().getHotfolderPath());
+        Path priorityFile = Files.writeString(hotfolder.getHotfolderPath().resolve("foo.xml"), "<mets/>");
+        Path regularFile = Files.writeString(hotfolder.getHotfolderPath().resolve("bar.xml"), "<mets/>");
+        try {
+            // Absolute path, as MetsIndexer.writeAnchorXmlFile() enqueues it; the listing yields hotfolder-relative paths
+            hotfolder.getHighPriorityQueue().add(priorityFile.toAbsolutePath());
+
+            assertEquals(1, hotfolder.listNewFiles(), "only the file that is not in the priority queue may be queued");
+        } finally {
+            Files.deleteIfExists(priorityFile);
+            Files.deleteIfExists(regularFile);
+        }
+    }
+
+    /**
      * @see Hotfolder#isUnmodifiedSince(Path,String,long)
      * @verifies return true if nothing modified after threshold
      */
