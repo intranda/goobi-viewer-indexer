@@ -16,16 +16,27 @@
 package io.goobi.viewer.indexer.helper;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Stream;
 
+import org.jdom2.Document;
+import org.jdom2.Element;
+import org.jdom2.JDOMException;
 import org.jdom2.Namespace;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 import io.goobi.viewer.indexer.AbstractTest;
 import io.goobi.viewer.indexer.Ead3Indexer;
 import io.goobi.viewer.indexer.EadIndexer;
 import io.goobi.viewer.indexer.SolrIndexerDaemon;
+import io.goobi.viewer.indexer.helper.JDomXP.FileFormat;
 
 class JDomXPTest extends AbstractTest {
 
@@ -94,5 +105,191 @@ class JDomXPTest extends AbstractTest {
         Assertions.assertTrue(cache.containsKey("a"));
         Assertions.assertTrue(cache.containsKey("c"));
         Assertions.assertFalse(cache.containsKey("b"));
+    }
+
+    /**
+     * @see JDomXP#determineFileFormat(File)
+     * @verifies detect mets mods files correctly
+     */
+    @Test
+    void determineFileFormat_shouldDetectMetsModsFilesCorrectly() throws Exception {
+        Assertions.assertEquals(FileFormat.METS, JDomXP.determineFileFormat(new File("src/test/resources/METS/H030001_mets.xml")));
+    }
+
+    /**
+     * @see JDomXP#determineFileFormat(File)
+     * @verifies detect mets marc files correctly
+     */
+    @Test
+    void determineFileFormat_shouldDetectMetsMarcFilesCorrectly() throws Exception {
+        Assertions.assertEquals(FileFormat.METS_MARC,
+                JDomXP.determineFileFormat(new File("src/test/resources/METS/VoorbeeldMETS_9940609919905131.xml")));
+    }
+
+    /**
+     * @see JDomXP#determineFileFormat(File)
+     * @verifies detect lido files correctly
+     */
+    @Test
+    void determineFileFormat_shouldDetectLidoFilesCorrectly() throws Exception {
+        Assertions.assertEquals(FileFormat.LIDO, JDomXP.determineFileFormat(new File("src/test/resources/LIDO/V0011127.xml")));
+    }
+
+    /**
+     * @see JDomXP#determineFileFormat(File)
+     * @verifies detect ead2 files correctly
+     */
+    @Test
+    void determineFileFormat_shouldDetectEad2FilesCorrectly() throws Exception {
+        Assertions.assertEquals(FileFormat.EAD, JDomXP.determineFileFormat(new File(EAD2_FILE)));
+    }
+
+    /**
+     * @see JDomXP#determineFileFormat(File)
+     * @verifies detect ead3 files correctly
+     */
+    @Test
+    void determineFileFormat_shouldDetectEad3FilesCorrectly() throws Exception {
+        Assertions.assertEquals(FileFormat.EAD3, JDomXP.determineFileFormat(new File(EAD3_FILE)));
+    }
+
+    /**
+     * @see JDomXP#determineFileFormat(File)
+     * @verifies detect denkxweb files correctly
+     */
+    @Test
+    void determineFileFormat_shouldDetectDenkxwebFilesCorrectly() throws Exception {
+        Assertions.assertEquals(FileFormat.DENKXWEB, JDomXP.determineFileFormat(new File("src/test/resources/DenkXweb/10973880.xml")));
+    }
+
+    /**
+     * @see JDomXP#determineFileFormat(File)
+     * @verifies detect dublin core files correctly
+     */
+    @Test
+    void determineFileFormat_shouldDetectDublinCoreFilesCorrectly() throws Exception {
+        Assertions.assertEquals(FileFormat.DUBLINCORE, JDomXP.determineFileFormat(new File("src/test/resources/DC/record.xml")));
+    }
+
+    /**
+     * @see JDomXP#determineFileFormat(File)
+     * @verifies detect worldviews files correctly
+     */
+    @Test
+    void determineFileFormat_shouldDetectWorldviewsFilesCorrectly() throws Exception {
+        Assertions.assertEquals(FileFormat.WORLDVIEWS,
+                JDomXP.determineFileFormat(new File("src/test/resources/WorldViews/gei_test_sthe_quelle_01.xml")));
+    }
+
+    /**
+     * @see JDomXP#determineFileFormat(File)
+     * @verifies detect abbyy files correctly
+     */
+    @Test
+    void determineFileFormat_shouldDetectAbbyyFilesCorrectly() throws Exception {
+        Assertions.assertEquals(FileFormat.ABBYYXML, JDomXP.determineFileFormat(new File("src/test/resources/ABBYYXML/00000001.xml")));
+    }
+
+    /**
+     * @see JDomXP#determineFileFormat(File)
+     * @verifies detect tei files correctly
+     */
+    @Test
+    void determineFileFormat_shouldDetectTeiFilesCorrectly() throws Exception {
+        Assertions.assertEquals(FileFormat.TEI,
+                JDomXP.determineFileFormat(new File("src/test/resources/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005_wc/00000001.xml")));
+    }
+
+    /**
+     * @see JDomXP#determineFileFormat(File)
+     * @verifies detect cms files correctly
+     */
+    @Test
+    void determineFileFormat_shouldDetectCmsFilesCorrectly() throws Exception {
+        Assertions.assertEquals(FileFormat.CMS, JDomXP.determineFileFormat(new File("src/test/resources/cms/cms1.xml")));
+    }
+
+    /**
+     * @see JDomXP#determineFileFormat(File)
+     * @verifies return unknown for files with doctype
+     */
+    @Test
+    void determineFileFormat_shouldReturnUnknownForFilesWithDoctype(@TempDir Path tempDir) throws Exception {
+        Path file = Files.writeString(tempDir.resolve("doctype.xml"),
+                "<?xml version=\"1.0\"?><!DOCTYPE lido [<!ENTITY x \"y\">]><lido:lido xmlns:lido=\"http://www.lido-schema.org\">&x;</lido:lido>");
+        Assertions.assertEquals(FileFormat.UNKNOWN, JDomXP.determineFileFormat(file.toFile()));
+    }
+
+    /**
+     * @see JDomXP#determineFileFormat(File)
+     * @verifies return same results as full document parsing
+     */
+    @Test
+    void determineFileFormat_shouldReturnSameResultsAsFullDocumentParsing() throws Exception {
+        List<Path> files;
+        try (Stream<Path> walk = Files.walk(Paths.get("src/test/resources"))) {
+            files = walk.filter(p -> Files.isRegularFile(p) && p.getFileName().toString().endsWith(".xml")).toList();
+        }
+        Assertions.assertFalse(files.isEmpty());
+        for (Path file : files) {
+            Assertions.assertEquals(determineFileFormatFromDocument(file.toFile()), JDomXP.determineFileFormat(file.toFile()), file.toString());
+        }
+    }
+
+    /**
+     * Previous implementation of {@link JDomXP#determineFileFormat(File)}, which parses the complete document; used as a reference.
+     *
+     * @param file
+     * @return Detected {@link FileFormat}
+     * @throws Exception
+     */
+    private static FileFormat determineFileFormatFromDocument(File file) throws Exception {
+        Document doc;
+        try (FileInputStream fis = new FileInputStream(file)) {
+            doc = XmlTools.getSAXBuilder().build(fis);
+        } catch (JDOMException e) {
+            return FileFormat.UNKNOWN;
+        }
+        Element root = doc.getRootElement();
+        if (root.getNamespace("mets") != null) {
+            List<Element> elements = JDomXP.evaluateToElementsStatic("mets:dmdSec/mets:mdWrap[@MDTYPE='MODS']", root);
+            if (elements != null && !elements.isEmpty()) {
+                return FileFormat.METS;
+            }
+            elements = JDomXP.evaluateToElementsStatic("mets:dmdSec/mets:mdWrap[@MDTYPE='MARC']", root);
+            if (elements != null && !elements.isEmpty()) {
+                return FileFormat.METS_MARC;
+            }
+            return FileFormat.METS;
+        }
+        if (root.getNamespace("lido") != null) {
+            return FileFormat.LIDO;
+        }
+        String uri = root.getNamespace().getURI();
+        if (uri.equals("urn:isbn:1-931666-22-9")) {
+            return FileFormat.EAD;
+        }
+        if (uri.equals("http://ead3.archivists.org/schema/") || uri.equals("https://archivists.org/ns/ead/v4")) {
+            return FileFormat.EAD3;
+        }
+        if (uri.equals("http://denkxweb.de/")) {
+            return FileFormat.DENKXWEB;
+        }
+        if (root.getNamespace("dc") != null) {
+            return FileFormat.DUBLINCORE;
+        }
+        if (root.getName().equals("worldviews")) {
+            return FileFormat.WORLDVIEWS;
+        }
+        if (uri.contains("abbyy")) {
+            return FileFormat.ABBYYXML;
+        }
+        if (root.getName().equals("TEI.2")) {
+            return FileFormat.TEI;
+        }
+        if (root.getName().equals("cmsPage")) {
+            return FileFormat.CMS;
+        }
+        return FileFormat.UNKNOWN;
     }
 }

@@ -27,6 +27,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLStreamConstants;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamReader;
+
 import org.apache.commons.io.output.FileWriterWithEncoding;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -713,59 +718,144 @@ public class JDomXP {
      * @should detect cms files correctly
      */
     public static FileFormat determineFileFormat(File file) throws IOException {
-        try {
-            JDomXP xp = new JDomXP(file);
-            if (xp.doc.getRootElement() == null) {
-                return FileFormat.UNKNOWN;
-            }
-
-            if (xp.doc.getRootElement().getNamespace("mets") != null) {
-                // Records containing both MODS and MARC should be treated as METS/MODS
-                List<Element> elements = evaluateToElementsStatic("mets:dmdSec/mets:mdWrap[@MDTYPE='MODS']", xp.doc.getRootElement());
-                if (elements != null && !elements.isEmpty()) {
-                    return FileFormat.METS;
+        // Only the root element (and, for METS, the dmdSec/mdWrap elements) is needed, so the file is streamed and reading stops as soon as
+        // the format is known, instead of building a complete document that the indexer then parses a second time.
+        XMLInputFactory factory = XMLInputFactory.newInstance();
+        factory.setProperty(XMLInputFactory.SUPPORT_DTD, false);
+        factory.setProperty(XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES, false);
+        factory.setProperty(XMLInputFactory.IS_NAMESPACE_AWARE, true);
+        XMLStreamReader reader = null;
+        try (FileInputStream fis = new FileInputStream(file)) {
+            reader = factory.createXMLStreamReader(fis);
+            while (reader.hasNext()) {
+                int event = reader.next();
+                if (event == XMLStreamConstants.DTD) {
+                    // Same as the SAX builder used for indexing, which disallows DOCTYPE declarations
+                    logger.error("DOCTYPE is disallowed: {}", file.getName());
+                    return FileFormat.UNKNOWN;
                 }
-                elements = evaluateToElementsStatic("mets:dmdSec/mets:mdWrap[@MDTYPE='MARC']", xp.doc.getRootElement());
-                if (elements != null && !elements.isEmpty()) {
-                    return FileFormat.METS_MARC;
+                if (event == XMLStreamConstants.START_ELEMENT) {
+                    return determineFileFormat(reader);
                 }
-                return FileFormat.METS;
             }
-            if (xp.doc.getRootElement().getNamespace("lido") != null) {
-                return FileFormat.LIDO;
-            }
-            if (xp.doc.getRootElement().getNamespace() != null
-                    && (xp.doc.getRootElement().getNamespace().getURI().equals("urn:isbn:1-931666-22-9"))) {
-                return FileFormat.EAD;
-            }
-            if (xp.doc.getRootElement().getNamespace() != null
-                    && (xp.doc.getRootElement().getNamespace().getURI().equals("http://ead3.archivists.org/schema/")
-                            || xp.doc.getRootElement().getNamespace().getURI().equals("https://archivists.org/ns/ead/v4"))) {
-                return FileFormat.EAD3;
-            }
-            if (xp.doc.getRootElement().getNamespace() != null
-                    && xp.doc.getRootElement().getNamespace().getURI().equals("http://denkxweb.de/")) {
-                return FileFormat.DENKXWEB;
-            }
-            if (xp.doc.getRootElement().getNamespace("dc") != null) {
-                return FileFormat.DUBLINCORE;
-            }
-            if (xp.doc.getRootElement().getName().equals("worldviews")) {
-                return FileFormat.WORLDVIEWS;
-            }
-            if (xp.doc.getRootElement().getNamespace().getURI().contains("abbyy")) {
-                return FileFormat.ABBYYXML;
-            }
-            if (xp.doc.getRootElement().getName().equals("TEI.2")) {
-                return FileFormat.TEI;
-            }
-            if (xp.doc.getRootElement().getName().equals("cmsPage")) {
-                return FileFormat.CMS;
-            }
-        } catch (JDOMException e) {
+        } catch (XMLStreamException e) {
             logger.error(e.getMessage());
+        } finally {
+            if (reader != null) {
+                try {
+                    reader.close();
+                } catch (XMLStreamException e) {
+                    logger.error(e.getMessage());
+                }
+            }
         }
 
         return FileFormat.UNKNOWN;
+    }
+
+    /**
+     * Determines the file format from the root element the given reader is positioned at.
+     *
+     * @param reader Reader positioned at the root START_ELEMENT
+     * @return Detected {@link FileFormat}
+     * @throws XMLStreamException
+     */
+    private static FileFormat determineFileFormat(XMLStreamReader reader) throws XMLStreamException {
+        String rootNamespaceUri = reader.getNamespaceURI() != null ? reader.getNamespaceURI() : "";
+        String rootName = reader.getLocalName();
+
+        if (isPrefixDeclaredOnRoot(reader, "mets")) {
+            return determineMetsType(reader);
+        }
+        if (isPrefixDeclaredOnRoot(reader, "lido")) {
+            return FileFormat.LIDO;
+        }
+        if (rootNamespaceUri.equals("urn:isbn:1-931666-22-9")) {
+            return FileFormat.EAD;
+        }
+        if (rootNamespaceUri.equals("http://ead3.archivists.org/schema/") || rootNamespaceUri.equals("https://archivists.org/ns/ead/v4")) {
+            return FileFormat.EAD3;
+        }
+        if (rootNamespaceUri.equals("http://denkxweb.de/")) {
+            return FileFormat.DENKXWEB;
+        }
+        if (isPrefixDeclaredOnRoot(reader, "dc")) {
+            return FileFormat.DUBLINCORE;
+        }
+        if (rootName.equals("worldviews")) {
+            return FileFormat.WORLDVIEWS;
+        }
+        if (rootNamespaceUri.contains("abbyy")) {
+            return FileFormat.ABBYYXML;
+        }
+        if (rootName.equals("TEI.2")) {
+            return FileFormat.TEI;
+        }
+        if (rootName.equals("cmsPage")) {
+            return FileFormat.CMS;
+        }
+
+        return FileFormat.UNKNOWN;
+    }
+
+    /**
+     * Equivalent of JDOM's <code>Element.getNamespace(prefix) != null</code> for the root element: true if the root element itself uses the
+     * given prefix or declares a namespace for it.
+     *
+     * @param reader Reader positioned at the root START_ELEMENT
+     * @param prefix Namespace prefix
+     * @return true if the prefix is bound on the root element; false otherwise
+     */
+    private static boolean isPrefixDeclaredOnRoot(XMLStreamReader reader, String prefix) {
+        if (prefix.equals(reader.getPrefix())) {
+            return true;
+        }
+        for (int i = 0; i < reader.getNamespaceCount(); i++) {
+            if (prefix.equals(reader.getNamespacePrefix(i))) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Distinguishes METS/MODS from METS/MARC by the MDTYPE of the root's <code>mets:dmdSec/mets:mdWrap</code> elements. Records containing
+     * both MODS and MARC are treated as METS/MODS, so reading stops at the first MODS wrapper.
+     *
+     * @param reader Reader positioned at the root START_ELEMENT
+     * @return {@link FileFormat#METS} or {@link FileFormat#METS_MARC}
+     * @throws XMLStreamException
+     */
+    private static FileFormat determineMetsType(XMLStreamReader reader) throws XMLStreamException {
+        Namespace metsNamespace = SolrIndexerDaemon.getInstance().getConfiguration().getNamespaces().get("mets");
+        String metsUri = metsNamespace != null ? metsNamespace.getURI() : "http://www.loc.gov/METS/";
+        boolean marcFound = false;
+        int depth = 1; // root
+        boolean inDmdSec = false;
+        while (reader.hasNext()) {
+            int event = reader.next();
+            if (event == XMLStreamConstants.START_ELEMENT) {
+                depth++;
+                boolean isMets = metsUri.equals(reader.getNamespaceURI());
+                if (depth == 2) {
+                    inDmdSec = isMets && "dmdSec".equals(reader.getLocalName());
+                } else if (depth == 3 && inDmdSec && isMets && "mdWrap".equals(reader.getLocalName())) {
+                    String mdType = reader.getAttributeValue(null, "MDTYPE");
+                    if ("MODS".equals(mdType)) {
+                        return FileFormat.METS;
+                    }
+                    if ("MARC".equals(mdType)) {
+                        marcFound = true;
+                    }
+                }
+            } else if (event == XMLStreamConstants.END_ELEMENT) {
+                depth--;
+                if (depth == 1) {
+                    inDmdSec = false;
+                }
+            }
+        }
+
+        return marcFound ? FileFormat.METS_MARC : FileFormat.METS;
     }
 }
