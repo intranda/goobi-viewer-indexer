@@ -304,6 +304,8 @@ public final class SolrIndexerDaemon {
         for (Hotfolder hotfolder : hotfolders) {
             hotfolder.shutdownRecordExecutor();
         }
+        // Give pending background requests to the Goobi viewer (e.g. PDF pre-rendering) a chance to be sent
+        Utils.shutdownViewerTaskSender(10);
         // Shut down the shared work-stealing pool (if the shared-pool mode was used).
         if (workerPool != null) {
             workerPool.shutdown();

@@ -38,6 +38,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
@@ -95,6 +98,12 @@ public final class Utils {
     private static final Logger logger = LogManager.getLogger(Utils.class);
 
     private static final int HTTP_TIMEOUT = 30000;
+
+    /** Maximum number of viewer task requests (e.g. PDF pre-rendering) waiting to be sent in the background. */
+    static final int VIEWER_TASK_QUEUE_CAPACITY = 10000;
+
+    /** Single background thread that sends task requests to the Goobi viewer (created on first use). */
+    private static ThreadPoolExecutor viewerTaskSender;
 
     /**
      * Lazily created HTTP client shared by all requests. It pools and keeps alive connections, so that the per-record calls to the Goobi
@@ -225,6 +234,70 @@ public final class Utils {
      * @throws java.io.IOException
      * @throws io.goobi.viewer.indexer.exceptions.HTTPException
      */
+    /**
+     * Requests pre-rendering of the page PDFs of the given record from the Goobi viewer in the background, so that the calling record
+     * worker does not wait for the viewer. The requests are sent one at a time by a single thread, which also keeps the viewer from being
+     * flooded with parallel requests while it is busy. If too many requests are pending (e.g. the viewer is unreachable), further requests
+     * are dropped with a warning; the viewer then renders those PDFs on demand.
+     *
+     * @param pi Record identifier
+     * @param forceUpdate If true, existing page PDFs are re-rendered
+     */
+    public static void prerenderPdfsInBackground(String pi, boolean forceUpdate) {
+        if (StringUtils.isBlank(pi) || !SolrIndexerDaemon.getInstance().getConfiguration().isPrerenderPdfsEnabled()) {
+            return;
+        }
+        try {
+            getViewerTaskSender().execute(() -> {
+                try {
+                    prerenderPdfs(pi, forceUpdate);
+                } catch (IOException | HTTPException e) {
+                    logger.error("Could not request PDF pre-rendering for '{}' from the Goobi viewer: {}", pi, e.getMessage());
+                }
+            });
+        } catch (RejectedExecutionException e) {
+            logger.warn("Too many pending Goobi viewer requests, PDF pre-rendering for '{}' is not requested.", pi);
+        }
+    }
+
+    /**
+     * 
+     * @return Background sender for viewer task requests (created on first use)
+     */
+    private static synchronized ThreadPoolExecutor getViewerTaskSender() {
+        if (viewerTaskSender == null) {
+            viewerTaskSender = new ThreadPoolExecutor(1, 1, 0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>(VIEWER_TASK_QUEUE_CAPACITY), r -> {
+                Thread t = new Thread(r, "viewer-task-sender");
+                t.setDaemon(true);
+                return t;
+            });
+        }
+        return viewerTaskSender;
+    }
+
+    /**
+     * Waits (at most the given time) for pending background viewer task requests to be sent and stops the background sender. Requests that
+     * could not be sent in time are dropped.
+     *
+     * @param timeoutSeconds Maximum time to wait
+     */
+    public static synchronized void shutdownViewerTaskSender(long timeoutSeconds) {
+        if (viewerTaskSender == null) {
+            return;
+        }
+        viewerTaskSender.shutdown();
+        try {
+            if (!viewerTaskSender.awaitTermination(timeoutSeconds, TimeUnit.SECONDS)) {
+                int dropped = viewerTaskSender.shutdownNow().size();
+                logger.warn("{} pending Goobi viewer request(s) could not be sent before shutdown.", dropped);
+            }
+        } catch (InterruptedException e) {
+            viewerTaskSender.shutdownNow();
+            Thread.currentThread().interrupt();
+        }
+        viewerTaskSender = null;
+    }
+
     public static void prerenderPdfs(String pi, boolean forceUpdate) throws IOException, HTTPException {
         if (StringUtils.isNotBlank(pi) && SolrIndexerDaemon.getInstance().getConfiguration().isPrerenderPdfsEnabled()) {
             prerenderPdfs(pi, forceUpdate, SolrIndexerDaemon.getInstance().getConfiguration().getPrerenderPdfsConfigVariant(),
@@ -299,7 +372,7 @@ public final class Utils {
             throw new IllegalArgumentException(StringConstants.ERROR_PI_MAY_NOT_BE_NULL);
         }
 
-        logger.info("Requesting prerender pdf task in viewer...");
+        logger.debug("Requesting prerender pdf task in viewer for '{}'...", pi);
         JSONObject json = new JSONObject();
         json.put("type", "PRERENDER_PDF");
         json.put("pi", pi);

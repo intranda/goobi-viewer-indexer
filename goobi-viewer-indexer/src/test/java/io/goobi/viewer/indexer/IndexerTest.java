@@ -45,6 +45,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 import io.goobi.viewer.indexer.helper.Hotfolder;
 import io.goobi.viewer.indexer.helper.JDomXP;
@@ -1098,5 +1099,64 @@ class IndexerTest extends AbstractSolrEnabledTest {
         indexer.addGroupDocs(indexObj, strategy);
         assertEquals("ID123", indexObj.getAnchorPI());
         assertEquals(0, ((LazySolrWriteStrategy) strategy).getDocsToAdd().size());
+    }
+
+    /**
+     * @see Indexer#isPrerenderPagePdfsRequired(String)
+     * @verifies return true if record media folder not empty
+     */
+    @Test
+    void isPrerenderPagePdfsRequired_shouldReturnTrueIfRecordMediaFolderNotEmpty(@TempDir Path tempDir) throws Exception {
+        Indexer indexer = new MetsIndexer(hotfolder);
+        DataRepository dataRepository = new DataRepository(tempDir.toString(), true);
+        indexer.setDataRepository(dataRepository);
+        Path recordMediaFolder = Files.createDirectory(dataRepository.getDir(DataRepository.PARAM_MEDIA).resolve("PPN123"));
+        Files.writeString(recordMediaFolder.resolve("00000001.jpg"), "image");
+
+        SolrIndexerDaemon.getInstance().getConfiguration().overrideValue("init.viewerNotifications.prerenderPdfs[@enabled]", true);
+        try {
+            Assertions.assertTrue(indexer.isPrerenderPagePdfsRequired("PPN123"));
+        } finally {
+            SolrIndexerDaemon.getInstance().getConfiguration().overrideValue("init.viewerNotifications.prerenderPdfs[@enabled]", false);
+        }
+    }
+
+    /**
+     * @see Indexer#isPrerenderPagePdfsRequired(String)
+     * @verifies return false if record media folder missing or empty
+     */
+    @Test
+    void isPrerenderPagePdfsRequired_shouldReturnFalseIfRecordMediaFolderMissingOrEmpty(@TempDir Path tempDir) throws Exception {
+        Indexer indexer = new MetsIndexer(hotfolder);
+        DataRepository dataRepository = new DataRepository(tempDir.toString(), true);
+        indexer.setDataRepository(dataRepository);
+        // Media files of another record must not trigger prerendering for this one
+        Path otherMediaFolder = Files.createDirectory(dataRepository.getDir(DataRepository.PARAM_MEDIA).resolve("PPN456"));
+        Files.writeString(otherMediaFolder.resolve("00000001.jpg"), "image");
+
+        SolrIndexerDaemon.getInstance().getConfiguration().overrideValue("init.viewerNotifications.prerenderPdfs[@enabled]", true);
+        try {
+            Assertions.assertFalse(indexer.isPrerenderPagePdfsRequired("PPN123"));
+            Files.createDirectory(dataRepository.getDir(DataRepository.PARAM_MEDIA).resolve("PPN123"));
+            Assertions.assertFalse(indexer.isPrerenderPagePdfsRequired("PPN123"));
+        } finally {
+            SolrIndexerDaemon.getInstance().getConfiguration().overrideValue("init.viewerNotifications.prerenderPdfs[@enabled]", false);
+        }
+    }
+
+    /**
+     * @see Indexer#isPrerenderPagePdfsRequired(String)
+     * @verifies return false if prerendering disabled
+     */
+    @Test
+    void isPrerenderPagePdfsRequired_shouldReturnFalseIfPrerenderingDisabled(@TempDir Path tempDir) throws Exception {
+        Indexer indexer = new MetsIndexer(hotfolder);
+        DataRepository dataRepository = new DataRepository(tempDir.toString(), true);
+        indexer.setDataRepository(dataRepository);
+        Path recordMediaFolder = Files.createDirectory(dataRepository.getDir(DataRepository.PARAM_MEDIA).resolve("PPN123"));
+        Files.writeString(recordMediaFolder.resolve("00000001.jpg"), "image");
+
+        Assertions.assertFalse(SolrIndexerDaemon.getInstance().getConfiguration().isPrerenderPdfsEnabled());
+        Assertions.assertFalse(indexer.isPrerenderPagePdfsRequired("PPN123"));
     }
 }

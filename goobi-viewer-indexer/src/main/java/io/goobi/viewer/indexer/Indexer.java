@@ -2114,22 +2114,44 @@ public abstract class Indexer {
     }
 
     /**
-     * Send a request to the viewer rest api to start a task to prerender page PDF files if it is required. The task is required if either
-     * hasNewMediaFiles is true, of if a non-empty _media folder exists in the {@link #getDataRepository()}. In the first case, always overwrite any
-     * existing page PDFs; in the second case, only do so if {@link Configuration#isForcePrerenderPdfs()} is true
+     * Requests a task from the viewer rest api to prerender the page PDF files of the given record, if required (see
+     * {@link #isPrerenderPagePdfsRequired(String)}). Existing page PDFs are only overwritten if {@link Configuration#isForcePrerenderPdfs()}
+     * is true. The request is sent in the background, so the record does not wait for the viewer.
      * 
      * @param pi The identifier of the process to create pdfs for
      */
     void prerenderPagePdfsIfRequired(String pi) {
+        if (isPrerenderPagePdfsRequired(pi)) {
+            boolean force = SolrIndexerDaemon.getInstance().getConfiguration().isForcePrerenderPdfs();
+            logger.debug("Process with media files: Trigger prerenderPDFs task in viewer; overwrite existing files: {}", force);
+            Utils.prerenderPdfsInBackground(pi, force);
+        }
+    }
+
+    /**
+     * Page PDFs need to be prerendered if prerendering is enabled and the record has a non-empty media folder in its data repository.
+     * 
+     * @param pi The identifier of the record
+     * @return true if page PDFs should be prerendered for the given record; false otherwise
+     * @should return true if record media folder not empty
+     * @should return false if record media folder missing or empty
+     * @should return false if prerendering disabled
+     */
+    boolean isPrerenderPagePdfsRequired(String pi) {
+        if (StringUtils.isEmpty(pi) || dataRepository == null || !SolrIndexerDaemon.getInstance().getConfiguration().isPrerenderPdfsEnabled()) {
+            return false;
+        }
+        Path mediaFolder = dataRepository.getDir(DataRepository.PARAM_MEDIA);
+        if (mediaFolder == null) {
+            return false;
+        }
+        // The media folder of this record, not the media folder of the entire data repository
+        Path recordMediaFolder = mediaFolder.resolve(pi);
         try {
-            Path mediaFolder = this.dataRepository.getDir(DataRepository.PARAM_MEDIA);
-            if (mediaFolder != null && !FileTools.isFolderEmpty(mediaFolder)) {
-                boolean force = SolrIndexerDaemon.getInstance().getConfiguration().isForcePrerenderPdfs();
-                logger.debug("Reindexed process with media files: Trigger prerenderPDFs task in viewer; overwrite existing files: {}", pi);
-                Utils.prerenderPdfs(pi, force);
-            }
-        } catch (IOException | HTTPException e) {
-            logger.error(e.getMessage());
+            return Files.isDirectory(recordMediaFolder) && !FileTools.isFolderEmpty(recordMediaFolder);
+        } catch (IOException e) {
+            logger.error("Could not check media folder '{}': {}", recordMediaFolder, e.getMessage());
+            return false;
         }
     }
 
