@@ -495,6 +495,28 @@ class HotfolderTest extends AbstractSolrEnabledTest {
     }
 
     /**
+     * @see Hotfolder#isUnmodifiedSince(Path,String,long)
+     * @verifies return false if listed data folder content modified after threshold
+     */
+    @Test
+    void isUnmodifiedSince_shouldReturnFalseIfListedDataFolderContentModifiedAfterThreshold() throws Exception {
+        hotfolder = new Hotfolder(SolrIndexerDaemon.getInstance().getConfiguration().getHotfolderPath());
+        Path recordFile = Files.writeString(hotfolder.getHotfolderPath().resolve("foo.xml"), "<mets/>");
+        Path mediaFolder = Files.createDirectory(hotfolder.getHotfolderPath().resolve("foo_media"));
+        Files.writeString(mediaFolder.resolve("00000001.tif"), "image");
+        long threshold = System.currentTimeMillis() - 60_000;
+        Files.setLastModifiedTime(recordFile, FileTime.fromMillis(threshold - 1000));
+        Files.setLastModifiedTime(mediaFolder, FileTime.fromMillis(threshold - 1000));
+        // The listing records foo_media as a data folder of foo.xml, so only that folder is checked
+        assertEquals(1, hotfolder.listNewFiles());
+
+        assertFalse(hotfolder.isUnmodifiedSince(recordFile, "foo", threshold));
+        // Once the folder content is old enough, the export counts as finished
+        Files.setLastModifiedTime(mediaFolder.resolve("00000001.tif"), FileTime.fromMillis(threshold - 1000));
+        assertTrue(hotfolder.isUnmodifiedSince(recordFile, "foo", threshold));
+    }
+
+    /**
      * @see Hotfolder#getDataFolderTotalSize(String)
      * @verifies sum sizes of all data folders of the record
      */

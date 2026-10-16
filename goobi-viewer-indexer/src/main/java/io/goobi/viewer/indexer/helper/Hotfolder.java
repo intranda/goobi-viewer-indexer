@@ -1593,6 +1593,9 @@ public class Hotfolder {
 
     /**
      * Checks whether neither the given record file nor any entry in its data folders has been modified after the given point in time.
+     * <p>
+     * If the record file was found by a hotfolder listing, only the data folders found by that listing are checked (data folders are
+     * expected to be in place before their record file).
      *
      * @param recordFile record file in the hotfolder
      * @param fileNameRoot record file name without extension
@@ -1601,13 +1604,21 @@ public class Hotfolder {
      * @should return true if nothing modified after threshold
      * @should return false if record file modified after threshold
      * @should return false if data folder content modified after threshold
+     * @should return false if listed data folder content modified after threshold
      */
     boolean isUnmodifiedSince(Path recordFile, String fileNameRoot, long thresholdMillis) {
         if (recordFile.toFile().lastModified() > thresholdMillis) {
             return false;
         }
+        // If the record file was found by a hotfolder listing, only check the data folders that listing found, instead of probing every
+        // possible suffix (one file system lookup each, in a potentially very large hotfolder directory) for every record
+        List<String> listedDataFolders = dataFolderCandidates.get(fileNameRoot);
         for (String suffix : Indexer.DATA_FOLDER_SUFFIXES) {
-            Path dataFolder = getHotfolderPath().resolve(fileNameRoot + suffix);
+            String dataFolderName = fileNameRoot + suffix;
+            if (listedDataFolders != null && !listedDataFolders.contains(dataFolderName)) {
+                continue;
+            }
+            Path dataFolder = getHotfolderPath().resolve(dataFolderName);
             if (!Files.exists(dataFolder)) {
                 continue;
             }
