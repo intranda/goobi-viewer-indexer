@@ -28,6 +28,7 @@ import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -36,6 +37,7 @@ import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutionException;
@@ -156,6 +158,12 @@ public class Hotfolder {
     /** Regular index queue for files found in the regular hotfolder. */
     private final Queue<Path> indexQueue = new LinkedBlockingQueue<>(queueCapacity);
     /**
+     * Record files found by the last hotfolder listing that did not fit into {@link #indexQueue}. The queue is refilled from here, and the
+     * hotfolder is only listed again once this is empty, so a hotfolder with a large number of files is not listed again for every
+     * {@link #queueCapacity} records.
+     */
+    private final Deque<Path> listingBacklog = new ConcurrentLinkedDeque<>();
+    /**
      * High priority index queue for anchor re-indexing, anchor update (.UPDATED) files, etc. Concurrent because record
      * workers add .UPDATED files to it (via {@link #getHighPriorityQueue()}) while the scan thread polls it.
      */
@@ -200,6 +208,8 @@ public class Hotfolder {
     private final ConcurrentMap<String, List<String>> dataFolderCandidates = new ConcurrentHashMap<>();
     /** Record files submitted to {@link #recordExecutor} that have not finished yet (excluded when refilling the queue). */
     private final Set<Path> inFlightRecordFiles = ConcurrentHashMap.newKeySet();
+    /** Maximum number of record files kept in {@link #listingBacklog} (in addition to the queue) per hotfolder listing. */
+    static final int MAX_LISTING_BACKLOG = 50000;
 
     /**
      * Zero-arg constructor for tests.
@@ -598,6 +608,10 @@ public class Hotfolder {
                 return false;
             }
 
+            if (indexQueue.isEmpty()) {
+                fillQueueFromBacklog();
+            }
+
             if (!indexQueue.isEmpty()) {
                 if (recordExecutor == null) {
                     // Serial: index the next export-ready record inline (unchanged behavior).
@@ -656,7 +670,37 @@ public class Hotfolder {
             listNewFiles();
         }
 
-        return !highPriorityIndexQueue.isEmpty() || !indexQueue.isEmpty();
+        return !highPriorityIndexQueue.isEmpty() || !indexQueue.isEmpty() || !listingBacklog.isEmpty();
+    }
+
+    /**
+     * Moves record files from {@link #listingBacklog} into the (empty) index queue, skipping files that no longer exist.
+     *
+     * @return Number of files moved into the queue
+     * @should move files from backlog into queue
+     * @should skip files that no longer exist
+     */
+    int fillQueueFromBacklog() {
+        int added = 0;
+        Path recordFile;
+        while ((recordFile = listingBacklog.peek()) != null) {
+            if (!Files.exists(recordFile)) {
+                // Removed from the hotfolder since it was listed
+                listingBacklog.poll();
+                dataFolderCandidates.remove(FilenameUtils.getBaseName(recordFile.getFileName().toString()));
+                continue;
+            }
+            if (!indexQueue.offer(recordFile)) {
+                break;
+            }
+            listingBacklog.poll();
+            added++;
+        }
+        if (added > 0) {
+            logger.debug("Hotfolder ({}): {} files moved from the listing backlog to the index queue, {} remaining.",
+                    getHotfolderPath().getFileName(), added, listingBacklog.size());
+        }
+        return added;
     }
 
     /**
@@ -703,7 +747,8 @@ public class Hotfolder {
 
     /**
      * Lists the hotfolder and adds record files that are neither queued nor currently being indexed to the index queue (up to its
-     * capacity). The same pass collects the names of potential data folders ("&lt;root&gt;_&lt;suffix&gt;") per record file name root, so
+     * capacity); further files are kept in {@link #listingBacklog} (up to {@link #MAX_LISTING_BACKLOG}). Only called while the backlog is
+     * empty. The same pass collects the names of potential data folders ("&lt;root&gt;_&lt;suffix&gt;") per record file name root, so
      * that deleting a record's leftover data folders later does not have to list the entire hotfolder again per record.
      * <p>
      * Files that are already in the priority queue (e.g. an anchor written by {@link MetsIndexer} for immediate re-indexing) are skipped,
@@ -745,14 +790,20 @@ public class Hotfolder {
         int added = 0;
         for (Path recordFile : newFiles) {
             if (indexQueue.offer(recordFile)) {
-                added++;
-                String root = FilenameUtils.getBaseName(recordFile.getFileName().toString());
-                dataFolderCandidates.put(root, dataFolderNames.getOrDefault(root, Collections.emptyList()));
                 logger.debug("Added file from '{}' to index queue: {}", getHotfolderPath().getFileName(), recordFile.getFileName());
+            } else if (listingBacklog.size() < MAX_LISTING_BACKLOG) {
+                // Queue full: keep the file for later instead of listing the hotfolder again after the next queueCapacity records
+                listingBacklog.add(recordFile);
             } else {
-                logger.debug("Queue full ({})", getHotfolderPath().getFileName());
+                logger.debug("Queue and listing backlog full ({})", getHotfolderPath().getFileName());
                 break;
             }
+            added++;
+            String root = FilenameUtils.getBaseName(recordFile.getFileName().toString());
+            dataFolderCandidates.put(root, dataFolderNames.getOrDefault(root, Collections.emptyList()));
+        }
+        if (!listingBacklog.isEmpty()) {
+            logger.debug("Hotfolder ({}): {} files kept in the listing backlog.", getHotfolderPath().getFileName(), listingBacklog.size());
         }
 
         return added;
@@ -1463,8 +1514,9 @@ public class Hotfolder {
         }
 
         if (matchingFile != null) {
-            if (indexQueue.contains(matchingFile)) {
-                indexQueue.remove(matchingFile);
+            boolean removedFromQueue = indexQueue.remove(matchingFile);
+            boolean removedFromBacklog = listingBacklog.remove(matchingFile);
+            if (removedFromQueue || removedFromBacklog) {
                 logger.info("Removed '{}' from hotfolder '{}' index queue.", matchingFile.getFileName(), getHotfolderPath().getFileName());
             }
             Files.delete(matchingFile);
@@ -1599,6 +1651,31 @@ public class Hotfolder {
         }
 
         return total;
+    }
+
+    /**
+     * For unit testing purposes.
+     *
+     * @return Number of record files in the index queue
+     */
+    int getIndexQueueSize() {
+        return indexQueue.size();
+    }
+
+    /**
+     * For unit testing purposes.
+     *
+     * @return Number of record files in the listing backlog
+     */
+    int getListingBacklogSize() {
+        return listingBacklog.size();
+    }
+
+    /**
+     * For unit testing purposes.
+     */
+    void clearIndexQueue() {
+        indexQueue.clear();
     }
 
     /**

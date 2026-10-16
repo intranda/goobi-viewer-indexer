@@ -25,6 +25,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.attribute.FileTime;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.io.FileUtils;
@@ -369,6 +370,80 @@ class HotfolderTest extends AbstractSolrEnabledTest {
         } finally {
             Files.deleteIfExists(priorityFile);
             Files.deleteIfExists(regularFile);
+        }
+    }
+
+    /**
+     * @see Hotfolder#listNewFiles()
+     * @verifies keep files beyond queue capacity in backlog
+     */
+    @Test
+    void listNewFiles_shouldKeepFilesBeyondQueueCapacityInBacklog() throws Exception {
+        hotfolder = new Hotfolder(SolrIndexerDaemon.getInstance().getConfiguration().getHotfolderPath());
+        List<Path> files = createRecordFiles(hotfolder.getHotfolderPath(), 510);
+        try {
+            assertEquals(510, hotfolder.listNewFiles());
+            assertEquals(500, hotfolder.getIndexQueueSize());
+            assertEquals(10, hotfolder.getListingBacklogSize());
+        } finally {
+            deleteFiles(files);
+        }
+    }
+
+    /**
+     * @see Hotfolder#fillQueueFromBacklog()
+     * @verifies move files from backlog into queue
+     */
+    @Test
+    void fillQueueFromBacklog_shouldMoveFilesFromBacklogIntoQueue() throws Exception {
+        hotfolder = new Hotfolder(SolrIndexerDaemon.getInstance().getConfiguration().getHotfolderPath());
+        List<Path> files = createRecordFiles(hotfolder.getHotfolderPath(), 510);
+        try {
+            hotfolder.listNewFiles();
+            // Queue still full: nothing can be moved
+            assertEquals(0, hotfolder.fillQueueFromBacklog());
+            // Simulate the queue having been processed
+            hotfolder.clearIndexQueue();
+            assertEquals(10, hotfolder.fillQueueFromBacklog());
+            assertEquals(10, hotfolder.getIndexQueueSize());
+            assertEquals(0, hotfolder.getListingBacklogSize());
+        } finally {
+            deleteFiles(files);
+        }
+    }
+
+    /**
+     * @see Hotfolder#fillQueueFromBacklog()
+     * @verifies skip files that no longer exist
+     */
+    @Test
+    void fillQueueFromBacklog_shouldSkipFilesThatNoLongerExist() throws Exception {
+        hotfolder = new Hotfolder(SolrIndexerDaemon.getInstance().getConfiguration().getHotfolderPath());
+        List<Path> files = createRecordFiles(hotfolder.getHotfolderPath(), 510);
+        try {
+            hotfolder.listNewFiles();
+            hotfolder.clearIndexQueue();
+            // Delete all files; the 10 in the backlog must not be queued anymore
+            deleteFiles(files);
+            assertEquals(0, hotfolder.fillQueueFromBacklog());
+            assertEquals(0, hotfolder.getIndexQueueSize());
+            assertEquals(0, hotfolder.getListingBacklogSize());
+        } finally {
+            deleteFiles(files);
+        }
+    }
+
+    private static List<Path> createRecordFiles(Path folder, int count) throws IOException {
+        List<Path> ret = new ArrayList<>(count);
+        for (int i = 0; i < count; i++) {
+            ret.add(Files.writeString(folder.resolve(String.format("BACKLOGTEST%04d.xml", i)), "<mets/>"));
+        }
+        return ret;
+    }
+
+    private static void deleteFiles(List<Path> files) throws IOException {
+        for (Path file : files) {
+            Files.deleteIfExists(file);
         }
     }
 
