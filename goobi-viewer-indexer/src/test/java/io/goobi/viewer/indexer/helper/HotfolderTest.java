@@ -433,6 +433,32 @@ class HotfolderTest extends AbstractSolrEnabledTest {
         }
     }
 
+    /**
+     * @see Hotfolder#pollExistingRecordFile()
+     * @verifies skip files that no longer exist
+     */
+    @Test
+    void pollExistingRecordFile_shouldSkipFilesThatNoLongerExist() throws Exception {
+        hotfolder = new Hotfolder(SolrIndexerDaemon.getInstance().getConfiguration().getHotfolderPath());
+        List<Path> files = createRecordFiles(hotfolder.getHotfolderPath(), 3);
+        try {
+            assertEquals(3, hotfolder.listNewFiles());
+            // Simulate a record that was indexed (and its file removed) after the listing had read its name
+            Files.delete(files.get(1));
+
+            List<Path> polled = new ArrayList<>();
+            Path recordFile;
+            while ((recordFile = hotfolder.pollExistingRecordFile()) != null) {
+                polled.add(recordFile.getFileName());
+            }
+            assertEquals(2, polled.size());
+            assertFalse(polled.contains(files.get(1).getFileName()));
+            assertEquals(0, hotfolder.getIndexQueueSize());
+        } finally {
+            deleteFiles(files);
+        }
+    }
+
     private static List<Path> createRecordFiles(Path folder, int count) throws IOException {
         List<Path> ret = new ArrayList<>(count);
         for (int i = 0; i < count; i++) {

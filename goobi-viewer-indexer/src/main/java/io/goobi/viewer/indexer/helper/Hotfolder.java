@@ -818,7 +818,7 @@ public class Hotfolder {
      * @return an export-ready record file, or null if none is ready right now
      */
     private Path pollExportReadyRecord() {
-        Path recordFile = indexQueue.poll();
+        Path recordFile = pollExistingRecordFile();
         if (recordFile == null) {
             return null;
         }
@@ -832,12 +832,32 @@ public class Hotfolder {
                 logger.info("All files in queue have not yet finished export.");
                 return null;
             }
-            recordFile = indexQueue.poll();
+            recordFile = pollExistingRecordFile();
             if (recordFile == null) {
                 return null;
             }
         }
         return recordFile;
+    }
+
+    /**
+     * Polls the index queue for the next record file that still exists. A hotfolder listing that runs while records are being indexed may
+     * return a file that an in-flight record removes right afterwards (directory entries are read in batches); such a file must not be
+     * indexed a second time.
+     *
+     * @return Next existing record file in the queue; null if the queue is empty
+     * @should skip files that no longer exist
+     */
+    Path pollExistingRecordFile() {
+        Path recordFile;
+        while ((recordFile = indexQueue.poll()) != null) {
+            if (Files.exists(recordFile)) {
+                return recordFile;
+            }
+            logger.debug("Skipping '{}', it no longer exists.", recordFile.getFileName());
+            dataFolderCandidates.remove(FilenameUtils.getBaseName(recordFile.getFileName().toString()));
+        }
+        return null;
     }
 
     /**
