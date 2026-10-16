@@ -20,6 +20,7 @@ import java.io.FileInputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
@@ -291,5 +292,33 @@ class JDomXPTest extends AbstractTest {
             return FileFormat.CMS;
         }
         return FileFormat.UNKNOWN;
+    }
+
+    /**
+     * @see JDomXP#buildNamespaceSignature(Map)
+     * @verifies build same signature regardless of insertion order
+     */
+    @Test
+    void buildNamespaceSignature_shouldBuildSameSignatureRegardlessOfInsertionOrder() {
+        Map<String, Namespace> namespaces1 = new LinkedHashMap<>();
+        namespaces1.put("a", Namespace.getNamespace("a", "http://a"));
+        namespaces1.put("b", Namespace.getNamespace("b", "http://b"));
+        Map<String, Namespace> namespaces2 = new LinkedHashMap<>();
+        namespaces2.put("b", Namespace.getNamespace("b", "http://b"));
+        namespaces2.put("a", Namespace.getNamespace("a", "http://a"));
+
+        Assertions.assertEquals(JDomXP.buildNamespaceSignature(namespaces1), JDomXP.buildNamespaceSignature(namespaces2));
+        namespaces2.put("a", Namespace.getNamespace("a", "http://other"));
+        Assertions.assertNotEquals(JDomXP.buildNamespaceSignature(namespaces1), JDomXP.buildNamespaceSignature(namespaces2));
+    }
+
+    /**
+     * @see JDomXP#buildNamespaceSignature(Map)
+     * @verifies return empty string if no namespaces
+     */
+    @Test
+    void buildNamespaceSignature_shouldReturnEmptyStringIfNoNamespaces() {
+        Assertions.assertEquals("", JDomXP.buildNamespaceSignature(null));
+        Assertions.assertEquals("", JDomXP.buildNamespaceSignature(Map.of()));
     }
 }

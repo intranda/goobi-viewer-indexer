@@ -135,7 +135,7 @@ public class JDomXP {
      * (pool) thread that owns it.
      */
     // Bounded per-thread cache, intentionally kept for the lifetime of the thread (see Javadoc)
-    private static final ThreadLocal<Map<String, XPathExpression<Object>>> XPATH_CACHE = //NOSONAR java:S5164 bounded, kept on purpose
+    private static final ThreadLocal<Map<XPathCacheKey, XPathExpression<Object>>> XPATH_CACHE = //NOSONAR java:S5164 bounded, kept on purpose
             ThreadLocal.withInitial(() -> newLruCache(XPATH_CACHE_MAX_ENTRIES));
 
     private Document doc;
@@ -145,6 +145,9 @@ public class JDomXP {
      * evaluation, so a prefix such as <code>ead</code> can resolve to a document-specific URI (e.g. EAD2 vs. EAD3) without mutating shared state.
      */
     private final Map<String, Namespace> localNamespaces = new HashMap<>();
+
+    /** Signature of {@link #localNamespaces} for the XPath cache key; updated whenever a namespace is registered. */
+    private String localNamespaceSignature = "";
 
     /**
      * Constructor that reads a Document from the given file.
@@ -181,6 +184,7 @@ public class JDomXP {
     public JDomXP addNamespace(Namespace namespace) {
         if (namespace != null) {
             localNamespaces.put(namespace.getPrefix(), namespace);
+            localNamespaceSignature = buildNamespaceSignature(localNamespaces);
         }
         return this;
     }
@@ -194,7 +198,7 @@ public class JDomXP {
      * @return {@link java.util.List}
      */
     public List<Object> evaluate(String expr, final Object parent) {
-        return evaluate(expr, parent != null ? parent : doc, Filters.fpassthrough(), localNamespaces);
+        return evaluate(expr, parent != null ? parent : doc, Filters.fpassthrough(), localNamespaces, localNamespaceSignature);
     }
 
     /**
@@ -204,15 +208,17 @@ public class JDomXP {
      * @param parent If not null, the expression is evaluated relative to this element.
      * @param filter Return type filter.
      * @param localNamespaces Instance namespaces applied on top of (and overriding) the global configuration namespaces; may be null.
+     * @param localNamespaceSignature Signature of <code>localNamespaces</code> (see {@link #buildNamespaceSignature(Map)}); empty if none
      * @return List<Object>
      */
     @SuppressWarnings({ "rawtypes" })
-    private static List<Object> evaluate(String expr, Object parent, Filter filter, Map<String, Namespace> localNamespaces) {
+    private static List<Object> evaluate(String expr, Object parent, Filter filter, Map<String, Namespace> localNamespaces,
+            String localNamespaceSignature) {
         if (expr == null) {
             throw new IllegalArgumentException("expr may not be null");
         }
 
-        return getCompiledExpression(expr, filter, localNamespaces).evaluate(parent);
+        return getCompiledExpression(expr, filter, localNamespaces, localNamespaceSignature).evaluate(parent);
     }
 
     /**
@@ -247,20 +253,24 @@ public class JDomXP {
      * reusing a per-thread cached instance when possible. Only the compilation (XPath parsing and namespace binding) is
      * cached; evaluation against a concrete context node still happens on every call. The global configuration namespaces
      * are effectively constant for the lifetime of the process, so they do not need to be part of the cache key.
+     * <p>
+     * The cache key uses the expression as given (normalized only when compiling), so a cache hit does not create any new strings: the
+     * expressions usually come from the configuration as the same string instances, whose hash codes are cached.
      *
      * @param expr XPath expression to compile; may not be null
      * @param filter return type filter
      * @param localNamespaces instance namespaces applied on top of (and overriding) the global configuration namespaces; may be null
+     * @param localNamespaceSignature Signature of <code>localNamespaces</code> (see {@link #buildNamespaceSignature(Map)}); empty if none
      * @return compiled, reusable {@link XPathExpression}
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    private static XPathExpression<Object> getCompiledExpression(String expr, Filter filter, Map<String, Namespace> localNamespaces) {
-        String normalizedExpr = expr.trim().replace("\n", "");
-        String cacheKey = buildCacheKey(normalizedExpr, filter, localNamespaces);
-        Map<String, XPathExpression<Object>> cache = XPATH_CACHE.get();
+    private static XPathExpression<Object> getCompiledExpression(String expr, Filter filter, Map<String, Namespace> localNamespaces,
+            String localNamespaceSignature) {
+        XPathCacheKey cacheKey = new XPathCacheKey(filter.getClass(), localNamespaceSignature, expr);
+        Map<XPathCacheKey, XPathExpression<Object>> cache = XPATH_CACHE.get();
         XPathExpression<Object> xpath = cache.get(cacheKey);
         if (xpath == null) {
-            XPathBuilder<Object> builder = new XPathBuilder<>(normalizedExpr, filter);
+            XPathBuilder<Object> builder = new XPathBuilder<>(expr.trim().replace("\n", ""), filter);
             // Add all global namespaces
             for (Namespace value : SolrIndexerDaemon.getInstance().getConfiguration().getNamespaces().values()) {
                 builder.setNamespace(value.getPrefix(), value.getURI());
@@ -278,26 +288,33 @@ public class JDomXP {
     }
 
     /**
-     * Builds a stable cache key from the return-type filter, the instance namespaces and the normalized expression. The
-     * filter is distinguished by its class (all filters used here are parameterless), and the instance namespaces are
-     * emitted sorted by prefix so that iteration order does not affect the key.
+     * Builds a stable signature of the given instance namespaces for the XPath cache key, sorted by prefix so that iteration order does not
+     * matter.
      *
-     * @param normalizedExpr expression with surrounding whitespace and newlines already stripped
-     * @param filter return type filter
      * @param localNamespaces instance namespaces; may be null or empty
-     * @return cache key
+     * @return signature; empty if there are no instance namespaces
+     * @should build same signature regardless of insertion order
+     * @should return empty string if no namespaces
      */
-    @SuppressWarnings({ "rawtypes" })
-    private static String buildCacheKey(String normalizedExpr, Filter filter, Map<String, Namespace> localNamespaces) {
-        StringBuilder sb = new StringBuilder(filter.getClass().getName());
-        sb.append(' ');
-        if (localNamespaces != null && !localNamespaces.isEmpty()) {
-            for (Map.Entry<String, Namespace> entry : new TreeMap<>(localNamespaces).entrySet()) {
-                sb.append(entry.getKey()).append('=').append(entry.getValue().getURI()).append(';');
-            }
+    static String buildNamespaceSignature(Map<String, Namespace> localNamespaces) {
+        if (localNamespaces == null || localNamespaces.isEmpty()) {
+            return "";
         }
-        sb.append(' ').append(normalizedExpr);
+        StringBuilder sb = new StringBuilder();
+        for (Map.Entry<String, Namespace> entry : new TreeMap<>(localNamespaces).entrySet()) {
+            sb.append(entry.getKey()).append('=').append(entry.getValue().getURI()).append(';');
+        }
         return sb.toString();
+    }
+
+    /**
+     * Key of the per-thread compiled XPath cache.
+     *
+     * @param filterClass Class of the return type filter (all filters used here are parameterless)
+     * @param namespaceSignature Signature of the instance namespaces
+     * @param expr Expression as given
+     */
+    record XPathCacheKey(Class<?> filterClass, String namespaceSignature, String expr) {
     }
 
     /**
@@ -309,7 +326,7 @@ public class JDomXP {
      * @should return all values
      */
     public List<Element> evaluateToElements(String expr, final Object parent) {
-        return toElementList(evaluate(expr, parent != null ? parent : doc, Filters.element(), localNamespaces));
+        return toElementList(evaluate(expr, parent != null ? parent : doc, Filters.element(), localNamespaces, localNamespaceSignature));
     }
 
     /**
@@ -321,7 +338,7 @@ public class JDomXP {
      * @return {@link java.util.ArrayList} or null
      */
     public static List<Element> evaluateToElementsStatic(String expr, Object parent) {
-        return toElementList(evaluate(expr, parent, Filters.element(), null));
+        return toElementList(evaluate(expr, parent, Filters.element(), null, ""));
     }
 
     /**
@@ -354,7 +371,7 @@ public class JDomXP {
      */
     public List<Attribute> evaluateToAttributes(String expr, final Object parent) {
         List<Attribute> retList = new ArrayList<>();
-        List<Object> list = evaluate(expr, parent != null ? parent : doc, Filters.attribute(), localNamespaces);
+        List<Object> list = evaluate(expr, parent != null ? parent : doc, Filters.attribute(), localNamespaces, localNamespaceSignature);
         if (list == null) {
             return Collections.emptyList();
         }
@@ -376,7 +393,7 @@ public class JDomXP {
      * @should return value correctly
      */
     public String evaluateToAttributeStringValue(String expr, final Object parent) {
-        List<Object> list = evaluate(expr, parent != null ? parent : doc, Filters.attribute(), localNamespaces);
+        List<Object> list = evaluate(expr, parent != null ? parent : doc, Filters.attribute(), localNamespaces, localNamespaceSignature);
         if (list == null || list.isEmpty()) {
             return null;
         }
@@ -406,7 +423,7 @@ public class JDomXP {
         if (!expression.endsWith(XPATH_TEXT)) {
             expression += XPATH_TEXT;
         }
-        List<Object> list = evaluate(expression, parent != null ? parent : doc, Filters.text(), localNamespaces);
+        List<Object> list = evaluate(expression, parent != null ? parent : doc, Filters.text(), localNamespaces, localNamespaceSignature);
         if (list == null || list.isEmpty()) {
             return null;
         }
@@ -426,7 +443,7 @@ public class JDomXP {
      * @should convert strings to NFC
      */
     public List<String> evaluateToStringList(String expr, final Object parent) {
-        return toStringList(evaluate(expr, parent != null ? parent : doc, Filters.fpassthrough(), localNamespaces));
+        return toStringList(evaluate(expr, parent != null ? parent : doc, Filters.fpassthrough(), localNamespaces, localNamespaceSignature));
     }
 
     /**
@@ -438,7 +455,7 @@ public class JDomXP {
      * @return {@link java.util.ArrayList} or null
      */
     public static List<String> evaluateToStringListStatic(String expr, Object parent) {
-        return toStringList(evaluate(expr, parent, Filters.fpassthrough(), null));
+        return toStringList(evaluate(expr, parent, Filters.fpassthrough(), null, ""));
     }
 
     /**
@@ -477,7 +494,7 @@ public class JDomXP {
         if (!useExpr.endsWith(XPATH_TEXT)) {
             useExpr += XPATH_TEXT;
         }
-        List<Object> list = evaluate(useExpr, parent != null ? parent : doc, Filters.cdata(), localNamespaces);
+        List<Object> list = evaluate(useExpr, parent != null ? parent : doc, Filters.cdata(), localNamespaces, localNamespaceSignature);
         if (list == null || list.isEmpty()) {
             return null;
         }
