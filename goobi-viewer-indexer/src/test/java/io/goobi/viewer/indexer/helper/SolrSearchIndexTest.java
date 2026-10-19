@@ -330,4 +330,36 @@ class SolrSearchIndexTest extends AbstractSolrEnabledTest {
         Assertions.assertEquals(1, duplicates.size());
         Assertions.assertTrue(duplicates.contains("H030001"));
     }
+
+    /**
+     * @see SolrSearchIndex#search(String,List)
+     * @verifies return all hits
+     */
+    @Test
+    void search_shouldReturnAllHits() throws Exception {
+        for (int i = 1; i <= 3; i++) {
+            SolrInputDocument doc = new SolrInputDocument();
+            doc.addField(SolrConstants.IDDOC, "SEARCHTEST" + i);
+            doc.addField(SolrConstants.GROUPFIELD, "SEARCHTEST" + i);
+            doc.addField(SolrConstants.PI_TOPSTRUCT, "PPN_SEARCHTEST");
+            searchIndex.writeToIndex(doc);
+        }
+        searchIndex.commit(false);
+
+        SolrDocumentList result = searchIndex.search(SolrConstants.PI_TOPSTRUCT + ":PPN_SEARCHTEST", Collections.singletonList(SolrConstants.IDDOC));
+        Assertions.assertEquals(3, result.getNumFound());
+        Assertions.assertEquals(3, result.size());
+    }
+
+    /**
+     * @see SolrSearchIndex#search(String,List)
+     * @verifies return empty list if no hits
+     */
+    @Test
+    void search_shouldReturnEmptyListIfNoHits() throws Exception {
+        SolrDocumentList result = searchIndex.search(SolrConstants.PI_TOPSTRUCT + ":PPN_DOES_NOT_EXIST", null);
+        Assertions.assertNotNull(result);
+        Assertions.assertEquals(0, result.getNumFound());
+        Assertions.assertTrue(result.isEmpty());
+    }
 }

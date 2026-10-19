@@ -148,18 +148,30 @@ public final class SolrSearchIndex {
     }
 
     /**
+     * Returns all documents matching the given query.
      * <p>
-     * search.
-     * </p>
+     * The number of hits is determined first and then exactly that many rows are requested. Solr sizes its result buffer by the requested
+     * number of rows (capped at the number of documents in the index) and fills it in advance, so requesting "all" rows with a huge
+     * <code>rows</code> value made every query allocate a buffer the size of the entire index, even if it only matched a single document.
+     * With large indexes and many parallel queries this exhausted the Solr heap.
      *
      * @param query a {@link java.lang.String} object.
      * @param fields a {@link java.util.List} object.
      * @return a {@link org.apache.solr.common.SolrDocumentList} object.
      * @throws org.apache.solr.client.solrj.SolrServerException if any.
      * @throws java.io.IOException
+     * @should return all hits
+     * @should return empty list if no hits
      */
     public SolrDocumentList search(String query, List<String> fields) throws SolrServerException, IOException {
-        return search(query, fields, MAX_HITS);
+        SolrQuery countQuery = new SolrQuery(query);
+        countQuery.setRows(0);
+        SolrDocumentList countResult = client.query(countQuery).getResults();
+        long numFound = countResult.getNumFound();
+        if (numFound == 0) {
+            return countResult;
+        }
+        return search(query, fields, (int) Math.min(numFound, MAX_HITS));
     }
 
     /**
