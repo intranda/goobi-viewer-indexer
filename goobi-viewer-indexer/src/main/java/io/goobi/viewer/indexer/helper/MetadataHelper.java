@@ -470,7 +470,37 @@ public final class MetadataHelper {
     }
 
     /**
-     * 
+     * Retrieves an authority data record (see {@link NormDataImporter#getSingleRecord(String, String, int)}).
+     */
+    @FunctionalInterface
+    interface AuthorityRecordRetriever {
+        Record retrieve(String url, String proxyUrl, int proxyPort);
+    }
+
+    /**
+     * Retrieves the authority data record for the given URL. A {@link NullPointerException} thrown during retrieval is treated like a failed
+     * retrieval (null): normdataimporter (up to 2.1.5) throws it instead of returning null if the authority service answers with an error
+     * status (e.g. the DNB SRU interface under load), which would otherwise fail the entire record.
+     *
+     * @param url Authority data URL
+     * @param proxyUrl Optional proxy URL
+     * @param proxyPort Proxy port
+     * @param retriever Retrieval function
+     * @return Retrieved record; null if retrieval failed
+     * @should return null if retrieval throws NullPointerException
+     * @should return retrieved record
+     */
+    static Record fetchAuthorityRecord(String url, String proxyUrl, int proxyPort, AuthorityRecordRetriever retriever) {
+        try {
+            return retriever.retrieve(url, proxyUrl, proxyPort);
+        } catch (NullPointerException e) { //NOSONAR java:S1696 Defect in third-party code (null response passed to Normalizer.normalize)
+            logger.warn("Authority dataset could not be retrieved (service error response?): {} ({})", url, e.getMessage());
+            return null;
+        }
+    }
+
+    /**
+     *
      * @param authorityUrl URL to query
      * @param sbDefaultMetadataValues StringBuilder for collecting
      * @param sbNormDataTerms
@@ -535,7 +565,7 @@ public final class MetadataHelper {
             }
 
             try {
-                rec = NormDataImporter.getSingleRecord(url, proxyUrl, proxyPort);
+                rec = fetchAuthorityRecord(url, proxyUrl, proxyPort, NormDataImporter::getSingleRecord);
             } catch (IllegalArgumentException e) {
                 // Catch invalid URLs (e.g. containing illegal characters) that slip through sanitization
                 logger.error("Invalid authority URL '{}': {}", url, e.getMessage());

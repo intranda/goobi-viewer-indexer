@@ -41,6 +41,7 @@ import org.junit.jupiter.api.Test;
 
 import de.intranda.digiverso.normdataimporter.model.NormData;
 import de.intranda.digiverso.normdataimporter.model.NormDataValue;
+import de.intranda.digiverso.normdataimporter.model.Record;
 import io.goobi.viewer.indexer.AbstractTest;
 import io.goobi.viewer.indexer.SolrIndexerDaemon;
 import io.goobi.viewer.indexer.helper.JDomXP.FileFormat;
@@ -64,6 +65,29 @@ class MetadataHelperTest extends AbstractTest {
         AbstractTest.setUpClass();
 
         hotfolder = new Hotfolder(SolrIndexerDaemon.getInstance().getConfiguration().getHotfolderPath());
+    }
+
+    /**
+     * @see MetadataHelper#fetchAuthorityRecord(String, String, int, MetadataHelper.AuthorityRecordRetriever)
+     * @verifies return null if retrieval throws NullPointerException
+     */
+    @Test
+    void fetchAuthorityRecord_shouldReturnNullIfRetrievalThrowsNullPointerException() {
+        Assertions.assertNull(MetadataHelper.fetchAuthorityRecord("https://d-nb.info/gnd/11856014X", null, 0, (url, proxyUrl, proxyPort) -> {
+            throw new NullPointerException("Cannot invoke \"java.lang.CharSequence.toString()\" because \"src\" is null");
+        }));
+    }
+
+    /**
+     * @see MetadataHelper#fetchAuthorityRecord(String, String, int, MetadataHelper.AuthorityRecordRetriever)
+     * @verifies return retrieved record
+     */
+    @Test
+    void fetchAuthorityRecord_shouldReturnRetrievedRecord() {
+        Record rec = new Record() {
+        };
+        Assertions.assertSame(rec,
+                MetadataHelper.fetchAuthorityRecord("https://d-nb.info/gnd/11856014X", null, 0, (url, proxyUrl, proxyPort) -> rec));
     }
 
     /**
