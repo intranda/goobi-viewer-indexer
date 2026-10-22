@@ -184,7 +184,7 @@ public class WorldViewsIndexer extends Indexer {
                 }
             }
             prerenderPagePdfsIfRequired(pi);
-            logger.info("Successfully prepared '{}'. It will be added to the index with the next commit batch", mainFile.getFileName());
+            recordIndexed(result);
 
             // Remove this file from lower priority hotfolders to avoid overriding changes with older version
             SolrIndexerDaemon.getInstance().removeRecordFileFromLowerPriorityHotfolders(pi, hotfolder);
@@ -405,6 +405,7 @@ public class WorldViewsIndexer extends Indexer {
 
             logger.debug("Writing document to index...");
             useWriteStrategy.writeDocs(SolrIndexerDaemon.getInstance().getConfiguration().isAggregateRecords());
+            ret.setDocStructType(indexObj.getType()).setNumPages(recordNumPages).setNumSourcePages(recordNumSourcePages);
             // New volume: flag its anchor for deferred, coalesced reconciliation of NUMVOLUMES + METS.
             if (indexObj.isVolume() && !indexObj.isUpdate() && indexObj.getParent() != null) {
                 hotfolder.flagAnchorForReconciliation(indexObj.getParent().getPi());
@@ -714,6 +715,7 @@ public class WorldViewsIndexer extends Indexer {
             int pageCountStart) throws InterruptedException {
         // Get all physical elements
         List<Element> eleListImages = xp.evaluateToElements("worldviews/resource/images/image", null);
+        recordNumSourcePages = eleListImages.size();
         logger.debug("Generating {} page documents (count starts at {})...", eleListImages.size(), pageCountStart);
 
         if (SolrIndexerDaemon.getInstance().getConfiguration().getPageThreads() > 1) {
@@ -753,6 +755,7 @@ public class WorldViewsIndexer extends Indexer {
                 }
             }
         }
+        recordNumPages = writeStrategy.getPageDocsSize();
         logger.info("Generated {} page documents.", writeStrategy.getPageDocsSize());
     }
 

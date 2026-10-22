@@ -37,6 +37,7 @@ import org.junit.jupiter.api.Test;
 import io.goobi.viewer.indexer.AbstractSolrEnabledTest;
 import io.goobi.viewer.indexer.SolrIndexerDaemon;
 import io.goobi.viewer.indexer.exceptions.FatalIndexerException;
+import io.goobi.viewer.indexer.model.IndexingResult;
 import io.goobi.viewer.indexer.model.datarepository.DataRepository;
 
 /**
@@ -568,5 +569,47 @@ class HotfolderTest extends AbstractSolrEnabledTest {
         Files.writeString(otherMediaFolder.resolve("00000001.tif"), "1234567890");
 
         assertEquals(0, hotfolder.getDataFolderTotalSize("foo"));
+    }
+
+    /**
+     * @see Hotfolder#buildRecordSummary(IndexingResult,Long,int)
+     * @verifies build summary for committed record
+     */
+    @Test
+    void buildRecordSummary_shouldBuildSummaryForCommittedRecord() {
+        IndexingResult result = new IndexingResult().setPi("PPN123").setDocStructType("Monograph").setNumPages(2).setNumSourcePages(3);
+        assertEquals("Indexed 'PPN123' (Monograph, 2 of 3 pages); 42 record files remaining in hotfolder.",
+                Hotfolder.buildRecordSummary(result, 42L, 1));
+    }
+
+    /**
+     * @see Hotfolder#buildRecordSummary(IndexingResult,Long,int)
+     * @verifies mention commit batch if batch size greater than one
+     */
+    @Test
+    void buildRecordSummary_shouldMentionCommitBatchIfBatchSizeGreaterThanOne() {
+        IndexingResult result = new IndexingResult().setPi("PPN123").setDocStructType("Monograph").setNumPages(2).setNumSourcePages(2);
+        assertEquals("Prepared 'PPN123' (Monograph, 2 of 2 pages); will be committed with the next commit batch;"
+                + " 0 record files remaining in hotfolder.", Hotfolder.buildRecordSummary(result, 0L, 100));
+    }
+
+    /**
+     * @see Hotfolder#buildRecordSummary(IndexingResult,Long,int)
+     * @verifies omit page counts if not available
+     */
+    @Test
+    void buildRecordSummary_shouldOmitPageCountsIfNotAvailable() {
+        IndexingResult result = new IndexingResult().setPi("PPN123").setDocStructType("Periodical");
+        assertEquals("Indexed 'PPN123' (Periodical); 5 record files remaining in hotfolder.", Hotfolder.buildRecordSummary(result, 5L, 1));
+    }
+
+    /**
+     * @see Hotfolder#buildRecordSummary(IndexingResult,Long,int)
+     * @verifies omit remaining files if not counted
+     */
+    @Test
+    void buildRecordSummary_shouldOmitRemainingFilesIfNotCounted() {
+        IndexingResult result = new IndexingResult().setPi("PPN123").setDocStructType("Monograph").setNumPages(1).setNumSourcePages(1);
+        assertEquals("Indexed 'PPN123' (Monograph, 1 of 1 pages).", Hotfolder.buildRecordSummary(result, null, 1));
     }
 }

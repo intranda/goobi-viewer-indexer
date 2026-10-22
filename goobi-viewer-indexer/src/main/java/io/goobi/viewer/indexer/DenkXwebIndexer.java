@@ -167,7 +167,7 @@ public class DenkXwebIndexer extends Indexer {
                     }
                 }
                 prerenderPagePdfsIfRequired(identifier);
-                logger.info("Successfully prepared '{}'. It will be added to the index with the next commit batch", identifier);
+                recordIndexed(result);
 
                 // Remove this file from lower priority hotfolders to avoid overriding changes with older version
                 SolrIndexerDaemon.getInstance().removeRecordFileFromLowerPriorityHotfolders(identifier, hotfolder);
@@ -323,6 +323,7 @@ public class DenkXwebIndexer extends Indexer {
 
             logger.debug("Writing document to index...");
             writeStrategy.writeDocs(SolrIndexerDaemon.getInstance().getConfiguration().isAggregateRecords());
+            ret.setDocStructType(indexObj.getType()).setNumPages(recordNumPages).setNumSourcePages(recordNumSourcePages);
 
             // Set image file names belonging to this record
             ret.setMediaImageFileNames(imgFileNames);
@@ -385,6 +386,8 @@ public class DenkXwebIndexer extends Indexer {
             boolean downloadExternalImages) {
         String xpath = "//denkxweb:images/denkxweb:image";
         List<Element> eleImageList = xp.evaluateToElements(xpath, null);
+        recordNumSourcePages = eleImageList != null ? eleImageList.size() : 0;
+        recordNumPages = 0;
         if (eleImageList == null || eleImageList.isEmpty()) {
             // No pages
             return;
@@ -407,6 +410,7 @@ public class DenkXwebIndexer extends Indexer {
             }
         }
 
+        recordNumPages = writeStrategy.getPageDocsSize();
         logger.info("Generated {} page documents.", writeStrategy.getPageDocsSize());
     }
 

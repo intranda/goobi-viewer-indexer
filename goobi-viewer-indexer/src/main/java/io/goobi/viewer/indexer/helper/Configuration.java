@@ -45,6 +45,7 @@ import org.jdom2.Namespace;
 
 import io.goobi.viewer.indexer.EadIndexer;
 import io.goobi.viewer.indexer.exceptions.FatalIndexerException;
+import io.goobi.viewer.indexer.helper.logging.LoggingTools;
 import io.goobi.viewer.indexer.model.config.FulltextSuppressionCondition;
 import io.goobi.viewer.indexer.model.config.ImageUrlReplaceRule;
 import io.goobi.viewer.indexer.model.config.MetadataConfigurationManager;
@@ -61,6 +62,8 @@ public final class Configuration {
 
     /** Constant <code>CONFIG_FILE_NAME="config_indexer.xml"</code> */
     public static final String CONFIG_FILE_NAME = "config_indexer.xml";
+
+    private static final String XPATH_CONSOLE_LOGGING = "init.logging.console";
 
     private ReloadingFileBasedConfigurationBuilder<XMLConfiguration> builder;
     private MetadataConfigurationManager metadataConfigurationManager;
@@ -129,6 +132,8 @@ public final class Configuration {
         metadataConfigurationManager = new MetadataConfigurationManager(config);
         namespaces = new HashMap<>();
         initNamespaces();
+        // Read from the given config object; getConfig() would trigger another reload check
+        LoggingTools.setConsoleAppenderEnabled(config.getBoolean(XPATH_CONSOLE_LOGGING, true));
     }
 
     /**
@@ -560,6 +565,16 @@ public final class Configuration {
      */
     public boolean isCountHotfolderFiles() {
         return getBoolean("performance.countHotfolderFiles", true);
+    }
+
+    /**
+     * If false, log output to the console (stdout) is disabled. Applied at startup and on every configuration reload.
+     *
+     * @should return correct value
+     * @return true if log output to the console is enabled; false otherwise
+     */
+    public boolean isConsoleLoggingEnabled() {
+        return getBoolean(XPATH_CONSOLE_LOGGING, true);
     }
 
     /**

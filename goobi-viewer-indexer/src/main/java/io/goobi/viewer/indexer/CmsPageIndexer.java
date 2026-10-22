@@ -325,7 +325,8 @@ public class CmsPageIndexer extends Indexer {
 
             logger.debug("Writing document to index...");
             useWriteStrategy.writeDocs(SolrIndexerDaemon.getInstance().getConfiguration().isAggregateRecords());
-            logger.info("Successfully prepared '{}'. It will be added to the index with the next commit batch", cmsFile.getFileName());
+            ret.setDocStructType(indexObj.getType()).setNumPages(recordNumPages).setNumSourcePages(recordNumSourcePages);
+            recordIndexed(ret);
         } catch (IOException | IndexerException | FatalIndexerException | SolrServerException | JDOMException e) {
             logger.error("Indexing of '{}' could not be finished due to an error.", cmsFile.getFileName());
             logger.error(e.getMessage(), e);

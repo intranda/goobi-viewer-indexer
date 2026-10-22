@@ -150,7 +150,7 @@ public class EadIndexer extends Indexer {
                 }
             }
             prerenderPagePdfsIfRequired(pi);
-            logger.info("Successfully prepared '{}'. It will be added to the index with the next commit batch", eadFile.getFileName());
+            recordIndexed(result);
 
             // Remove this file from lower priority hotfolders to avoid overriding changes with older version
             SolrIndexerDaemon.getInstance().removeRecordFileFromLowerPriorityHotfolders(pi, hotfolder);
@@ -294,6 +294,7 @@ public class EadIndexer extends Indexer {
             writeStrategy.setRootDoc(rootDoc);
 
             writeStrategy.writeDocs(SolrIndexerDaemon.getInstance().getConfiguration().isAggregateRecords());
+            ret.setDocStructType(indexObj.getType()).setNumPages(recordNumPages).setNumSourcePages(recordNumSourcePages);
             logger.debug("Finished writing data for '{}' to Solr.", pi);
         } catch (FatalIndexerException | IndexerException | IOException | JDOMException | SolrServerException e) {
             logger.error("Indexing of '{}' could not be finished due to an error.", eadFile.getFileName());

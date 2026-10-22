@@ -194,7 +194,7 @@ public class LidoIndexer extends Indexer {
                     }
                 }
                 prerenderPagePdfsIfRequired(identifier);
-                logger.info("Successfully prepared '{}'. It will be added to the index with the next commit batch", identifier);
+                recordIndexed(result);
 
                 // Remove this file from lower priority hotfolders to avoid overriding changes with older version
                 SolrIndexerDaemon.getInstance().removeRecordFileFromLowerPriorityHotfolders(identifier, hotfolder);
@@ -358,6 +358,7 @@ public class LidoIndexer extends Indexer {
 
             logger.debug("Writing document to index...");
             writeStrategy.writeDocs(SolrIndexerDaemon.getInstance().getConfiguration().isAggregateRecords());
+            ret.setDocStructType(indexObj.getType()).setNumPages(recordNumPages).setNumSourcePages(recordNumSourcePages);
 
             // Set image file names belonging to this record
             ret.setMediaImageFileNames(imgFileNames);
@@ -591,6 +592,8 @@ public class LidoIndexer extends Indexer {
             List<String> imageXPaths, boolean downloadExternalImages, boolean useOldImageFolderIfAvailable) {
         String xpath = "/lido:lido/lido:administrativeMetadata/lido:resourceWrap/lido:resourceSet";
         List<Element> resourceSetList = xp.evaluateToElements(xpath, null);
+        recordNumSourcePages = resourceSetList != null ? resourceSetList.size() : 0;
+        recordNumPages = 0;
         if (resourceSetList == null || resourceSetList.isEmpty()) {
             // No pages
             return;
@@ -622,6 +625,7 @@ public class LidoIndexer extends Indexer {
             }
         }
 
+        recordNumPages = writeStrategy.getPageDocsSize();
         logger.info("Generated {} page documents.", writeStrategy.getPageDocsSize());
     }
 

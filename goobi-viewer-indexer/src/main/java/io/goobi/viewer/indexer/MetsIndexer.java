@@ -249,7 +249,7 @@ public class MetsIndexer extends Indexer {
                 }
             }
             prerenderPagePdfsIfRequired(result.getPi());
-            logger.info("Successfully prepared '{}'. It will be added to the index with the next commit batch", metsFile.getFileName());
+            recordIndexed(result);
 
             // Remove this file from lower priority hotfolders to avoid overriding changes with older version
             SolrIndexerDaemon.getInstance().removeRecordFileFromLowerPriorityHotfolders(result.getPi(), hotfolder);
@@ -293,6 +293,7 @@ public class MetsIndexer extends Indexer {
      * @should not add dateupdated if value already exists
      * @should index page metadata correctly
      * @should flag anchor for reconciliation even if anchor not yet visible in index
+     * @should set summary data on result
      *
      */
     public IndexingResult index(Path metsFile, Map<String, Path> dataFolders, final ISolrWriteStrategy inWriteStrategy,
@@ -627,6 +628,7 @@ public class MetsIndexer extends Indexer {
 
             writeStrategy.writeDocs(SolrIndexerDaemon.getInstance().getConfiguration().isAggregateRecords());
             logger.debug("Finished writing data for '{}' to Solr.", pi);
+            ret.setDocStructType(indexObj.getType()).setNumPages(recordNumPages).setNumSourcePages(recordNumSourcePages);
         } catch (InterruptedException e) {
             logger.error("Indexing of '{}' could not be finished due to an error.", metsFile.getFileName());
             logger.error(e.getMessage(), e);
@@ -681,6 +683,8 @@ public class MetsIndexer extends Indexer {
             pages.forEach(writeStrategy::addPage);
             this.recordHasImages = pageBuilder.isHasImages();
             this.recordHasFulltext = pageBuilder.isHasFulltext();
+            this.recordNumPages = pageBuilder.getNumPages();
+            this.recordNumSourcePages = pageBuilder.getNumSourcePages();
             // Add Solr docs for grouped page metadata
             for (PhysicalElement page : pages) {
                 int docsAdded = addGroupedMetadataDocsForPage(page, pi, writeStrategy);

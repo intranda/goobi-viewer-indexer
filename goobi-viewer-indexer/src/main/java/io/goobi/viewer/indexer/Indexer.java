@@ -107,6 +107,7 @@ import io.goobi.viewer.indexer.helper.XmlTools;
 import io.goobi.viewer.indexer.helper.logging.SecondaryAppender;
 import io.goobi.viewer.indexer.model.GroupedMetadata;
 import io.goobi.viewer.indexer.model.IndexObject;
+import io.goobi.viewer.indexer.model.IndexingResult;
 import io.goobi.viewer.indexer.model.LuceneField;
 import io.goobi.viewer.indexer.model.PhysicalElement;
 import io.goobi.viewer.indexer.model.SolrConstants;
@@ -184,6 +185,12 @@ public abstract class Indexer {
     protected boolean recordHasFulltext = false;
     /** Indicates whether full-text indexing is suppressed for this record (see {@link #isFulltextSuppressed()}). */
     protected boolean suppressFulltext = false;
+    /** Number of generated page documents of the current record (without shapes); null if no pages were generated. */
+    protected Integer recordNumPages = null;
+    /** Number of pages in the source document of the current record; null if no pages were generated. */
+    protected Integer recordNumSourcePages = null;
+    /** Successfully indexed records of the current source file, for the per-record summary log line. */
+    private final List<IndexingResult> indexedRecords = new ArrayList<>();
 
     protected final HttpConnector httpConnector;
 
@@ -209,6 +216,22 @@ public abstract class Indexer {
      * @return List of successfully indexed record identifiers
      */
     public abstract List<String> addToIndex(Path recordFile, Map<String, Boolean> reindexSettings) throws IOException, FatalIndexerException;
+
+    /**
+     * Registers the given result as a successfully indexed record (see {@link #getIndexedRecords()}).
+     * 
+     * @param result Result of the successfully indexed record
+     */
+    protected void recordIndexed(IndexingResult result) {
+        indexedRecords.add(result);
+    }
+
+    /**
+     * @return Results of the records successfully indexed by the last {@link #addToIndex(Path, Map)} call
+     */
+    public List<IndexingResult> getIndexedRecords() {
+        return indexedRecords;
+    }
 
     /**
      * 

@@ -269,6 +269,15 @@ class ConfigurationTest extends AbstractTest {
     }
 
     /**
+     * @see Configuration#isConsoleLoggingEnabled()
+     * @verifies return correct value
+     */
+    @Test
+    void isConsoleLoggingEnabled_shouldReturnCorrectValue() {
+        assertTrue(SolrIndexerDaemon.getInstance().getConfiguration().isConsoleLoggingEnabled());
+    }
+
+    /**
      * @see Configuration#isPrioritizeLargeImageFolders()
      * @verifies return correct value
      */

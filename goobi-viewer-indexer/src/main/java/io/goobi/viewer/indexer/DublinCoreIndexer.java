@@ -155,7 +155,7 @@ public class DublinCoreIndexer extends Indexer {
                 }
             }
             prerenderPagePdfsIfRequired(pi);
-            logger.info("Successfully prepared '{}'. It will be added to the index with the next commit batch", dcFile.getFileName());
+            recordIndexed(result);
 
             // Remove this file from lower priority hotfolders to avoid overriding changes with older version
             SolrIndexerDaemon.getInstance().removeRecordFileFromLowerPriorityHotfolders(pi, hotfolder);
@@ -341,6 +341,7 @@ public class DublinCoreIndexer extends Indexer {
 
             logger.debug("Writing document to index...");
             useWriteStrategy.writeDocs(SolrIndexerDaemon.getInstance().getConfiguration().isAggregateRecords());
+            ret.setDocStructType(indexObj.getType()).setNumPages(recordNumPages).setNumSourcePages(recordNumSourcePages);
             logger.debug("Finished writing data for '{}' to Solr.", pi);
         } catch (IOException | IndexerException | FatalIndexerException | JDOMException | SolrServerException e) {
             logger.error("Indexing of '{}' could not be finished due to an error.", dcFile.getFileName());
@@ -536,6 +537,7 @@ public class DublinCoreIndexer extends Indexer {
         // Get all physical elements
         String xpath = "/record/dc:relation";
         List<Element> eleImageList = xp.evaluateToElements(xpath, null);
+        recordNumSourcePages = eleImageList.size();
         logger.debug("Generating {} page documents (count starts at {})...", eleImageList.size(), pageCountStart);
 
         // Generate pages sequentially
@@ -547,6 +549,7 @@ public class DublinCoreIndexer extends Indexer {
                 order++;
             }
         }
+        recordNumPages = writeStrategy.getPageDocsSize();
         logger.info("Generated {} page documents.", writeStrategy.getPageDocsSize());
     }
 

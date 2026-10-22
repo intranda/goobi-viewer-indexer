@@ -34,6 +34,7 @@ import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.ForkJoinTask;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 
 import org.apache.commons.io.FilenameUtils;
@@ -119,6 +120,10 @@ public class PhysicalDocumentBuilder {
 
     private boolean hasImages = false;
     private boolean hasFulltext = false;
+    /** Number of pages in the physical structMap, as of the last {@link #generatePageDocuments} call. */
+    private int numSourcePages = 0;
+    /** Number of generated page documents (without shapes), as of the last {@link #generatePageDocuments} call. */
+    private final AtomicInteger numPages = new AtomicInteger();
 
     /**
      * Create a builder for pages and other documents based on physical files
@@ -241,6 +246,8 @@ public class PhysicalDocumentBuilder {
         // Get all physical elements
         String xpath = buildPagesXpathExpresson();
         List<Element> eleStructMapPhysicalList = xp.evaluateToElements(xpath, null);
+        numSourcePages = eleStructMapPhysicalList.size();
+        numPages.set(0);
         if (eleStructMapPhysicalList.isEmpty()) {
             logger.info("No pages found.");
             return Collections.emptyList();
@@ -264,6 +271,7 @@ public class PhysicalDocumentBuilder {
                                     downloadExternalImages);
                     if (page != null) {
                         pages.add(page);
+                        numPages.incrementAndGet();
                         // Shapes must be added as regular pages to the WriteStrategy to ensure correct docstrcut mapping
                         for (PhysicalElement shape : page.getShapes()) {
                             pages.add(shape);
@@ -301,6 +309,7 @@ public class PhysicalDocumentBuilder {
                         pi, order, dataFolders, dataRepository, downloadExternalImages);
                 if (page != null) {
                     pages.add(page);
+                    numPages.incrementAndGet();
                     // Shapes must be added as regular pages to the WriteStrategy to ensure correct docstrcut mapping
                     for (PhysicalElement shape : page.getShapes()) {
                         pages.add(shape);
@@ -323,6 +332,20 @@ public class PhysicalDocumentBuilder {
 
     public boolean isHasImages() {
         return hasImages;
+    }
+
+    /**
+     * @return Number of pages in the physical structMap, as of the last {@link #generatePageDocuments} call
+     */
+    public int getNumSourcePages() {
+        return numSourcePages;
+    }
+
+    /**
+     * @return Number of generated page documents (without shapes), as of the last {@link #generatePageDocuments} call
+     */
+    public int getNumPages() {
+        return numPages.get();
     }
 
     /**

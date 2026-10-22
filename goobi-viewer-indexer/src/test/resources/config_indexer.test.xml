@@ -7,6 +7,10 @@
 		<!-- Minimum required free space to index (MB) -->
 		<minStorageSpace>2048</minStorageSpace>
 
+		<logging>
+			<console>true</console>
+		</logging>
+
 		<solrUrl>https://viewer-testing-index.goobi.io/solr/indexer-testing</solrUrl>
         <viewerUrl>http://localhost:8080/viewer</viewerUrl>
 

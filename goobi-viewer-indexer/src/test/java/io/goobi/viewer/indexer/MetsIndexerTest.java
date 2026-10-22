@@ -938,6 +938,27 @@ class MetsIndexerTest extends AbstractSolrEnabledTest {
     }
 
     /**
+     * @see MetsIndexer#index(Path,Map,ISolrWriteStrategy,int,boolean)
+     * @verifies set summary data on result
+     */
+    @Test
+    void index_shouldSetSummaryDataOnResult() throws Exception {
+        Map<String, Path> dataFolders = new HashMap<>();
+        IndexingResult result = new MetsIndexer(hotfolder).index(metsFile, dataFolders, null, 1, false);
+        Assertions.assertNull(result.getError());
+        assertEquals("Monograph", result.getDocStructType());
+        assertEquals(16, result.getNumSourcePages());
+        assertEquals(16, result.getNumPages());
+
+        // Shapes are added as pages to the write strategy, but must not be counted as pages
+        Path file = Paths.get("src/test/resources/METS/74241.xml");
+        result = new MetsIndexer(hotfolder).index(file, dataFolders, null, 1, false);
+        Assertions.assertNull(result.getError());
+        assertEquals(52, result.getNumSourcePages());
+        assertEquals(52, result.getNumPages());
+    }
+
+    /**
      * @see MetsIndexer#index(Path,boolean,Map,ISolrWriteStrategy,int)
      * @verifies write shape metadata correctly
      */
