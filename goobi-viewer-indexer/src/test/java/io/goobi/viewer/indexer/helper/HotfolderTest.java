@@ -27,6 +27,7 @@ import java.nio.file.Paths;
 import java.nio.file.attribute.FileTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.AfterEach;
@@ -37,6 +38,7 @@ import org.junit.jupiter.api.Test;
 import io.goobi.viewer.indexer.AbstractSolrEnabledTest;
 import io.goobi.viewer.indexer.SolrIndexerDaemon;
 import io.goobi.viewer.indexer.exceptions.FatalIndexerException;
+import io.goobi.viewer.indexer.exceptions.SolrUnavailableException;
 import io.goobi.viewer.indexer.model.IndexingResult;
 import io.goobi.viewer.indexer.model.datarepository.DataRepository;
 
@@ -611,5 +613,76 @@ class HotfolderTest extends AbstractSolrEnabledTest {
     void buildRecordSummary_shouldOmitRemainingFilesIfNotCounted() {
         IndexingResult result = new IndexingResult().setPi("PPN123").setDocStructType("Monograph").setNumPages(1).setNumSourcePages(1);
         assertEquals("Indexed 'PPN123' (Monograph, 1 of 1 pages).", Hotfolder.buildRecordSummary(result, null, 1));
+    }
+
+    /**
+     * @see Hotfolder#doIndex(Path)
+     * @verifies keep record file in hotfolder if solr unavailable
+     */
+    @Test
+    void doIndex_shouldKeepRecordFileInHotfolderIfSolrUnavailable() throws Exception {
+        hotfolder = new Hotfolder(SolrIndexerDaemon.getInstance().getConfiguration().getHotfolderPath()) {
+            @Override
+            boolean handleSourceFile(Path sourceFile, Map<String, Boolean> reindexSettings) {
+                throw new SolrUnavailableException("Solr request 'commit' failed: Connection refused");
+            }
+        };
+        Path recordFile = Files.writeString(hotfolder.getHotfolderPath().resolve("foo.xml"), "<mets/>");
+        try {
+            assertFalse(hotfolder.doIndex(recordFile));
+            assertTrue(Files.isRegularFile(recordFile));
+            assertFalse(Files.exists(hotfolder.getErrorMets().resolve("foo.xml")));
+        } finally {
+            Files.deleteIfExists(recordFile);
+        }
+    }
+
+    /**
+     * @see Hotfolder#doIndex(Path)
+     * @verifies move record file to error folder on unexpected error
+     */
+    @Test
+    void doIndex_shouldMoveRecordFileToErrorFolderOnUnexpectedError() throws Exception {
+        hotfolder = new Hotfolder(SolrIndexerDaemon.getInstance().getConfiguration().getHotfolderPath()) {
+            @Override
+            boolean handleSourceFile(Path sourceFile, Map<String, Boolean> reindexSettings) {
+                throw new IllegalStateException("unexpected");
+            }
+        };
+        Path recordFile = Files.writeString(hotfolder.getHotfolderPath().resolve("foo.xml"), "<mets/>");
+        Path errorFile = hotfolder.getErrorMets().resolve("foo.xml");
+        Path errorLogFile = hotfolder.getErrorMets().resolve("foo.log");
+        try {
+            assertFalse(hotfolder.doIndex(recordFile));
+            assertFalse(Files.exists(recordFile));
+            assertTrue(Files.isRegularFile(errorFile));
+            assertTrue(Files.readString(errorLogFile).contains("unexpected"));
+        } finally {
+            Files.deleteIfExists(recordFile);
+            Files.deleteIfExists(errorFile);
+            Files.deleteIfExists(errorLogFile);
+        }
+    }
+
+    /**
+     * @see Hotfolder#moveRecordFileToErrorFolder(Path,String)
+     * @verifies move record file to error folder
+     */
+    @Test
+    void moveRecordFileToErrorFolder_shouldMoveRecordFileToErrorFolder() throws Exception {
+        hotfolder = new Hotfolder(SolrIndexerDaemon.getInstance().getConfiguration().getHotfolderPath());
+        Path recordFile = Files.writeString(hotfolder.getHotfolderPath().resolve("bar.xml"), "<mets/>");
+        Path errorFile = hotfolder.getErrorMets().resolve("bar.xml");
+        Path errorLogFile = hotfolder.getErrorMets().resolve("bar.log");
+        try {
+            hotfolder.moveRecordFileToErrorFolder(recordFile, "some error");
+            assertFalse(Files.exists(recordFile));
+            assertEquals("<mets/>", Files.readString(errorFile));
+            assertEquals("some error", Files.readString(errorLogFile));
+        } finally {
+            Files.deleteIfExists(recordFile);
+            Files.deleteIfExists(errorFile);
+            Files.deleteIfExists(errorLogFile);
+        }
     }
 }

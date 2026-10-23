@@ -52,6 +52,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
+import org.apache.solr.common.SolrException;
 import org.apache.solr.common.SolrInputDocument;
 import org.jdom2.Attribute;
 import org.jdom2.Element;
@@ -635,7 +636,7 @@ public class MetsIndexer extends Indexer {
             ret.setError(e.getMessage() != null ? e.getMessage() : e.getClass().getName());
             SolrIndexerDaemon.getInstance().getSearchIndex().rollback();
             Thread.currentThread().interrupt();
-        } catch (FatalIndexerException | IndexerException | IOException | JDOMException | SolrServerException e) {
+        } catch (FatalIndexerException | IndexerException | IOException | JDOMException | SolrServerException | SolrException e) {
             logger.error("Indexing of '{}' could not be finished due to an error.", metsFile.getFileName());
             logger.error(e.getMessage(), e);
             ret.setError(e.getMessage() != null ? e.getMessage() : e.getClass().getName());

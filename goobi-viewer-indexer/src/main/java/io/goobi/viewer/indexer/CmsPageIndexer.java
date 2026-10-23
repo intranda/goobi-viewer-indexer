@@ -33,6 +33,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.solr.client.solrj.SolrServerException;
+import org.apache.solr.common.SolrException;
 import org.apache.solr.common.SolrInputDocument;
 import org.jdom2.Document;
 import org.jdom2.Element;
@@ -327,7 +328,7 @@ public class CmsPageIndexer extends Indexer {
             useWriteStrategy.writeDocs(SolrIndexerDaemon.getInstance().getConfiguration().isAggregateRecords());
             ret.setDocStructType(indexObj.getType()).setNumPages(recordNumPages).setNumSourcePages(recordNumSourcePages);
             recordIndexed(ret);
-        } catch (IOException | IndexerException | FatalIndexerException | SolrServerException | JDOMException e) {
+        } catch (IOException | IndexerException | FatalIndexerException | SolrServerException | JDOMException | SolrException e) {
             logger.error("Indexing of '{}' could not be finished due to an error.", cmsFile.getFileName());
             logger.error(e.getMessage(), e);
             ret.setError(e.getMessage() != null ? e.getMessage() : e.getClass().getName());

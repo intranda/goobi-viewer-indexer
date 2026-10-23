@@ -33,6 +33,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.solr.client.solrj.SolrServerException;
+import org.apache.solr.common.SolrException;
 import org.apache.solr.common.SolrInputDocument;
 import org.jdom2.Document;
 import org.jdom2.Element;
@@ -328,7 +329,7 @@ public class DenkXwebIndexer extends Indexer {
             // Set image file names belonging to this record
             ret.setMediaImageFileNames(imgFileNames);
             logger.debug("Finished writing data for '{}' to Solr.", pi);
-        } catch (FatalIndexerException | IndexerException | IOException | JDOMException | SolrServerException e) {
+        } catch (FatalIndexerException | IndexerException | IOException | JDOMException | SolrServerException | SolrException e) {
             if ("No image resource sets found.".equals(e.getMessage())) {
                 logger.error("Indexing of '{}' could not be finished due to an error: {}", pi, e.getMessage());
             } else {

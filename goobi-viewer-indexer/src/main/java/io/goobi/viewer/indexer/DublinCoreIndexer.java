@@ -36,6 +36,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.solr.client.solrj.SolrServerException;
+import org.apache.solr.common.SolrException;
 import org.apache.solr.common.SolrInputDocument;
 import org.jdom2.Element;
 import org.jdom2.JDOMException;
@@ -343,7 +344,7 @@ public class DublinCoreIndexer extends Indexer {
             useWriteStrategy.writeDocs(SolrIndexerDaemon.getInstance().getConfiguration().isAggregateRecords());
             ret.setDocStructType(indexObj.getType()).setNumPages(recordNumPages).setNumSourcePages(recordNumSourcePages);
             logger.debug("Finished writing data for '{}' to Solr.", pi);
-        } catch (IOException | IndexerException | FatalIndexerException | JDOMException | SolrServerException e) {
+        } catch (IOException | IndexerException | FatalIndexerException | JDOMException | SolrServerException | SolrException e) {
             logger.error("Indexing of '{}' could not be finished due to an error.", dcFile.getFileName());
             logger.error(e.getMessage(), e);
             ret.setError(e.getMessage() != null ? e.getMessage() : e.getClass().getName());

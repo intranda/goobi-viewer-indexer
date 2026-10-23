@@ -32,6 +32,7 @@ import org.jdom2.Element;
 import org.jdom2.JDOMException;
 
 import io.goobi.viewer.indexer.exceptions.FatalIndexerException;
+import io.goobi.viewer.indexer.exceptions.SolrUnavailableException;
 import io.goobi.viewer.indexer.helper.Configuration;
 import io.goobi.viewer.indexer.helper.Hotfolder;
 import io.goobi.viewer.indexer.helper.SolrSearchIndex;
@@ -281,7 +282,14 @@ public final class SolrIndexerDaemon {
         while (running) {
             boolean madeProgress = false;
             for (Hotfolder hotfolder : hotfolders) {
-                boolean pending = hotfolder.scan();
+                boolean pending;
+                try {
+                    pending = hotfolder.scan();
+                } catch (SolrUnavailableException e) {
+                    // E.g. the commit or anchor reconciliation after a queue drain; pending records stay pending and are committed later
+                    logger.warn("Solr is unavailable, pausing: {}", e.getMessage());
+                    break;
+                }
                 madeProgress |= hotfolder.isMadeProgress();
                 if (pending) {
                     break;

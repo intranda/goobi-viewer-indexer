@@ -79,6 +79,7 @@ import io.goobi.viewer.indexer.UsageStatisticsIndexer;
 import io.goobi.viewer.indexer.Version;
 import io.goobi.viewer.indexer.WorldViewsIndexer;
 import io.goobi.viewer.indexer.exceptions.FatalIndexerException;
+import io.goobi.viewer.indexer.exceptions.SolrUnavailableException;
 import io.goobi.viewer.indexer.helper.JDomXP.FileFormat;
 import io.goobi.viewer.indexer.helper.logging.SecondaryAppender;
 import io.goobi.viewer.indexer.model.IndexingResult;
@@ -195,7 +196,7 @@ public class Hotfolder {
     /** True if this hotfolder created {@link #recordExecutor} itself (and must shut it down); false when it is the shared daemon pool. */
     private boolean ownsRecordExecutor;
     /** Records submitted to {@link #recordExecutor} and not yet awaited. Accessed only from the single scan thread. */
-    private final List<Future<Boolean>> inFlightRecords = new ArrayList<>();
+    private final List<InFlightRecord> inFlightRecords = new ArrayList<>();
     /** Upper bound on submitted-but-unfinished records; beyond it the scan thread blocks on the oldest for backpressure. */
     private int maxInFlightRecords = 1;
     /** Released by each parallel record when it finishes, so the scan thread can wait for a free slot instead of polling. */
@@ -211,6 +212,15 @@ public class Hotfolder {
     private final Set<Path> inFlightRecordFiles = ConcurrentHashMap.newKeySet();
     /** Maximum number of record files kept in {@link #listingBacklog} (in addition to the queue) per hotfolder listing. */
     static final int MAX_LISTING_BACKLOG = 50000;
+
+    /**
+     * A record submitted for parallel indexing.
+     *
+     * @param recordFile Record file
+     * @param future Result of the indexing task
+     */
+    private record InFlightRecord(Path recordFile, Future<Boolean> future) {
+    }
 
     /**
      * Zero-arg constructor for tests.
@@ -575,6 +585,11 @@ public class Hotfolder {
     public boolean scan() throws FatalIndexerException {
         logger.debug("scan ({})", getHotfolderPath().getFileName());
         madeProgress = false;
+        if (SolrIndexerDaemon.getInstance().getSearchIndex().isUnavailable()) {
+            // Records already indexing keep retrying on their own; do not start new ones until Solr is back
+            logger.debug("Solr is unavailable, not starting any new records.");
+            return false;
+        }
         if (!Files.isDirectory(getHotfolderPath())) {
             logger.error("Hotfolder not found in file system: {}", hotfolderPath);
             return false;
@@ -589,7 +604,7 @@ public class Hotfolder {
             if (recordExecutor != null && !ownsRecordExecutor && inFlightRecords.isEmpty()) {
                 // Shared pool, idle (e.g. reconciliation after a queue drain): run on a pool worker so the record's page/child
                 // work nests into the shared pool, but wait for it here so priority items stay serial as before.
-                joinRecord(recordExecutor.submit(() -> doIndex(fileToReindex)));
+                joinRecord(new InFlightRecord(fileToReindex, recordExecutor.submit(() -> doIndex(fileToReindex))));
             } else {
                 // Serial/two-pool mode, or shared pool still busy with regular records (anchor files queued by record workers
                 // mid-batch): run inline right away instead of waiting behind the records already in the pool.
@@ -876,14 +891,14 @@ public class Hotfolder {
         }
         logger.debug("Submitting {} for parallel indexing ({})...", recordFile.getFileName(), getHotfolderPath().getFileName());
         inFlightRecordFiles.add(recordFile);
-        inFlightRecords.add(recordExecutor.submit(() -> {
+        inFlightRecords.add(new InFlightRecord(recordFile, recordExecutor.submit(() -> {
             try {
                 return doIndex(recordFile);
             } finally {
                 inFlightRecordFiles.remove(recordFile);
                 recordCompletions.release();
             }
-        }));
+        })));
     }
 
     /**
@@ -926,11 +941,11 @@ public class Hotfolder {
      * @throws FatalIndexerException if a completed record failed fatally
      */
     private void pruneCompletedRecords() throws FatalIndexerException {
-        for (Iterator<Future<Boolean>> it = inFlightRecords.iterator(); it.hasNext();) {
-            Future<Boolean> future = it.next();
-            if (future.isDone()) {
+        for (Iterator<InFlightRecord> it = inFlightRecords.iterator(); it.hasNext();) {
+            InFlightRecord inFlightRecord = it.next();
+            if (inFlightRecord.future().isDone()) {
                 it.remove();
-                joinRecord(future);
+                joinRecord(inFlightRecord);
             }
         }
     }
@@ -953,8 +968,8 @@ public class Hotfolder {
      * @throws FatalIndexerException if any record failed fatally
      */
     private void awaitInFlightRecords() throws FatalIndexerException {
-        for (Future<Boolean> future : inFlightRecords) {
-            joinRecord(future);
+        for (InFlightRecord inFlightRecord : inFlightRecords) {
+            joinRecord(inFlightRecord);
         }
         inFlightRecords.clear();
     }
@@ -963,12 +978,12 @@ public class Hotfolder {
      * Waits for a single submitted record and propagates a fatal failure; a non-fatal failure is logged (the record's own
      * error handling and e-mail already ran on the worker thread).
      *
-     * @param future the record's future
+     * @param inFlightRecord the record and its future
      * @throws FatalIndexerException if the record failed with a {@link FatalIndexerException}
      */
-    private static void joinRecord(Future<Boolean> future) throws FatalIndexerException {
+    private static void joinRecord(InFlightRecord inFlightRecord) throws FatalIndexerException {
         try {
-            future.get();
+            inFlightRecord.future().get();
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             logger.error(e.getMessage(), e);
@@ -977,7 +992,8 @@ public class Hotfolder {
             if (cause instanceof FatalIndexerException fatal) {
                 throw fatal;
             }
-            logger.error("Parallel record indexing failed: {}", cause != null ? cause.getMessage() : e.getMessage(), cause);
+            logger.error("Parallel indexing of '{}' failed: {}", inFlightRecord.recordFile().getFileName(),
+                    cause != null ? cause.getMessage() : e.getMessage(), cause);
         }
     }
 
@@ -993,6 +1009,8 @@ public class Hotfolder {
                 SolrIndexerDaemon.getInstance().getSearchIndex().commitPending();
             } catch (FatalIndexerException e) {
                 logger.error(e.getMessage(), e);
+            } catch (SolrUnavailableException e) {
+                logger.error("Pending records could not be committed before shutting down: {}", e.getMessage());
             }
             // Only shut down a pool this hotfolder owns; the shared work-stealing pool is shut down by the daemon.
             if (ownsRecordExecutor) {
@@ -1089,6 +1107,8 @@ public class Hotfolder {
      * @throws FatalIndexerException
      * @should return false if recordFile null
      * @should return true if successful
+     * @should keep record file in hotfolder if solr unavailable
+     * @should move record file to error folder on unexpected error
      */
     boolean doIndex(Path recordFile) throws FatalIndexerException {
         if (recordFile == null) {
@@ -1113,7 +1133,20 @@ public class Hotfolder {
             reindexSettings.put(DataRepository.PARAM_MIX, false);
             reindexSettings.put(DataRepository.PARAM_UGC, false);
             // Note: the per-thread compiled XPath caches (JDomXP, XmlTools) are deliberately kept across records; they are bounded LRU maps
-            boolean ret = handleSourceFile(recordFile, reindexSettings);
+            boolean ret = false;
+            try {
+                ret = handleSourceFile(recordFile, reindexSettings);
+            } catch (SolrUnavailableException e) {
+                logger.warn("Solr is unavailable, '{}' stays in the hotfolder and will be indexed again later: {}", recordFile.getFileName(),
+                        e.getMessage());
+                // CHECKSTYLE:OFF
+                // Catching RuntimeException is intended: this is the record task boundary. Without it, an unexpected exception (e.g. caused by
+                // malformed data) skips all failure handling (error folder, e-mail), and the record is retried after every hotfolder listing.
+            } catch (RuntimeException e) { //NOSONAR Record task boundary, see above
+                // CHECKSTYLE:ON
+                logger.error("Indexing of '{}' failed with an unexpected error: {}", recordFile.getFileName(), e.getMessage(), e);
+                moveRecordFileToErrorFolder(recordFile, e.toString());
+            }
             if (secondaryAppender != null && emailConfigurationComplete) {
                 checkAndSendErrorReport(recordFile.getFileName() + ": Indexing failed (" + Version.asString() + ")",
                         secondaryAppender.getLog(recordKey));
@@ -1128,6 +1161,41 @@ public class Hotfolder {
             resetSecondaryLog(recordKey);
             ThreadContext.remove(SecondaryAppender.MDC_KEY);
             ThreadContext.remove(SecondaryAppender.MDC_KEY_ID);
+        }
+    }
+
+    /**
+     * Copies the given record file to the error folder (together with a log file containing the given error), removes it from the hotfolder
+     * and, if {@link #isDeleteContentFilesOnFailure()}, also removes its data folders. Used for records that failed outside the error handling
+     * of the indexers.
+     *
+     * @param recordFile Record file in the hotfolder
+     * @param error Error description for the log file
+     * @should move record file to error folder
+     */
+    void moveRecordFileToErrorFolder(Path recordFile, String error) {
+        String fileNameRoot = FilenameUtils.getBaseName(recordFile.getFileName().toString());
+        if (Files.isRegularFile(recordFile)) {
+            if (errorMets != null) {
+                try {
+                    Files.copy(recordFile, errorMets.resolve(recordFile.getFileName().toString()), StandardCopyOption.REPLACE_EXISTING);
+                    Files.writeString(errorMets.resolve(fileNameRoot + ".log"), error != null ? error : "");
+                } catch (IOException e) {
+                    logger.error("'{}' could not be copied to the error folder: {}", recordFile.getFileName(), e.getMessage());
+                }
+            }
+            try {
+                Files.delete(recordFile);
+            } catch (IOException e) {
+                logger.error(StringConstants.LOG_COULD_NOT_BE_DELETED, recordFile.toAbsolutePath());
+            }
+        }
+        if (isDeleteContentFilesOnFailure()) {
+            try {
+                FileTools.deleteUnsupportedDataFolders(hotfolderPath, fileNameRoot, dataFolderCandidates.get(fileNameRoot));
+            } catch (IOException e) {
+                logger.error("Data folders of '{}' could not be deleted: {}", recordFile.getFileName(), e.getMessage());
+            }
         }
     }
 
@@ -1237,7 +1305,7 @@ public class Hotfolder {
      * @return true if successful; false otherwise
      * @throws FatalIndexerException
      */
-    private boolean handleSourceFile(Path sourceFile, Map<String, Boolean> reindexSettings) throws FatalIndexerException {
+    boolean handleSourceFile(Path sourceFile, Map<String, Boolean> reindexSettings) throws FatalIndexerException {
         logger.info("handleSourceFile: {}", sourceFile);
         // Always unselect repository
         String filename = sourceFile.getFileName().toString();

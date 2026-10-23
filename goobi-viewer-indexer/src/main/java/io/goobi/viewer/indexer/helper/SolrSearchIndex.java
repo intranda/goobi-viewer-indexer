@@ -49,6 +49,7 @@ import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.client.solrj.response.UpdateResponse;
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
+import org.apache.solr.common.SolrException;
 import org.apache.solr.common.SolrInputDocument;
 import org.jdom2.Document;
 import org.jdom2.JDOMException;
@@ -56,6 +57,7 @@ import org.jdom2.JDOMException;
 import io.goobi.viewer.indexer.SolrIndexerDaemon;
 import io.goobi.viewer.indexer.exceptions.FatalIndexerException;
 import io.goobi.viewer.indexer.exceptions.HTTPException;
+import io.goobi.viewer.indexer.exceptions.SolrUnavailableException;
 import io.goobi.viewer.indexer.model.LuceneField;
 import io.goobi.viewer.indexer.model.SolrConstants;
 import io.goobi.viewer.indexer.model.SolrConstants.DocType;
@@ -73,9 +75,11 @@ public final class SolrSearchIndex {
     /** Constant <code>TIMEOUT_CONNECTION=300000</code> */
     public static final int TIMEOUT_CONNECTION = 300000;
     private static final int RETRY_ATTEMPTS = 20;
-
-    private static final String ERROR_SOLR_CONNECTION = "Solr connection error";
-    private static final String ERROR_UPDATE_STATUS = "Update status: {}";
+    /** Delay before the first retry of a failed Solr request; doubled after each attempt up to {@link #RETRY_MAX_DELAY_MILLIS}. */
+    private static final long RETRY_DELAY_MILLIS = 1000;
+    private static final long RETRY_MAX_DELAY_MILLIS = 10000;
+    /** How long record indexing pauses after Solr was unavailable for an entire retry period. */
+    private static final long UNAVAILABLE_PAUSE_MILLIS = 60000;
 
     private boolean optimize = false;
 
@@ -93,6 +97,22 @@ public final class SolrSearchIndex {
     private final AtomicBoolean commitScheduled = new AtomicBoolean();
     /** Fatal error of a background commit, rethrown to the next caller of {@link #commitAfterRecord()} or {@link #commitPending()}. */
     private volatile FatalIndexerException backgroundCommitFailure;
+    /** Number of attempts per Solr request (package-private for tests). */
+    int retryAttempts = RETRY_ATTEMPTS;
+    /** Delay before the first retry (package-private for tests). */
+    long retryDelayMillis = RETRY_DELAY_MILLIS;
+    /** Epoch millis until which Solr is considered unavailable (see {@link #isUnavailable()}). */
+    private volatile long unavailableUntil = 0;
+
+    /**
+     * A Solr request that may fail with a connection or Solr error.
+     *
+     * @param <T> Response type
+     */
+    @FunctionalInterface
+    interface SolrOperation<T> {
+        T execute() throws SolrServerException, IOException;
+    }
 
     /**
      * <p>
@@ -166,7 +186,7 @@ public final class SolrSearchIndex {
     public SolrDocumentList search(String query, List<String> fields) throws SolrServerException, IOException {
         SolrQuery countQuery = new SolrQuery(query);
         countQuery.setRows(0);
-        SolrDocumentList countResult = client.query(countQuery).getResults();
+        SolrDocumentList countResult = execute("query", () -> client.query(countQuery)).getResults();
         long numFound = countResult.getNumFound();
         if (numFound == 0) {
             return countResult;
@@ -195,7 +215,7 @@ public final class SolrSearchIndex {
             }
         }
 
-        return client.query(solrQuery).getResults();
+        return execute("query", () -> client.query(solrQuery)).getResults();
     }
 
     /**
@@ -287,7 +307,7 @@ public final class SolrSearchIndex {
         SolrQuery solrQuery = new SolrQuery(SolrConstants.PI + ":" + pi);
         solrQuery.setRows(1);
         solrQuery.setFields(SolrConstants.DATAREPOSITORY);
-        QueryResponse resp = client.query(solrQuery);
+        QueryResponse resp = execute("query", () -> client.query(solrQuery));
 
         if (!resp.getResults().isEmpty()) {
             if (resp.getResults().get(0).getFieldValue(SolrConstants.DATAREPOSITORY) != null) {
@@ -336,28 +356,7 @@ public final class SolrSearchIndex {
      * @should write doc correctly
      */
     public void writeToIndex(SolrInputDocument doc) throws FatalIndexerException {
-        boolean success = false;
-        int tries = RETRY_ATTEMPTS;
-
-        while (!success && tries > 0) {
-            tries--;
-            try {
-                UpdateResponse ur = client.add(doc);
-                if (ur.getStatus() == 0) {
-                    success = true;
-                } else {
-                    logger.error(ERROR_UPDATE_STATUS, ur.getStatus());
-                }
-            } catch (SolrServerException | IOException e) {
-                logger.error(e.getMessage(), e);
-            }
-        }
-
-        if (!success) {
-            logger.error("Could not write document after {} attempts. Check the Solr server connection. Exiting...", RETRY_ATTEMPTS);
-            rollback();
-            throw new FatalIndexerException(ERROR_SOLR_CONNECTION);
-        }
+        execute("add document", () -> client.add(doc));
     }
 
     /**
@@ -370,30 +369,7 @@ public final class SolrSearchIndex {
      * @should write all docs correctly
      */
     public void writeToIndex(List<SolrInputDocument> docs) throws FatalIndexerException {
-        boolean success = false;
-        int tries = RETRY_ATTEMPTS;
-
-        while (!success && tries > 0) {
-            tries--;
-            try {
-                UpdateResponse ur = client.add(docs);
-                if (ur.getStatus() == 0) {
-                    success = true;
-                } else {
-                    logger.error(ERROR_UPDATE_STATUS, ur.getStatus());
-                }
-            } catch (IOException | SolrServerException e) {
-                logger.error(e.getMessage(), e);
-            } catch (RemoteSolrException e) {
-                logger.error(e.getMessage());
-            }
-        }
-
-        if (!success) {
-            logger.error("Could not write {} documents after {} attempts. Check the Solr server connection. Exiting...", docs.size(), RETRY_ATTEMPTS);
-            rollback();
-            throw new FatalIndexerException(ERROR_SOLR_CONNECTION);
-        }
+        execute("add " + docs.size() + " documents", () -> client.add(docs));
     }
 
     /**
@@ -405,29 +381,7 @@ public final class SolrSearchIndex {
      * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException
      */
     public void deleteDocument(String id) throws FatalIndexerException {
-        boolean success = false;
-        int tries = RETRY_ATTEMPTS;
-
-        while (!success && tries > 0) {
-            tries--;
-            try {
-                UpdateResponse ur = client.deleteById(id);
-                if (ur.getStatus() == 0) {
-                    success = true;
-                } else {
-                    logger.error(ERROR_UPDATE_STATUS, ur.getStatus());
-                }
-            } catch (SolrServerException e) {
-                logger.error(e.getMessage());
-            } catch (IOException e) {
-                logger.error(e.getMessage(), e);
-            }
-        }
-        if (!success) {
-            logger.error("Could not delete '{}' after {} attempts. Check the Solr server connection. Exiting...", id, RETRY_ATTEMPTS);
-            rollback();
-            throw new FatalIndexerException(ERROR_SOLR_CONNECTION);
-        }
+        execute("delete '" + id + "'", () -> client.deleteById(id));
     }
 
     /**
@@ -446,31 +400,9 @@ public final class SolrSearchIndex {
             logger.warn("Nothing to delete.");
             return false;
         }
-        boolean success = false;
-        int tries = RETRY_ATTEMPTS;
+        execute("delete " + ids.size() + " documents", () -> client.deleteById(ids));
 
-        while (!success && tries > 0) {
-            tries--;
-            try {
-                UpdateResponse ur = client.deleteById(ids);
-                if (ur.getStatus() == 0) {
-                    success = true;
-                } else {
-                    logger.error(ERROR_UPDATE_STATUS, ur.getStatus());
-                }
-            } catch (SolrServerException e) {
-                logger.error(e.getMessage());
-            } catch (IOException e) {
-                logger.error(e.getMessage(), e);
-            }
-        }
-        if (!success) {
-            logger.error("Could not delete {} docs after {} attempts. Check the Solr server connection. Exiting...", ids.size(), RETRY_ATTEMPTS);
-            rollback();
-            throw new FatalIndexerException(ERROR_SOLR_CONNECTION);
-        }
-
-        return success;
+        return true;
     }
 
     /**
@@ -483,32 +415,9 @@ public final class SolrSearchIndex {
         if (StringUtils.isEmpty(query)) {
             return false;
         }
+        execute("delete by query", () -> client.deleteByQuery(query));
 
-        boolean success = false;
-        int tries = RETRY_ATTEMPTS;
-
-        while (!success && tries > 0) {
-            tries--;
-            try {
-                UpdateResponse ur = client.deleteByQuery(query);
-                if (ur.getStatus() == 0) {
-                    success = true;
-                } else {
-                    logger.error(ERROR_UPDATE_STATUS, ur.getStatus());
-                }
-            } catch (SolrServerException e) {
-                logger.error(e.getMessage());
-            } catch (IOException e) {
-                logger.error(e.getMessage(), e);
-            }
-        }
-        if (!success) {
-            logger.error("Could not delete docs matching query '{}' after {} attempts. Check the Solr server connection. Exiting...", query,
-                    RETRY_ATTEMPTS);
-            rollback();
-        }
-
-        return success;
+        return true;
     }
 
     /**
@@ -574,6 +483,9 @@ public final class SolrSearchIndex {
                 } catch (FatalIndexerException e) {
                     logger.error("Background commit failed: {}", e.getMessage());
                     backgroundCommitFailure = e;
+                } catch (SolrUnavailableException e) {
+                    // Not fatal: the records stay pending (only subtracted on success) and are committed by the next commit
+                    logger.warn("Background commit failed, will be retried with the next commit: {}", e.getMessage());
                 } finally {
                     commitScheduled.set(false);
                 }
@@ -652,31 +564,7 @@ public final class SolrSearchIndex {
     }
 
     private void doCommit(boolean optimize) throws FatalIndexerException {
-        boolean success = false;
-        int tries = RETRY_ATTEMPTS;
-
-        while (!success && tries > 0) {
-            tries--;
-            try {
-                UpdateResponse ur = client.commit();
-                if (ur.getStatus() == 0) {
-                    success = true;
-                } else {
-                    logger.error(ERROR_UPDATE_STATUS, ur.getStatus());
-                }
-            } catch (SolrServerException e) {
-                logger.error(e.getMessage());
-            } catch (IOException e) {
-                logger.error(e.getMessage(), e);
-            }
-        }
-        if (!success)
-
-        {
-            logger.error("Could not commit after {} attempts. Check the Solr server connection. Exiting...", RETRY_ATTEMPTS);
-            rollback();
-            throw new FatalIndexerException(ERROR_SOLR_CONNECTION);
-        }
+        execute("commit", () -> client.commit());
 
         if (optimize) {
             logger.debug("Optimizing index...");
@@ -691,6 +579,83 @@ public final class SolrSearchIndex {
                 logger.error("Index optimization failed.", e);
             }
         }
+    }
+
+    /**
+     * Executes the given Solr request. Connection errors and transient Solr errors (see {@link #isTransient(SolrException)}) are retried with
+     * an increasing delay (about three minutes in total); permanent Solr errors (e.g. a rejected document) are thrown right away.
+     * <p>
+     * If all attempts fail, Solr is considered unavailable for a while (see {@link #isUnavailable()}) and a {@link SolrUnavailableException}
+     * is thrown. There is deliberately no rollback in that case: in a standalone Solr, it would discard the uncommitted documents of other
+     * records that have already been removed from the hotfolder (and in SolrCloud, rollback is not supported).
+     *
+     * @param <T> Response type
+     * @param description Short description of the request for the log
+     * @param operation The request
+     * @return Response of the request
+     * @throws SolrException if Solr answers with a permanent error
+     * @throws SolrUnavailableException if the request failed in all attempts
+     * @should return result after transient failure
+     * @should throw permanent solr error immediately
+     * @should throw SolrUnavailableException after all attempts failed
+     */
+    <T> T execute(String description, SolrOperation<T> operation) {
+        long delay = retryDelayMillis;
+        String lastError = null;
+        for (int attempt = 1; attempt <= retryAttempts; attempt++) {
+            try {
+                T ret = operation.execute();
+                if (ret instanceof UpdateResponse ur && ur.getStatus() != 0) {
+                    lastError = "Update status: " + ur.getStatus();
+                } else {
+                    return ret;
+                }
+            } catch (SolrServerException | IOException e) {
+                lastError = e.getMessage();
+            } catch (SolrException e) {
+                if (!isTransient(e)) {
+                    throw e;
+                }
+                lastError = e.getMessage();
+            }
+            if (attempt < retryAttempts) {
+                logger.warn("Solr request '{}' failed (attempt {}/{}), retrying in {} ms: {}", description, attempt, retryAttempts, delay,
+                        lastError);
+                try {
+                    Thread.sleep(delay);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    break;
+                }
+                delay = Math.min(delay * 2, RETRY_MAX_DELAY_MILLIS);
+            }
+        }
+
+        unavailableUntil = System.currentTimeMillis() + UNAVAILABLE_PAUSE_MILLIS;
+        logger.error("Solr request '{}' failed, Solr seems to be unavailable: {}", description, lastError);
+        throw new SolrUnavailableException("Solr request '" + description + "' failed: " + lastError);
+    }
+
+    /**
+     * Solr errors that may go away by themselves (server errors, Solr or the collection temporarily unavailable, timeouts, rate limiting) are
+     * transient; other client errors (e.g. 400 for a rejected document) are permanent.
+     *
+     * @param e Solr error
+     * @return true if the request may succeed if retried; false otherwise
+     * @should return true for server errors and unavailable collection
+     * @should return false for rejected requests
+     */
+    static boolean isTransient(SolrException e) {
+        int code = e.code();
+        return code <= 0 || code >= 500 || code == 404 || code == 408 || code == 429;
+    }
+
+    /**
+     * @return true if a Solr request recently failed in all attempts, in which case new records should not be indexed for a while; false
+     *         otherwise
+     */
+    public boolean isUnavailable() {
+        return System.currentTimeMillis() < unavailableUntil;
     }
 
     /**
