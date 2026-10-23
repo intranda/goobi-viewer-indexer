@@ -97,10 +97,10 @@ public final class SolrSearchIndex {
     private final AtomicBoolean commitScheduled = new AtomicBoolean();
     /** Fatal error of a background commit, rethrown to the next caller of {@link #commitAfterRecord()} or {@link #commitPending()}. */
     private volatile FatalIndexerException backgroundCommitFailure;
-    /** Number of attempts per Solr request (package-private for tests). */
-    int retryAttempts = RETRY_ATTEMPTS;
-    /** Delay before the first retry (package-private for tests). */
-    long retryDelayMillis = RETRY_DELAY_MILLIS;
+    /** Number of attempts per Solr request. */
+    private int retryAttempts = RETRY_ATTEMPTS;
+    /** Delay before the first retry. */
+    private long retryDelayMillis = RETRY_DELAY_MILLIS;
     /** Epoch millis until which Solr is considered unavailable (see {@link #isUnavailable()}). */
     private volatile long unavailableUntil = 0;
 
@@ -1041,5 +1041,16 @@ public final class SolrSearchIndex {
      */
     public void setOptimize(boolean optimize) {
         this.optimize = optimize;
+    }
+
+    /**
+     * Overrides the retry behavior of {@link #execute(String, SolrOperation)} (for tests).
+     *
+     * @param retryAttempts Number of attempts per Solr request
+     * @param retryDelayMillis Delay before the first retry
+     */
+    void setRetryPolicy(int retryAttempts, long retryDelayMillis) {
+        this.retryAttempts = retryAttempts;
+        this.retryDelayMillis = retryDelayMillis;
     }
 }

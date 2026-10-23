@@ -397,8 +397,7 @@ class SolrSearchIndexTest extends AbstractSolrEnabledTest {
      */
     @Test
     void execute_shouldReturnResultAfterTransientFailure() {
-        searchIndex.retryAttempts = 3;
-        searchIndex.retryDelayMillis = 1;
+        searchIndex.setRetryPolicy(3, 1);
         AtomicInteger attempts = new AtomicInteger();
         String result = searchIndex.execute("test", () -> {
             if (attempts.incrementAndGet() == 1) {
@@ -417,8 +416,7 @@ class SolrSearchIndexTest extends AbstractSolrEnabledTest {
      */
     @Test
     void execute_shouldThrowPermanentSolrErrorImmediately() {
-        searchIndex.retryAttempts = 3;
-        searchIndex.retryDelayMillis = 1;
+        searchIndex.setRetryPolicy(3, 1);
         AtomicInteger attempts = new AtomicInteger();
         SolrException e = Assertions.assertThrows(SolrException.class, () -> searchIndex.execute("test", () -> {
             attempts.incrementAndGet();
@@ -435,8 +433,7 @@ class SolrSearchIndexTest extends AbstractSolrEnabledTest {
      */
     @Test
     void execute_shouldThrowSolrUnavailableExceptionAfterAllAttemptsFailed() {
-        searchIndex.retryAttempts = 3;
-        searchIndex.retryDelayMillis = 1;
+        searchIndex.setRetryPolicy(3, 1);
         AtomicInteger attempts = new AtomicInteger();
         Assertions.assertThrows(SolrUnavailableException.class, () -> searchIndex.execute("test", () -> {
             attempts.incrementAndGet();
