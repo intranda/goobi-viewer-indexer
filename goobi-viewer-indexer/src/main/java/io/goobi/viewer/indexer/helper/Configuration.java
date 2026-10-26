@@ -516,7 +516,7 @@ public final class Configuration {
     }
 
     /**
-     * EXPERIMENTAL. When true, record-level and intra-record (page/child-node/serializing-write) parallelism share a
+     * When true, record-level and intra-record (page/child-node/serializing-write) parallelism share a
      * single work-stealing {@link java.util.concurrent.ForkJoinPool} sized by {@link #getThreads()}, which auto-balances
      * the two: few large records let page tasks fill the pool, many small records let the records fill it. Replaces the
      * separate {@link #getThreads()} × {@link #getPageThreads()} pools of the two-pool model. Default false (two-pool

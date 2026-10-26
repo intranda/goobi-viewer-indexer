@@ -290,8 +290,7 @@
 			auto-balances the two instead of the separate threads x pageThreads pools: few large records let their page
 			tasks fill the pool, many small records let the records fill it. When enabled, threads is the shared pool's
 			parallelism and pageThreads is ignored; size threads with headroom above the core count as I/O headroom, since
-			pool tasks block on Solr/file/HTTP work. Default false (two-pool model: threads and pageThreads apply).
-			Experimental; benchmark against the two-pool model before enabling. -->
+			pool tasks block on Solr/file/HTTP work. Default false (two-pool model: threads and pageThreads apply). -->
 		<sharedWorkerPool>false</sharedWorkerPool>
 
 		<!-- If true, the indexer will report the remaining number of record files in the hotfolder to the viewer REST API after every indexed record.
