@@ -236,16 +236,6 @@ public final class Utils {
     }
 
     /**
-     * <p>
-     * prerenderPdfs.
-     * </p>
-     *
-     * @param pi a {@link java.lang.String} object
-     * @param forceUpdate a boolean
-     * @throws java.io.IOException
-     * @throws io.goobi.viewer.indexer.exceptions.HTTPException
-     */
-    /**
      * Requests pre-rendering of the page PDFs of the given record from the Goobi viewer in the background, so that the calling record
      * worker does not wait for the viewer. The requests are sent one at a time by a single thread, which also keeps the viewer from being
      * flooded with parallel requests while it is busy. If too many requests are pending (e.g. the viewer is unreachable), further requests
@@ -309,6 +299,15 @@ public final class Utils {
         viewerTaskSender = null;
     }
 
+    /**
+     * Requests pre-rendering of the page PDFs of the given record from the Goobi viewer and waits for the request to be sent, using the
+     * configured PDF variant, viewer URL and authorization token. Does nothing if <code>pi</code> is blank or PDF pre-rendering is disabled.
+     *
+     * @param pi Record identifier
+     * @param forceUpdate If true, existing page PDFs are re-rendered
+     * @throws IOException
+     * @throws HTTPException
+     */
     public static void prerenderPdfs(String pi, boolean forceUpdate) throws IOException, HTTPException {
         if (StringUtils.isNotBlank(pi) && SolrIndexerDaemon.getInstance().getConfiguration().isPrerenderPdfsEnabled()) {
             prerenderPdfs(pi, forceUpdate, SolrIndexerDaemon.getInstance().getConfiguration().getPrerenderPdfsConfigVariant(),
