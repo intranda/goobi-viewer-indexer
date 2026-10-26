@@ -35,6 +35,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.ReentrantLock;
 
 import org.apache.commons.configuration2.ex.ConfigurationException;
@@ -98,7 +99,7 @@ public final class SolrSearchIndex {
     /** True while a background commit is scheduled or running. */
     private final AtomicBoolean commitScheduled = new AtomicBoolean();
     /** Fatal error of a background commit, rethrown to the next caller of {@link #commitAfterRecord()} or {@link #commitPending()}. */
-    private volatile FatalIndexerException backgroundCommitFailure;
+    private final AtomicReference<FatalIndexerException> backgroundCommitFailure = new AtomicReference<>();
     /** Number of attempts per Solr request. */
     private int retryAttempts = RETRY_ATTEMPTS;
     /** Delay before the first retry. */
@@ -552,7 +553,7 @@ public final class SolrSearchIndex {
                     flushPending(false);
                 } catch (FatalIndexerException e) {
                     logger.error("Background commit failed: {}", e.getMessage());
-                    backgroundCommitFailure = e;
+                    backgroundCommitFailure.set(e);
                 } catch (SolrUnavailableException e) {
                     // Not fatal: the records stay pending (only subtracted on success) and are committed by the next commit
                     logger.warn("Background commit failed, will be retried with the next commit: {}", e.getMessage());
@@ -586,7 +587,7 @@ public final class SolrSearchIndex {
      * @throws FatalIndexerException if a background commit has failed
      */
     private void rethrowBackgroundCommitFailure() throws FatalIndexerException {
-        FatalIndexerException e = backgroundCommitFailure;
+        FatalIndexerException e = backgroundCommitFailure.get();
         if (e != null) {
             throw e;
         }
