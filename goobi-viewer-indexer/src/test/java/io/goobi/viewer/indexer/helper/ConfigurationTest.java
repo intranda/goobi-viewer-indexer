@@ -269,6 +269,52 @@ class ConfigurationTest extends AbstractTest {
     }
 
     /**
+     * @see Configuration#isLegacyThreadsConfiguration()
+     * @verifies return true if threads above one and page threads missing
+     */
+    @Test
+    void isLegacyThreadsConfiguration_shouldReturnTrueIfThreadsAboveOneAndPageThreadsMissing() {
+        Configuration config = new Configuration(TEST_CONFIG_PATH);
+        config.overrideValue("performance.threads", 4);
+        assertTrue(config.isLegacyThreadsConfiguration());
+    }
+
+    /**
+     * @see Configuration#isLegacyThreadsConfiguration()
+     * @verifies return false if page threads configured
+     */
+    @Test
+    void isLegacyThreadsConfiguration_shouldReturnFalseIfPageThreadsConfigured() {
+        Configuration config = new Configuration(TEST_CONFIG_PATH);
+        config.overrideValue("performance.threads", 4);
+        config.overrideValue("performance.pageThreads", 1);
+        assertFalse(config.isLegacyThreadsConfiguration());
+    }
+
+    /**
+     * @see Configuration#isLegacyThreadsConfiguration()
+     * @verifies return false if threads is one
+     */
+    @Test
+    void isLegacyThreadsConfiguration_shouldReturnFalseIfThreadsIsOne() {
+        Configuration config = new Configuration(TEST_CONFIG_PATH);
+        assertEquals(1, config.getThreads());
+        assertFalse(config.isLegacyThreadsConfiguration());
+    }
+
+    /**
+     * @see Configuration#isLegacyThreadsConfiguration()
+     * @verifies return false if shared worker pool enabled
+     */
+    @Test
+    void isLegacyThreadsConfiguration_shouldReturnFalseIfSharedWorkerPoolEnabled() {
+        Configuration config = new Configuration(TEST_CONFIG_PATH);
+        config.overrideValue("performance.threads", 4);
+        config.overrideValue("performance.sharedWorkerPool", true);
+        assertFalse(config.isLegacyThreadsConfiguration());
+    }
+
+    /**
      * @see Configuration#isConsoleLoggingEnabled()
      * @verifies return correct value
      */

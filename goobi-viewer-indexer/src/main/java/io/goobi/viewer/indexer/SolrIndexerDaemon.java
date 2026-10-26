@@ -322,6 +322,14 @@ public final class SolrIndexerDaemon {
             logger.info("Thread configuration: up to {} record(s) indexed in parallel (performance.threads), "
                     + "each using up to {} thread(s) for page/child-node generation (performance.pageThreads).",
                     configuration.getThreads(), configuration.getPageThreads());
+            if (configuration.isLegacyThreadsConfiguration()) {
+                logger.warn("performance.threads is {} but performance.pageThreads is not configured. The meaning of <threads> has changed: "
+                        + "it used to be the number of threads for page generation within one record and is now the number of records indexed "
+                        + "in parallel, with pages generated serially. Indexing {} records at the same time needs more memory and puts more load "
+                        + "on Solr. Please check config_indexer.xml: set <pageThreads> (e.g. to the former value of <threads>) and choose "
+                        + "<threads> for the number of records indexed in parallel (1 = one record at a time).",
+                        configuration.getThreads(), configuration.getThreads());
+            }
         }
 
         Utils.submitDataToViewer(Collections.emptyList(), hotfolders.get(0).countRecordFiles());

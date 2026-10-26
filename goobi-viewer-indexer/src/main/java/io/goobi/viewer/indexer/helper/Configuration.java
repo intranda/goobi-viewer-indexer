@@ -486,8 +486,8 @@ public final class Configuration {
      * </p>
      * <ul>
      * <li>two-pool model ({@code sharedWorkerPool=false}): number of whole records indexed concurrently (record-level
-     * parallelism); total worker threads is approximately this value multiplied by {@link #getPageThreads()}. Anchor
-     * records are serialized per anchor PI.</li>
+     * parallelism); total worker threads is approximately this value multiplied by {@link #getPageThreads()}. Record
+     * files with the same PI are indexed one after the other.</li>
      * <li>shared model ({@code sharedWorkerPool=true}): parallelism of the single work-stealing pool that record and
      * intra-record (page/child-node) work draw from. Size it with headroom above the core count as I/O headroom for the
      * blocking Solr/file/HTTP work.</li>
@@ -513,6 +513,23 @@ public final class Configuration {
      */
     public int getPageThreads() {
         return Math.max(1, getInt("performance.pageThreads", 1));
+    }
+
+    /**
+     * Detects a configuration written for older versions, in which <code>performance.threads</code> was the number of threads used for page
+     * generation within one record. Such a configuration sets <code>threads</code> above 1 but has no <code>pageThreads</code>, so it now
+     * silently indexes several records in parallel (different memory and Solr load) while page generation runs serially. Not relevant for
+     * the shared worker pool, which has to be enabled explicitly.
+     *
+     * @return true if <code>performance.threads</code> is greater than 1, <code>performance.pageThreads</code> is missing and the shared worker
+     *         pool is disabled; false otherwise
+     * @should return true if threads above one and page threads missing
+     * @should return false if page threads configured
+     * @should return false if threads is one
+     * @should return false if shared worker pool enabled
+     */
+    public boolean isLegacyThreadsConfiguration() {
+        return getThreads() > 1 && !isSharedWorkerPool() && !getConfig().containsKey("performance.pageThreads");
     }
 
     /**
