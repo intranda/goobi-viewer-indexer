@@ -436,7 +436,7 @@ public class MetsIndexer extends Indexer {
                 indexObj.setAnchorPI(indexObj.getAnchorPI());
                 SolrDocumentList hits = SolrIndexerDaemon.getInstance()
                         .getSearchIndex()
-                        .search(SolrConstants.PI + ":" + indexObj.getAnchorPI(), Collections.singletonList(SolrConstants.ACCESSCONDITION));
+                        .search(SolrConstants.PI + ":\"" + indexObj.getAnchorPI() + '"', Collections.singletonList(SolrConstants.ACCESSCONDITION));
                 if (hits != null && !hits.isEmpty()) {
                     Collection<Object> fields = hits.get(0).getFieldValues(SolrConstants.ACCESSCONDITION);
                     if (fields != null) {

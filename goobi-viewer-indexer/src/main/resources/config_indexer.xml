@@ -3920,7 +3920,7 @@
                 <item>
                     <xpath>mets:xmlData/mods:mods/mods:originInfo[@eventType="publication"]/mods:dateIssued[@encoding="iso8601"]</xpath>
                     <addToDefault>false</addToDefault>
-                    <replace string="-"></replace>
+                    <replace regex="-|T.*"></replace>
                 </item>
             </list>
         </GROUPORDER_NEWSPAPER>

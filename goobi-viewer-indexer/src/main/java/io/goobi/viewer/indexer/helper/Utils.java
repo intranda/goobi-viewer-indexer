@@ -144,7 +144,18 @@ public final class Utils {
     private static final String MAIL_PROPERTY_SMTP_HOST = "mail.smtp.host";
     private static final String MAIL_PROPERTY_SMTP_PORT = "mail.smtp.port";
 
-    private static final char[] PI_ILLEGAL_CHARS = { '!', '?', '/', '\\', ':', ';', '(', ')', '@', '"', '\'' };
+    // Blocklist of characters not permitted in persistent identifiers (kept in sync with viewer-core PIValidator).
+    // Colons are excluded because they are structurally significant in Solr query syntax
+    // (FIELD:value) and must not appear unescaped in PI values used in queries.
+    // Additional characters block java.net.URI path construction failures (space, pipe,
+    // angle/square brackets, newlines, null byte) and double-encoding bypasses (percent).
+    private static final char[] PI_ILLEGAL_CHARS = {
+        '!', '?', '/', '\\', ':', ';', '(', ')', '@', '"', '\'',  // original set
+        '|', '<', '>', '[', ']',                                    // path-safety: invalid in java.net.URI
+        ' ', '%', '\r', '\n', '\0',                                 // encoding bypass / control chars
+        '*',                                                        // Solr wildcard abuse prevention
+        '+'                                                         // Solr syntax: unary plus is a prefix operator
+    };
 
     // Simple image URI pattern (adjust extensions as needed)
     private static final Pattern PATTERN_IMAGE_URI = Pattern.compile("^https?://.+\\.(jpg|jpeg|png|gif|bmp|tiff?)$", Pattern.CASE_INSENSITIVE);
@@ -1048,10 +1059,29 @@ public final class Utils {
      * @should return true if pi good
      * @should return false if pi empty, blank or null
      * @should return false if pi contains illegal characters
+     * @should return false if pi starts with non alphanumeric character
+     * @should return false if pi contains no alphanumeric character
+     * @should return false if pi contains plus sign
+     * @should return false if pi contains non ascii characters
      * @return a boolean.
      */
     public static boolean validatePi(String pi) {
         if (StringUtils.isBlank(pi)) {
+            return false;
+        }
+
+        // Reject non-printable ASCII control characters (< 0x20 or = 0x7F) and any non-ASCII
+        // characters (>= 0x80). Such characters cause java.net.URI construction failures and Solr query syntax errors.
+        for (int i = 0; i < pi.length(); i++) {
+            char c = pi.charAt(i);
+            if (c < 0x20 || c >= 0x7F) {
+                return false;
+            }
+        }
+
+        // Require the first character to be alphanumeric. This prevents Solr query
+        // injection via leading '-' (negation operator) or '+' (required operator).
+        if (!Character.isLetterOrDigit(pi.charAt(0))) {
             return false;
         }
 

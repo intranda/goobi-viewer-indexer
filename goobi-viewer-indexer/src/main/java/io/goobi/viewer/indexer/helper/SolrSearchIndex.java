@@ -750,7 +750,7 @@ public final class SolrSearchIndex {
      */
     public SolrInputDocument checkAndCreateGroupDoc(String groupIdField, String groupId, Map<String, String> metadata, String iddoc) {
         try {
-            SolrDocumentList docs = search(SolrConstants.PI + ":" + groupId, null);
+            SolrDocumentList docs = search(SolrConstants.PI + ":\"" + groupId + '"', null);
             SolrInputDocument doc = new SolrInputDocument();
             long now = System.currentTimeMillis();
             if (docs.isEmpty()) {
