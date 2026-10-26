@@ -99,6 +99,26 @@ public class DenkXwebIndexer extends Indexer {
      */
     @Override
     public List<String> addToIndex(Path denkxwebFile, Map<String, Boolean> reindexSettings) throws IOException, FatalIndexerException {
+        currentRecordFile = denkxwebFile;
+        try {
+            return indexRecordFile(denkxwebFile, reindexSettings);
+        } finally {
+            // Release the record lock acquired in index(), which is held for the post-processing
+            unlockRecord();
+            currentRecordFile = null;
+        }
+    }
+
+    /**
+     * Indexes the given record file and moves its data into the data repository (see {@link #addToIndex(Path, Map)}).
+     *
+     * @param denkxwebFile Record file
+     * @param reindexSettings
+     * @return List of successfully indexed record identifiers
+     * @throws IOException
+     * @throws FatalIndexerException
+     */
+    private List<String> indexRecordFile(Path denkxwebFile, Map<String, Boolean> reindexSettings) throws IOException, FatalIndexerException {
         if (denkxwebFile == null) {
             throw new IllegalArgumentException("denkxwebFile may not be null");
         }
@@ -128,6 +148,8 @@ public class DenkXwebIndexer extends Indexer {
 
         List<String> ret = new ArrayList<>(denkxwebDocs.size());
         for (Document doc : denkxwebDocs) {
+            // Release the lock of the previous record (held for its post-processing)
+            unlockRecord();
             IndexingResult result = index(doc, dataFolders, null, SolrIndexerDaemon.getInstance().getConfiguration().getPageCountStart(),
                     dataFolders.containsKey(DataRepository.PARAM_DOWNLOAD_IMAGES_TRIGGER));
             if (IndexingResultStatus.OK.equals(result.getStatus())) {
@@ -170,14 +192,14 @@ public class DenkXwebIndexer extends Indexer {
                 prerenderPagePdfsIfRequired(identifier);
                 recordIndexed(result);
 
-                // Remove this file from lower priority hotfolders to avoid overriding changes with older version
-                SolrIndexerDaemon.getInstance().removeRecordFileFromLowerPriorityHotfolders(identifier, hotfolder);
+                // Older copies of this record in lower-priority hotfolders must not overwrite this version
+                SolrIndexerDaemon.getInstance().registerIndexedRecord(identifier, hotfolder);
 
                 // Add identifier to return list
                 if (result.isSubmitPiToViewer()) {
                     ret.add(identifier);
                 }
-            } else {
+            } else if (!IndexingResultStatus.SKIPPED.equals(result.getStatus())) {
                 handleError(denkxwebFile, result.getError(), FileFormat.DENKXWEB);
             }
         }
@@ -232,6 +254,11 @@ public class DenkXwebIndexer extends Indexer {
 
             // Set PI
             pi = validateAndApplyPI(findPI(""), indexObj, true);
+
+            // Serialize with other record files carrying the same PI (other hotfolders, other file names)
+            if (!lockRecord(pi)) {
+                return skipSupersededRecord(ret, pi);
+            }
 
             // Determine the data repository to use
             selectDataRepository(indexObj, pi, null, dataFolders);
@@ -339,6 +366,7 @@ public class DenkXwebIndexer extends Indexer {
             ret.setError(e.getMessage());
             SolrIndexerDaemon.getInstance().getSearchIndex().rollback();
         } finally {
+            unlockRecordAfterIndex();
             if (writeStrategy != null) {
                 writeStrategy.cleanup();
             }

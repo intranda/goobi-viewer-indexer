@@ -21,6 +21,12 @@
 		<viewerUrl>http://localhost:8080/viewer/</viewerUrl>
 
 		<!-- Folder configuration -->
+		<!-- Hotfolder(s): several <hotFolder> elements may be configured, the first one has the highest priority. A record (identified by its PI,
+			regardless of the file name) that has been indexed from a higher-priority hotfolder is not overwritten by an older copy in a
+			lower-priority hotfolder: a copy that was last modified before the newer version was indexed is skipped and deleted.
+			Caveat: this relies on file modification times. Tools that preserve them when copying (e.g. rsync -a / rsync -t, cp -p) make fresh
+			copies look old, so they may be skipped. Copy files into lower-priority hotfolders without preserving modification times, or touch
+			them afterwards. -->
 		<hotFolder>/opt/digiverso/viewer/hotfolder/</hotFolder>
 		<!--hotFolder>/opt/digiverso/viewer/reindex_hotfolder/</hotFolder-->
 		<tempFolder>/opt/digiverso/indexer/temp/</tempFolder>
@@ -257,7 +263,7 @@
 		<!-- Top-level worker-thread count. Meaning depends on sharedWorkerPool (see below):
 			- sharedWorkerPool=false (default): number of whole records indexed concurrently (record-level parallelism).
 			  Total worker threads is roughly threads * pageThreads, so size both together against CPU and Solr capacity.
-			  Anchor records are serialized per anchor PI.
+			  Record files with the same PI (also from different hotfolders) are indexed one after the other.
 			- sharedWorkerPool=true: parallelism of the single shared work-stealing pool (pageThreads is ignored).
 			Default is 1 (serial). NOTE: this key formerly configured page-generation parallelism; that role has moved to
 			pageThreads. Update existing configs accordingly. -->

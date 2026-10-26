@@ -103,6 +103,26 @@ public class LidoIndexer extends Indexer {
     /** {@inheritDoc} */
     @Override
     public List<String> addToIndex(Path lidoFile, Map<String, Boolean> reindexSettings) throws IOException, FatalIndexerException {
+        currentRecordFile = lidoFile;
+        try {
+            return indexRecordFile(lidoFile, reindexSettings);
+        } finally {
+            // Release the record lock acquired in index(), which is held for the post-processing
+            unlockRecord();
+            currentRecordFile = null;
+        }
+    }
+
+    /**
+     * Indexes the given record file and moves its data into the data repository (see {@link #addToIndex(Path, Map)}).
+     *
+     * @param lidoFile Record file
+     * @param reindexSettings
+     * @return List of successfully indexed record identifiers
+     * @throws IOException
+     * @throws FatalIndexerException
+     */
+    private List<String> indexRecordFile(Path lidoFile, Map<String, Boolean> reindexSettings) throws IOException, FatalIndexerException {
         logger.debug("Indexing LIDO file '{}'...", lidoFile.getFileName());
         String fileNameRoot = FilenameUtils.getBaseName(lidoFile.getFileName().toString());
 
@@ -128,6 +148,8 @@ public class LidoIndexer extends Indexer {
 
         List<String> ret = new ArrayList<>(lidoDocs.size());
         for (Document doc : lidoDocs) {
+            // Release the lock of the previous record (held for its post-processing)
+            unlockRecord();
             IndexingResult result = index(doc, dataFolders, null, SolrIndexerDaemon.getInstance().getConfiguration().getPageCountStart(),
                     SolrIndexerDaemon.getInstance().getConfiguration().getStringList("init.lido.imageXPath"),
                     dataFolders.containsKey(DataRepository.PARAM_DOWNLOAD_IMAGES_TRIGGER),
@@ -197,14 +219,14 @@ public class LidoIndexer extends Indexer {
                 prerenderPagePdfsIfRequired(identifier);
                 recordIndexed(result);
 
-                // Remove this file from lower priority hotfolders to avoid overriding changes with older version
-                SolrIndexerDaemon.getInstance().removeRecordFileFromLowerPriorityHotfolders(identifier, hotfolder);
+                // Older copies of this record in lower-priority hotfolders must not overwrite this version
+                SolrIndexerDaemon.getInstance().registerIndexedRecord(identifier, hotfolder);
 
                 // Add identifier to return list
                 if (result.isSubmitPiToViewer()) {
                     ret.add(identifier);
                 }
-            } else {
+            } else if (!IndexingResultStatus.SKIPPED.equals(result.getStatus())) {
                 handleError(lidoFile, result.getError(), FileFormat.LIDO);
             }
         }
@@ -261,6 +283,11 @@ public class LidoIndexer extends Indexer {
 
             // Set PI
             pi = validateAndApplyPI(findPI("/lido:lido/"), indexObj, false);
+
+            // Serialize with other record files carrying the same PI (other hotfolders, other file names)
+            if (!lockRecord(pi)) {
+                return skipSupersededRecord(ret, pi);
+            }
 
             // Determine the data repository to use
             selectDataRepository(indexObj, pi, null, dataFolders);
@@ -374,6 +401,7 @@ public class LidoIndexer extends Indexer {
             ret.setError(e.getMessage());
             SolrIndexerDaemon.getInstance().getSearchIndex().rollback();
         } finally {
+            unlockRecordAfterIndex();
             if (writeStrategy != null) {
                 writeStrategy.cleanup();
             }

@@ -17,6 +17,7 @@ package io.goobi.viewer.indexer;
 
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -35,6 +36,8 @@ import io.goobi.viewer.indexer.exceptions.FatalIndexerException;
 import io.goobi.viewer.indexer.exceptions.SolrUnavailableException;
 import io.goobi.viewer.indexer.helper.Configuration;
 import io.goobi.viewer.indexer.helper.Hotfolder;
+import io.goobi.viewer.indexer.helper.IndexedRecordRegistry;
+import io.goobi.viewer.indexer.helper.RecordLocks;
 import io.goobi.viewer.indexer.helper.SolrSearchIndex;
 import io.goobi.viewer.indexer.helper.Utils;
 import io.goobi.viewer.indexer.model.datarepository.strategy.AbstractDataRepositoryStrategy;
@@ -67,6 +70,10 @@ public final class SolrIndexerDaemon {
     private ForkJoinPool workerPool;
 
     private List<Hotfolder> hotfolders = new ArrayList<>();
+    /** Locks records by PI across all hotfolders (see {@link RecordLocks}). */
+    private final RecordLocks recordLocks = new RecordLocks();
+    /** Records indexed from hotfolders other than the lowest-priority one (see {@link #isSupersededByHigherPriorityHotfolder}). */
+    private final IndexedRecordRegistry indexedRecordRegistry = new IndexedRecordRegistry(IndexedRecordRegistry.MAX_ENTRIES);
 
     /**
      * Initialization-on-demand holder: the JVM guarantees the class is loaded (and INSTANCE constructed) lazily and thread-safely on
@@ -167,25 +174,67 @@ public final class SolrIndexerDaemon {
     }
 
     /**
-     * Removes files that matches the given pi from hotfolders that are prioritized lower than (i.e. listed after) usedHotfolder.
-     * 
-     * @param pi
-     * @param usedHotfolder
+     * Registers that the record with the given PI has been indexed successfully from the given hotfolder, so that older copies of the record in
+     * lower-priority hotfolders are skipped (see {@link #isSupersededByHigherPriorityHotfolder(String, Hotfolder, Path)}). Nothing is
+     * registered for the lowest-priority hotfolder, which cannot supersede anything.
+     *
+     * @param pi Record identifier
+     * @param hotfolder Hotfolder the record file was taken from
      */
-    public void removeRecordFileFromLowerPriorityHotfolders(String pi, Hotfolder usedHotfolder) {
-        logger.debug("removeRecordFileFromLowerPriorityHotfolders: {}/{}", usedHotfolder.getHotfolderPath().getFileName(), pi);
-        int index = hotfolders.indexOf(usedHotfolder);
-        if (index == -1) {
+    public void registerIndexedRecord(String pi, Hotfolder hotfolder) {
+        int priority = getHotfolderPriority(hotfolder);
+        if (priority < 0 || priority >= hotfolders.size() - 1) {
             return;
         }
-        for (int i = index + 1; i < hotfolders.size(); ++i) {
-            Hotfolder hotfolder = hotfolders.get(i);
-            try {
-                hotfolder.removeSourceFileFromQueue(pi);
-            } catch (IOException e) {
-                logger.error(e.getMessage());
+        indexedRecordRegistry.register(pi, priority, System.currentTimeMillis());
+    }
+
+    /**
+     * Checks whether the given record file is an older copy of a record that has been indexed from a higher-priority hotfolder after the file
+     * was last modified (see {@link IndexedRecordRegistry#isSuperseded(String, int, long)}, also for the caveat regarding copies that preserve
+     * modification times, e.g. <code>rsync -a</code>). Only applies to files placed directly in the hotfolder, not to internal files (anchor
+     * <code>.UPDATED</code> files, indexed record files from the data repository).
+     *
+     * @param pi Record identifier
+     * @param hotfolder Hotfolder the record file was taken from
+     * @param recordFile Record file
+     * @return true if the record file is superseded and must not be indexed; false otherwise
+     * @should return true if indexed from higher priority hotfolder after file modification
+     * @should return false if indexed from higher priority hotfolder before file modification
+     * @should return false for highest priority hotfolder
+     * @should return false for files outside the hotfolder
+     */
+    public boolean isSupersededByHigherPriorityHotfolder(String pi, Hotfolder hotfolder, Path recordFile) {
+        int priority = getHotfolderPriority(hotfolder);
+        if (priority <= 0 || recordFile == null || recordFile.getParent() == null
+                || recordFile.getFileName().toString().endsWith(MetsIndexer.ANCHOR_UPDATE_EXTENSION)
+                || !recordFile.getParent().toAbsolutePath().normalize().equals(hotfolder.getHotfolderPath().toAbsolutePath().normalize())) {
+            return false;
+        }
+        try {
+            return indexedRecordRegistry.isSuperseded(pi, priority, Files.getLastModifiedTime(recordFile).toMillis());
+        } catch (IOException e) {
+            logger.warn("Could not read the modification time of '{}': {}", recordFile.getFileName(), e.getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * 
+     * @param hotfolder
+     * @return Priority of the given hotfolder (0 = highest, i.e. listed first); -1 if not a configured hotfolder
+     */
+    int getHotfolderPriority(Hotfolder hotfolder) {
+        if (hotfolder == null || hotfolder.getHotfolderPath() == null) {
+            return -1;
+        }
+        Path path = hotfolder.getHotfolderPath().toAbsolutePath().normalize();
+        for (int i = 0; i < hotfolders.size(); i++) {
+            if (path.equals(hotfolders.get(i).getHotfolderPath().toAbsolutePath().normalize())) {
+                return i;
             }
         }
+        return -1;
     }
 
     /**
@@ -435,6 +484,21 @@ public final class SolrIndexerDaemon {
      */
     public SolrSearchIndex getSearchIndex() {
         return this.searchIndex;
+    }
+
+    /**
+     * @return Record locks shared by all hotfolders
+     */
+    public RecordLocks getRecordLocks() {
+        return recordLocks;
+    }
+
+    /**
+     * 
+     * @return Configured hotfolders, in order of priority (live list; for tests)
+     */
+    List<Hotfolder> getHotfolders() {
+        return hotfolders;
     }
 
     /**

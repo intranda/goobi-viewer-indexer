@@ -108,6 +108,7 @@ import io.goobi.viewer.indexer.helper.logging.SecondaryAppender;
 import io.goobi.viewer.indexer.model.GroupedMetadata;
 import io.goobi.viewer.indexer.model.IndexObject;
 import io.goobi.viewer.indexer.model.IndexingResult;
+import io.goobi.viewer.indexer.model.IndexingResult.IndexingResultStatus;
 import io.goobi.viewer.indexer.model.LuceneField;
 import io.goobi.viewer.indexer.model.PhysicalElement;
 import io.goobi.viewer.indexer.model.SolrConstants;
@@ -198,6 +199,15 @@ public abstract class Indexer {
 
     protected Set<String> iddocsToDelete = new HashSet<>();
 
+    /**
+     * Record file processed by {@link #addToIndex(Path, Map)}; null if <code>index()</code> is called directly. If set, the record lock acquired in
+     * <code>index()</code> is kept for the post-processing in <code>addToIndex()</code> (moving files into the data repository) and the record
+     * is checked for being superseded (see {@link #lockRecord(String)}).
+     */
+    protected Path currentRecordFile;
+    /** PI of the record whose lock is currently held by this indexer (see {@link #lockRecord(String)}). */
+    private String lockedPi;
+
     protected Indexer() {
         httpConnector = new HttpConnector(HTTP_CONNECTION_TIMEOUT);
         mapper.registerModule(new JavaTimeModule());
@@ -224,6 +234,79 @@ public abstract class Indexer {
      */
     protected void recordIndexed(IndexingResult result) {
         indexedRecords.add(result);
+    }
+
+    /**
+     * Acquires the record lock for the given PI (see {@link io.goobi.viewer.indexer.helper.RecordLocks}), waiting while another record file with
+     * the same PI is being indexed. Must be called as soon as the PI is known, before the data repository is selected and before the previous
+     * instance is looked up. Any lock this indexer holds for another PI is released first (multi-record files are processed one record at a
+     * time).
+     * <p>
+     * If called during {@link #addToIndex(Path, Map)}, also checks whether the record file is an older copy of a record that has been indexed
+     * from a higher-priority hotfolder meanwhile (see {@link SolrIndexerDaemon#isSupersededByHigherPriorityHotfolder(String, Hotfolder, Path)});
+     * the lock is then released again.
+     *
+     * @param pi Record identifier
+     * @return true if the record may be indexed; false if it is superseded
+     */
+    protected boolean lockRecord(String pi) {
+        unlockRecord();
+        SolrIndexerDaemon.getInstance().getRecordLocks().lock(pi);
+        lockedPi = pi;
+        if (currentRecordFile != null && SolrIndexerDaemon.getInstance().isSupersededByHigherPriorityHotfolder(pi, hotfolder, currentRecordFile)) {
+            unlockRecord();
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * Releases the record lock held by this indexer, if any.
+     */
+    protected void unlockRecord() {
+        if (lockedPi != null) {
+            SolrIndexerDaemon.getInstance().getRecordLocks().unlock(lockedPi);
+            lockedPi = null;
+        }
+    }
+
+    /**
+     * Releases the record lock at the end of <code>index()</code>, unless <code>index()</code> was called by {@link #addToIndex(Path, Map)},
+     * which releases it after its post-processing.
+     */
+    protected void unlockRecordAfterIndex() {
+        if (currentRecordFile == null) {
+            unlockRecord();
+        }
+    }
+
+    /**
+     * Result for a record that is not indexed because a newer version has been indexed from a higher-priority hotfolder.
+     *
+     * @param ret Result to update
+     * @param pi Record identifier
+     * @return ret
+     */
+    protected IndexingResult skipSupersededRecord(IndexingResult ret, String pi) {
+        logger.info("Skipping '{}' ('{}'): a newer version of this record has been indexed from a higher-priority hotfolder.",
+                currentRecordFile != null ? currentRecordFile.getFileName() : null, pi);
+        return ret.setPi(pi).setStatus(IndexingResultStatus.SKIPPED);
+    }
+
+    /**
+     * Deletes a superseded record file and its data folders from the hotfolder (see {@link #skipSupersededRecord(IndexingResult, String)}).
+     *
+     * @param recordFile Record file
+     * @param dataFolders Data folders of the record file
+     * @param reindexSettings
+     */
+    protected static void deleteSupersededRecordFile(Path recordFile, Map<String, Path> dataFolders, Map<String, Boolean> reindexSettings) {
+        try {
+            Files.deleteIfExists(recordFile);
+        } catch (IOException e) {
+            logger.error(LOG_COULD_NOT_BE_DELETED, recordFile.toAbsolutePath());
+        }
+        DataRepository.deleteDataFoldersFromHotfolder(dataFolders, reindexSettings);
     }
 
     /**
@@ -345,6 +428,8 @@ public abstract class Indexer {
         if (searchIndex == null) {
             throw new IllegalArgumentException("searchIndex may not be null.");
         }
+        // Make documents of this record that were added but not committed yet (batched commits) visible, so they are deleted as well
+        searchIndex.commitIfUncommitted(pi);
         // Check whether this is an anchor record
         try {
             SolrDocumentList hits = searchIndex.search(new StringBuilder(SolrConstants.PI).append(":").append(pi).toString(),
@@ -1779,6 +1864,9 @@ public abstract class Indexer {
      */
     protected void prepareUpdate(IndexObject indexObj) throws IOException, SolrServerException, FatalIndexerException {
         String pi = indexObj.getPi().trim();
+        // Make a previous version of this record that was added but not committed yet (batched commits) visible, so it is found and
+        // deleted below; otherwise both versions would remain in the index
+        SolrIndexerDaemon.getInstance().getSearchIndex().commitIfUncommitted(pi);
         SolrDocumentList hits = SolrIndexerDaemon.getInstance().getSearchIndex().search(SolrConstants.PI + ":\"" + pi + '"', null);
         // Retrieve record from old index, if available
         boolean fromOldIndex = false;

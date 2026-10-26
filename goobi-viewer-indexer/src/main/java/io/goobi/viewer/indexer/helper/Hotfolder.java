@@ -47,7 +47,6 @@ import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.ReentrantLock;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
@@ -182,14 +181,6 @@ public class Hotfolder {
      * workers may flag their anchor at the same time.
      */
     private final Set<String> anchorPisPendingReconciliation = ConcurrentHashMap.newKeySet();
-
-    /**
-     * Per-anchor-PI locks serializing writes to the same anchor (the {@code anchorMerge}/anchor-doc write in
-     * {@link io.goobi.viewer.indexer.MetsIndexer} and {@code anchorSuperupdate}) when records index in parallel. Different
-     * anchors proceed concurrently; volumes take no lock (they only flag their anchor). Entries are created on demand and
-     * intentionally not evicted — the number of distinct anchor PIs per run is small.
-     */
-    private final ConcurrentMap<String, ReentrantLock> anchorWriteLocks = new ConcurrentHashMap<>();
 
     /** Executor for record-level parallelism; null when serial ({@code performance.threads}=1 and shared pool off). */
     private ExecutorService recordExecutor;
@@ -730,34 +721,6 @@ public class Hotfolder {
     public void flagAnchorForReconciliation(String anchorPi) {
         if (StringUtils.isNotEmpty(anchorPi)) {
             anchorPisPendingReconciliation.add(anchorPi);
-        }
-    }
-
-    /**
-     * Acquires the write lock for the given anchor PI (created on demand), serializing concurrent writes to the same
-     * anchor's Solr doc and METS file under record-level parallelism. Callers MUST release it in a finally via
-     * {@link #releaseAnchorWriteLock(String)}. Uncontended (effectively a no-op) when records are indexed serially.
-     *
-     * @param anchorPi anchor PI to lock; ignored if null or empty
-     */
-    public void acquireAnchorWriteLock(String anchorPi) {
-        if (StringUtils.isNotEmpty(anchorPi)) {
-            anchorWriteLocks.computeIfAbsent(anchorPi, k -> new ReentrantLock()).lock();
-        }
-    }
-
-    /**
-     * Releases the anchor write lock previously acquired via {@link #acquireAnchorWriteLock(String)}. Safe to call even
-     * if the current thread does not hold it (then it is a no-op), so it can sit unconditionally in a finally block.
-     *
-     * @param anchorPi anchor PI to unlock; ignored if null or empty
-     */
-    public void releaseAnchorWriteLock(String anchorPi) {
-        if (StringUtils.isNotEmpty(anchorPi)) {
-            ReentrantLock lock = anchorWriteLocks.get(anchorPi);
-            if (lock != null && lock.isHeldByCurrentThread()) {
-                lock.unlock();
-            }
         }
     }
 
@@ -1438,28 +1401,41 @@ public class Hotfolder {
                     removeUsageStatisticsFromIndex(sourceFile);
                     Files.delete(sourceFile);
                 } else {
-                    // PURGE / DELETE
-                    DataRepository[] repositories = dataRepositoryStrategy.selectDataRepository(null, sourceFile, null,
-                            SolrIndexerDaemon.getInstance().getSearchIndex(), SolrIndexerDaemon.getInstance().getOldSearchIndex());
-                    String pi = removeFromIndex(sourceFile, repositories[1] != null ? repositories[1] : repositories[0],
-                            filename.endsWith(FILENAME_EXTENSION_DELETE));
-                    Utils.submitDataToViewer(Collections.singletonList(pi), countRecordFiles());
+                    // PURGE / DELETE (the file name is the PI); serialized with the indexing of other files of the same record
+                    String pi = FilenameUtils.getBaseName(filename);
+                    RecordLocks recordLocks = SolrIndexerDaemon.getInstance().getRecordLocks();
+                    recordLocks.lock(pi);
+                    try {
+                        if (SolrIndexerDaemon.getInstance().isSupersededByHigherPriorityHotfolder(pi, this, sourceFile)) {
+                            logger.info("Skipping '{}': record '{}' has been indexed from a higher-priority hotfolder meanwhile.", filename, pi);
+                            Files.delete(sourceFile);
+                        } else {
+                            DataRepository[] repositories = dataRepositoryStrategy.selectDataRepository(null, sourceFile, null,
+                                    SolrIndexerDaemon.getInstance().getSearchIndex(), SolrIndexerDaemon.getInstance().getOldSearchIndex());
+                            String deletedPi = removeFromIndex(sourceFile, repositories[1] != null ? repositories[1] : repositories[0],
+                                    filename.endsWith(FILENAME_EXTENSION_DELETE));
+                            Utils.submitDataToViewer(Collections.singletonList(deletedPi), countRecordFiles());
+                        }
+                    } finally {
+                        recordLocks.unlock(pi);
+                    }
                 }
             } else if (filename.endsWith(MetsIndexer.ANCHOR_UPDATE_EXTENSION)) {
                 // SUPERUPDATE
                 DataRepository[] repositories = dataRepositoryStrategy.selectDataRepository(null, sourceFile, null,
                         SolrIndexerDaemon.getInstance().getSearchIndex(), SolrIndexerDaemon.getInstance().getOldSearchIndex());
                 // Derive the clean anchor PI (strip the '#' anti-collision part) so this file move serializes against a
-                // concurrent re-index of the same anchor via the same per-PI lock.
+                // concurrent re-index of the same anchor via the same record lock.
                 String anchorPi = FilenameUtils.getBaseName(filename);
                 if (anchorPi.contains("#")) {
                     anchorPi = anchorPi.substring(0, anchorPi.indexOf('#'));
                 }
-                acquireAnchorWriteLock(anchorPi);
+                RecordLocks recordLocks = SolrIndexerDaemon.getInstance().getRecordLocks();
+                recordLocks.lock(anchorPi);
                 try {
                     MetsIndexer.anchorSuperupdate(sourceFile, updatedMets, repositories[1] != null ? repositories[1] : repositories[0]);
                 } finally {
-                    releaseAnchorWriteLock(anchorPi);
+                    recordLocks.unlock(anchorPi);
                 }
                 Utils.submitDataToViewer(Collections.emptyList(), countRecordFiles()); // TODO submit any record identifiers here?
             } else if (filename.endsWith(DocUpdateIndexer.FILE_EXTENSION)) {
@@ -1641,43 +1617,6 @@ public class Hotfolder {
             throw new IllegalArgumentException("usage statistics file {} does not exist".replace("{}", sourceFile.toString()));
         }
         return new UsageStatisticsIndexer(this).removeFromIndex(sourceFile);
-    }
-
-    /**
-     * <p>
-     * removeSourceFileFromQueue.
-     * </p>
-     *
-     * @param pi a {@link java.lang.String} object
-     * @throws java.io.IOException
-     */
-    public void removeSourceFileFromQueue(String pi) throws IOException {
-        if (StringUtils.isEmpty(pi)) {
-            return;
-        }
-        logger.info("removeSourceFileFromQueue: {}/{}.xml", getHotfolderPath().getFileName(), pi);
-
-        Path matchingFile = null;
-        try (DirectoryStream<Path> stream = Files.newDirectoryStream(hotfolderPath, "*.{xml,json,delete,purge,docupdate,UPDATED}")) {
-            for (Path path : stream) {
-                if (FilenameUtils.getBaseName(path.getFileName().toString()).equals(pi)) {
-                    matchingFile = path;
-                    break;
-                }
-            }
-        } catch (IOException e) {
-            logger.error(e.getMessage(), e);
-        }
-
-        if (matchingFile != null) {
-            boolean removedFromQueue = indexQueue.remove(matchingFile);
-            boolean removedFromBacklog = listingBacklog.remove(matchingFile);
-            if (removedFromQueue || removedFromBacklog) {
-                logger.info("Removed '{}' from hotfolder '{}' index queue.", matchingFile.getFileName(), getHotfolderPath().getFileName());
-            }
-            Files.delete(matchingFile);
-            logger.info("Deleted '{}' from hotfolder '{}'.", matchingFile.getFileName(), getHotfolderPath().getFileName());
-        }
     }
 
     /**

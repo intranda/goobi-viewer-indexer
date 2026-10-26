@@ -164,8 +164,32 @@ public class MetsIndexer extends Indexer {
         this.availablePreferredImageFileGroups = availablePreferredImageFileGroups;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     * 
+     * @should skip record file superseded by higher priority hotfolder
+     */
+    @Override
     public List<String> addToIndex(Path metsFile, Map<String, Boolean> reindexSettings) throws IOException {
+        currentRecordFile = metsFile;
+        try {
+            return indexRecordFile(metsFile, reindexSettings);
+        } finally {
+            // Release the record lock acquired in index(), which is held for the post-processing
+            unlockRecord();
+            currentRecordFile = null;
+        }
+    }
+
+    /**
+     * Indexes the given record file and moves its data into the data repository (see {@link #addToIndex(Path, Map)}).
+     *
+     * @param metsFile Record file
+     * @param reindexSettings
+     * @return List of successfully indexed record identifiers
+     * @throws IOException
+     */
+    private List<String> indexRecordFile(Path metsFile, Map<String, Boolean> reindexSettings) throws IOException {
         String fileNameRoot = FilenameUtils.getBaseName(metsFile.getFileName().toString());
 
         // Check data folders in the hotfolder
@@ -177,6 +201,10 @@ public class MetsIndexer extends Indexer {
         IndexingResult result = index(metsFile, dataFolders, null,
                 SolrIndexerDaemon.getInstance().getConfiguration().getPageCountStart(),
                 dataFolders.containsKey(DataRepository.PARAM_DOWNLOAD_IMAGES_TRIGGER));
+        if (IndexingResultStatus.SKIPPED.equals(result.getStatus())) {
+            deleteSupersededRecordFile(metsFile, dataFolders, reindexSettings);
+            return Collections.emptyList();
+        }
 
         if (IndexingResultStatus.OK.equals(result.getStatus())) {
             String newMetsFileName = result.getRecordFileName();
@@ -252,8 +280,8 @@ public class MetsIndexer extends Indexer {
             prerenderPagePdfsIfRequired(result.getPi());
             recordIndexed(result);
 
-            // Remove this file from lower priority hotfolders to avoid overriding changes with older version
-            SolrIndexerDaemon.getInstance().removeRecordFileFromLowerPriorityHotfolders(result.getPi(), hotfolder);
+            // Older copies of this record in lower-priority hotfolders must not overwrite this version
+            SolrIndexerDaemon.getInstance().registerIndexedRecord(result.getPi(), hotfolder);
 
             return result.isSubmitPiToViewer() ? Collections.singletonList(result.getPi()) : Collections.emptyList();
         }
@@ -295,6 +323,8 @@ public class MetsIndexer extends Indexer {
      * @should index page metadata correctly
      * @should flag anchor for reconciliation even if anchor not yet visible in index
      * @should set summary data on result
+     * @should not create duplicate instances if same record indexed concurrently
+     * @should replace uncommitted previous version with batched commits
      *
      */
     public IndexingResult index(Path metsFile, Map<String, Path> dataFolders, final ISolrWriteStrategy inWriteStrategy,
@@ -309,8 +339,6 @@ public class MetsIndexer extends Indexer {
         logger.debug("Indexing METS file '{}'...", metsFile.getFileName());
         ISolrWriteStrategy writeStrategy = inWriteStrategy;
         IndexingResult ret = new IndexingResult();
-        // Set once this record is found to be an anchor and its write lock is held; released in the finally below.
-        String lockedAnchorPi = null;
         try {
             initJDomXP(metsFile);
             IndexObject indexObj = new IndexObject(getNextIddoc());
@@ -331,6 +359,11 @@ public class MetsIndexer extends Indexer {
 
             // Set PI
             String pi = validateAndApplyPI(findPI(getPiRootPath(indexObj.getDmdid())), indexObj, false);
+
+            // Serialize with other record files carrying the same PI (other hotfolders, other file names)
+            if (!lockRecord(pi)) {
+                return skipSupersededRecord(ret, pi);
+            }
 
             // Evaluate the full-text suppression trigger for this record
             this.suppressFulltext = isFulltextSuppressed();
@@ -578,11 +611,7 @@ public class MetsIndexer extends Indexer {
             }
 
             if (indexObj.isAnchor()) {
-                // Serialize concurrent writes to the same anchor (its Solr doc + METS file) under record-level
-                // parallelism; different anchors and all volumes proceed without contention. Held until the finally
-                // below so it covers both the METS rebuild here and the Solr write further down.
-                hotfolder.acquireAnchorWriteLock(indexObj.getPi());
-                lockedAnchorPi = indexObj.getPi();
+                // Concurrent writes to the same anchor (its Solr doc + METS file) are serialized by the record lock acquired above
                 // Rebuild the anchor METS file so its logical structure lists all currently indexed volumes (priority queue).
                 // Volume<->anchor association is via the stable PI_PARENT, so no IDDOC_PARENT repair of the volumes is needed.
                 logger.debug("'{}' is an anchor file.", metsFile.getFileName());
@@ -642,7 +671,7 @@ public class MetsIndexer extends Indexer {
             ret.setError(e.getMessage() != null ? e.getMessage() : e.getClass().getName());
             SolrIndexerDaemon.getInstance().getSearchIndex().rollback();
         } finally {
-            hotfolder.releaseAnchorWriteLock(lockedAnchorPi);
+            unlockRecordAfterIndex();
             if (writeStrategy != null) {
                 writeStrategy.cleanup();
             }

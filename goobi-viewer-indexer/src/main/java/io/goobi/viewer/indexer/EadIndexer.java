@@ -107,6 +107,26 @@ public class EadIndexer extends Indexer {
     /** {@inheritDoc} */
     @Override
     public List<String> addToIndex(Path eadFile, Map<String, Boolean> reindexSettings) throws IOException, FatalIndexerException {
+        currentRecordFile = eadFile;
+        try {
+            return indexRecordFile(eadFile, reindexSettings);
+        } finally {
+            // Release the record lock acquired in index(), which is held for the post-processing
+            unlockRecord();
+            currentRecordFile = null;
+        }
+    }
+
+    /**
+     * Indexes the given record file and moves its data into the data repository (see {@link #addToIndex(Path, Map)}).
+     *
+     * @param eadFile Record file
+     * @param reindexSettings
+     * @return List of successfully indexed record identifiers
+     * @throws IOException
+     * @throws FatalIndexerException
+     */
+    private List<String> indexRecordFile(Path eadFile, Map<String, Boolean> reindexSettings) throws IOException, FatalIndexerException {
         String fileNameRoot = FilenameUtils.getBaseName(eadFile.getFileName().toString());
 
         // Check data folders in the hotfolder
@@ -116,6 +136,10 @@ public class EadIndexer extends Indexer {
         checkReindexSettings(dataFolders, reindexSettings);
 
         IndexingResult result = index(eadFile, dataFolders, null);
+        if (IndexingResultStatus.SKIPPED.equals(result.getStatus())) {
+            deleteSupersededRecordFile(eadFile, dataFolders, reindexSettings);
+            return Collections.emptyList();
+        }
         if (IndexingResultStatus.OK.equals(result.getStatus())) {
             String newFileName = result.getRecordFileName();
             String pi = result.getPi();
@@ -153,8 +177,8 @@ public class EadIndexer extends Indexer {
             prerenderPagePdfsIfRequired(pi);
             recordIndexed(result);
 
-            // Remove this file from lower priority hotfolders to avoid overriding changes with older version
-            SolrIndexerDaemon.getInstance().removeRecordFileFromLowerPriorityHotfolders(pi, hotfolder);
+            // Older copies of this record in lower-priority hotfolders must not overwrite this version
+            SolrIndexerDaemon.getInstance().registerIndexedRecord(pi, hotfolder);
 
             return Collections.singletonList(pi); // Always submit EAD record identifiers
         }
@@ -222,6 +246,11 @@ public class EadIndexer extends Indexer {
             }
             String pi = validateAndApplyPI(MetadataHelper.applyIdentifierModifications(FilenameUtils.getBaseName(baseFileName)),
                     indexObj, false);
+
+            // Serialize with other record files carrying the same PI (other hotfolders, other file names)
+            if (!lockRecord(pi)) {
+                return skipSupersededRecord(ret, pi);
+            }
 
             // Determine the data repository to use
             selectDataRepository(indexObj, pi, eadFile, dataFolders);
@@ -303,6 +332,7 @@ public class EadIndexer extends Indexer {
             ret.setError(e.getMessage() != null ? e.getMessage() : e.getClass().getName());
             SolrIndexerDaemon.getInstance().getSearchIndex().rollback();
         } finally {
+            unlockRecordAfterIndex();
             if (writeStrategy != null) {
                 writeStrategy.cleanup();
             }

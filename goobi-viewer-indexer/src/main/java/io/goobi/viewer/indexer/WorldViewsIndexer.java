@@ -102,6 +102,26 @@ public class WorldViewsIndexer extends Indexer {
     /** {@inheritDoc} */
     @Override
     public List<String> addToIndex(Path mainFile, Map<String, Boolean> reindexSettings) throws IOException, FatalIndexerException {
+        currentRecordFile = mainFile;
+        try {
+            return indexRecordFile(mainFile, reindexSettings);
+        } finally {
+            // Release the record lock acquired in index(), which is held for the post-processing
+            unlockRecord();
+            currentRecordFile = null;
+        }
+    }
+
+    /**
+     * Indexes the given record file and moves its data into the data repository (see {@link #addToIndex(Path, Map)}).
+     *
+     * @param mainFile Record file
+     * @param reindexSettings
+     * @return List of successfully indexed record identifiers
+     * @throws IOException
+     * @throws FatalIndexerException
+     */
+    private List<String> indexRecordFile(Path mainFile, Map<String, Boolean> reindexSettings) throws IOException, FatalIndexerException {
         logger.debug("Indexing WorldViews file '{}'...", mainFile.getFileName());
         String fileNameRoot = FilenameUtils.getBaseName(mainFile.getFileName().toString());
 
@@ -112,6 +132,10 @@ public class WorldViewsIndexer extends Indexer {
         checkReindexSettings(dataFolders, reindexSettings);
 
         IndexingResult result = index(mainFile, dataFolders, null, SolrIndexerDaemon.getInstance().getConfiguration().getPageCountStart());
+        if (IndexingResultStatus.SKIPPED.equals(result.getStatus())) {
+            deleteSupersededRecordFile(mainFile, dataFolders, reindexSettings);
+            return Collections.emptyList();
+        }
 
         if (IndexingResultStatus.OK.equals(result.getStatus())) {
             String newMetsFileName = result.getRecordFileName();
@@ -187,8 +211,8 @@ public class WorldViewsIndexer extends Indexer {
             prerenderPagePdfsIfRequired(pi);
             recordIndexed(result);
 
-            // Remove this file from lower priority hotfolders to avoid overriding changes with older version
-            SolrIndexerDaemon.getInstance().removeRecordFileFromLowerPriorityHotfolders(pi, hotfolder);
+            // Older copies of this record in lower-priority hotfolders must not overwrite this version
+            SolrIndexerDaemon.getInstance().registerIndexedRecord(pi, hotfolder);
 
             return result.isSubmitPiToViewer() ? Collections.singletonList(pi) : Collections.emptyList();
         }
@@ -243,6 +267,11 @@ public class WorldViewsIndexer extends Indexer {
 
             // Set PI
             String pi = validateAndApplyPI(findPI("worldviews//identifier/text()"), indexObj, false);
+
+            // Serialize with other record files carrying the same PI (other hotfolders, other file names)
+            if (!lockRecord(pi)) {
+                return skipSupersededRecord(ret, pi);
+            }
 
             indexObj.setSourceDocFormat(FileFormat.WORLDVIEWS);
 
@@ -424,6 +453,7 @@ public class WorldViewsIndexer extends Indexer {
             ret.setError(e.getMessage() != null ? e.getMessage() : e.getClass().getName());
             SolrIndexerDaemon.getInstance().getSearchIndex().rollback();
         } finally {
+            unlockRecordAfterIndex();
             if (useWriteStrategy != null) {
                 useWriteStrategy.cleanup();
             }

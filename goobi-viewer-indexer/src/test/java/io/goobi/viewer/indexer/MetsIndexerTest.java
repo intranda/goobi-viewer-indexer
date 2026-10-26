@@ -16,6 +16,7 @@
 package io.goobi.viewer.indexer;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -24,6 +25,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.nio.file.attribute.FileTime;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -31,6 +33,11 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import org.apache.commons.collections4.CollectionUtils;
@@ -1751,4 +1758,104 @@ class MetsIndexerTest extends AbstractSolrEnabledTest {
         }
     }
 
+
+    /**
+     * 
+     * @param pi
+     * @return Number of top documents with the given PI in the index
+     * @throws Exception
+     */
+    private static long countRecordInstances(String pi) throws Exception {
+        return SolrIndexerDaemon.getInstance().getSearchIndex().search(SolrConstants.PI + ":\"" + pi + '"', null).getNumFound();
+    }
+
+    /**
+     * @see MetsIndexer#index(Path,Map,ISolrWriteStrategy,int,boolean)
+     * @verifies not create duplicate instances if same record indexed concurrently
+     */
+    @Test
+    void index_shouldNotCreateDuplicateInstancesIfSameRecordIndexedConcurrently() throws Exception {
+        // Index once, so that both concurrent runs replace an existing instance
+        Assertions.assertNull(new MetsIndexer(hotfolder).index(metsFile, new HashMap<>(), null, 1, false).getError());
+        assertEquals(1, countRecordInstances(PI));
+
+        ExecutorService executor = Executors.newFixedThreadPool(2);
+        try {
+            CountDownLatch start = new CountDownLatch(1);
+            List<Future<IndexingResult>> futures = new ArrayList<>();
+            for (int i = 0; i < 2; i++) {
+                futures.add(executor.submit(() -> {
+                    start.await();
+                    return new MetsIndexer(hotfolder).index(metsFile, new HashMap<>(), null, 1, false);
+                }));
+            }
+            start.countDown();
+            for (Future<IndexingResult> future : futures) {
+                Assertions.assertNull(future.get(5, TimeUnit.MINUTES).getError());
+            }
+        } finally {
+            executor.shutdownNow();
+        }
+        assertEquals(1, countRecordInstances(PI), "the same record indexed concurrently must not leave two instances");
+    }
+
+    /**
+     * @see MetsIndexer#index(Path,Map,ISolrWriteStrategy,int,boolean)
+     * @verifies replace uncommitted previous version with batched commits
+     */
+    @Test
+    void index_shouldReplaceUncommittedPreviousVersionWithBatchedCommits() throws Exception {
+        int originalCommitBatchSize = SolrIndexerDaemon.getInstance().getConfiguration().getCommitBatchSize();
+        SolrIndexerDaemon.getInstance().getConfiguration().overrideValue("performance.commitBatchSize", 100);
+        try {
+            // The first version is not committed when the second one is indexed
+            Assertions.assertNull(new MetsIndexer(hotfolder).index(metsFile, new HashMap<>(), null, 1, false).getError());
+            Assertions.assertNull(new MetsIndexer(hotfolder).index(metsFile, new HashMap<>(), null, 1, false).getError());
+            SolrIndexerDaemon.getInstance().getSearchIndex().commitPending();
+            assertEquals(1, countRecordInstances(PI), "the uncommitted first version must have been replaced");
+
+            // Deleting a record whose new version is not committed yet must delete that version, too
+            Assertions.assertNull(new MetsIndexer(hotfolder).index(metsFile, new HashMap<>(), null, 1, false).getError());
+            assertTrue(Indexer.delete(PI, false, SolrIndexerDaemon.getInstance().getSearchIndex()));
+            SolrIndexerDaemon.getInstance().getSearchIndex().commitPending();
+            assertEquals(0, countRecordInstances(PI));
+        } finally {
+            SolrIndexerDaemon.getInstance().getConfiguration().overrideValue("performance.commitBatchSize", originalCommitBatchSize);
+        }
+    }
+
+    /**
+     * @see MetsIndexer#addToIndex(Path,Map)
+     * @verifies skip record file superseded by higher priority hotfolder
+     */
+    @Test
+    void addToIndex_shouldSkipRecordFileSupersededByHigherPriorityHotfolder() throws Exception {
+        List<String> hotfolderPaths = SolrIndexerDaemon.getInstance().getConfiguration().getHotfolderPaths();
+        Assertions.assertTrue(hotfolderPaths.size() >= 2, "test configuration must define two hotfolders");
+        Hotfolder hotfolder2 = new Hotfolder(hotfolderPaths.get(1));
+        List<Hotfolder> hotfolders = SolrIndexerDaemon.getInstance().getHotfolders();
+        hotfolders.add(hotfolder);
+        hotfolders.add(hotfolder2);
+        try {
+            // Older copy of the record in hotfolder2, named after a process title rather than the PI, with a data folder
+            Path recordFile = Files.copy(metsFile, hotfolder2.getHotfolderPath().resolve("process_title.xml"), StandardCopyOption.REPLACE_EXISTING);
+            Path mediaFolder = Files.createDirectories(hotfolder2.getHotfolderPath().resolve("process_title_media"));
+            Files.writeString(mediaFolder.resolve("00000001.tif"), "");
+            Files.setLastModifiedTime(recordFile, FileTime.fromMillis(System.currentTimeMillis() - 60000));
+
+            // The record has been indexed from hotfolder1 since
+            SolrIndexerDaemon.getInstance().registerIndexedRecord(PI, hotfolder);
+
+            MetsIndexer indexer = new MetsIndexer(hotfolder2);
+            assertTrue(indexer.addToIndex(recordFile, new HashMap<>()).isEmpty());
+            assertTrue(indexer.getIndexedRecords().isEmpty());
+            assertFalse(Files.exists(recordFile), "superseded record file must be deleted");
+            assertFalse(Files.exists(mediaFolder), "data folders of the superseded record file must be deleted");
+            assertFalse(Files.exists(hotfolder2.getErrorMets().resolve("process_title.xml")), "a superseded record is not an error");
+            assertEquals(0, countRecordInstances(PI));
+            assertFalse(SolrIndexerDaemon.getInstance().getRecordLocks().isHeldByCurrentThread(PI));
+        } finally {
+            hotfolders.clear();
+        }
+    }
 }

@@ -27,12 +27,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.ReentrantLock;
 
 import org.apache.commons.configuration2.ex.ConfigurationException;
@@ -103,6 +105,13 @@ public final class SolrSearchIndex {
     private long retryDelayMillis = RETRY_DELAY_MILLIS;
     /** Epoch millis until which Solr is considered unavailable (see {@link #isUnavailable()}). */
     private volatile long unavailableUntil = 0;
+    /**
+     * Records (PI_TOPSTRUCT) with documents added but possibly not committed yet -> sequence number of their last add (see
+     * {@link #commitIfUncommitted(String)}).
+     */
+    private final Map<String, Long> uncommittedPis = new ConcurrentHashMap<>();
+    /** Sequence for {@link #uncommittedPis}: a commit covers all entries with a sequence number up to the value read before it started. */
+    private final AtomicLong addSequence = new AtomicLong();
 
     /**
      * A Solr request that may fail with a connection or Solr error.
@@ -357,6 +366,7 @@ public final class SolrSearchIndex {
      */
     public void writeToIndex(SolrInputDocument doc) throws FatalIndexerException {
         execute("add document", () -> client.add(doc));
+        markUncommitted(Collections.singletonList(doc));
     }
 
     /**
@@ -370,6 +380,64 @@ public final class SolrSearchIndex {
      */
     public void writeToIndex(List<SolrInputDocument> docs) throws FatalIndexerException {
         execute("add " + docs.size() + " documents", () -> client.add(docs));
+        markUncommitted(docs);
+    }
+
+    /**
+     * Registers the records of the given (just added) documents as possibly uncommitted. Called after the add has returned, so that a commit
+     * that removes the entry again (see {@link #removeCommittedPis(long)}) has started after the add and therefore covers it. Entries may
+     * outlive their commit (if the add and the commit overlap), which only causes an unnecessary commit in
+     * {@link #commitIfUncommitted(String)}.
+     *
+     * @param docs Added documents
+     */
+    private void markUncommitted(List<SolrInputDocument> docs) {
+        String lastPi = null;
+        for (SolrInputDocument doc : docs) {
+            Object pi = doc.getFieldValue(SolrConstants.PI_TOPSTRUCT);
+            if (pi != null && !pi.equals(lastPi)) {
+                lastPi = pi.toString();
+                uncommittedPis.put(lastPi, addSequence.incrementAndGet());
+            }
+        }
+    }
+
+    /**
+     * Removes the records whose documents were all added before a commit started.
+     *
+     * @param sequence Value of {@link #addSequence} read before the commit started
+     */
+    private void removeCommittedPis(long sequence) {
+        uncommittedPis.values().removeIf(v -> v <= sequence);
+    }
+
+    /**
+     * Commits if documents of the given record may have been added without having been committed yet. A search does not find uncommitted
+     * documents, so without this commit, re-indexing (or deleting) a record whose previous version is still uncommitted (with
+     * <code>performance.commitBatchSize</code> &gt; 1) would not find and delete that version, leaving two instances of the record in the
+     * index. Callers must hold the record lock for the PI (see {@link RecordLocks}), so no new documents of the record are added meanwhile.
+     *
+     * @param pi Record identifier
+     * @throws FatalIndexerException if this or a previous background commit failed
+     * @should commit if record has uncommitted docs
+     * @should not commit if record has no uncommitted docs
+     */
+    public void commitIfUncommitted(String pi) throws FatalIndexerException {
+        if (pi == null || !uncommittedPis.containsKey(pi)) {
+            return;
+        }
+        rethrowBackgroundCommitFailure();
+        logger.debug("Record '{}' has uncommitted documents, committing first.", pi);
+        flushPending(true);
+    }
+
+    /**
+     * 
+     * @param pi Record identifier
+     * @return true if documents of the given record may have been added without having been committed yet; false otherwise
+     */
+    boolean isUncommitted(String pi) {
+        return uncommittedPis.containsKey(pi);
     }
 
     /**
@@ -429,7 +497,9 @@ public final class SolrSearchIndex {
      * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException
      */
     public void commit(boolean optimize) throws FatalIndexerException {
+        long sequence = addSequence.get();
         doCommit(optimize);
+        removeCommittedPis(sequence);
         pendingRecords.set(0);
         lastCommitMillis = System.currentTimeMillis();
     }
@@ -530,7 +600,7 @@ public final class SolrSearchIndex {
      */
     public void commitPending() throws FatalIndexerException {
         rethrowBackgroundCommitFailure();
-        if (pendingRecords.get() > 0) {
+        if (pendingRecords.get() > 0 || !uncommittedPis.isEmpty()) {
             flushPending(true);
         }
     }
@@ -547,11 +617,13 @@ public final class SolrSearchIndex {
         commitLock.lock();
         try {
             int flushed = pendingRecords.get();
-            if (flushed == 0 || (!force && !isCommitDue(flushed))) {
+            if (force ? flushed == 0 && uncommittedPis.isEmpty() : flushed == 0 || !isCommitDue(flushed)) {
                 // Another thread already flushed while this one was waiting for the lock
                 return;
             }
+            long sequence = addSequence.get();
             doCommit(optimize);
+            removeCommittedPis(sequence);
             // Only subtract what this commit covered: records counted by other workers while the commit was running may not be
             // included in it and must stay pending (resetting to 0 would lose them, so commitPending() would skip them).
             pendingRecords.addAndGet(-flushed);

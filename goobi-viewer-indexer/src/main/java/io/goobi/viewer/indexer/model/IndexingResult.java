@@ -22,7 +22,9 @@ public class IndexingResult {
 
     public enum IndexingResultStatus {
         OK,
-        ERROR;
+        ERROR,
+        /** Not indexed because a newer version of the record has been indexed from a higher-priority hotfolder. */
+        SKIPPED;
     }
 
     private IndexingResultStatus status = IndexingResultStatus.OK;

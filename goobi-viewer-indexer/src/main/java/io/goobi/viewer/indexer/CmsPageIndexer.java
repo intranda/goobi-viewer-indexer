@@ -87,11 +87,35 @@ public class CmsPageIndexer extends Indexer {
      */
     @Override
     public List<String> addToIndex(Path cmsFile, Map<String, Boolean> reindexSettings) throws IOException, FatalIndexerException {
+        currentRecordFile = cmsFile;
+        try {
+            return indexRecordFile(cmsFile, reindexSettings);
+        } finally {
+            // Release the record lock acquired in index(), which is held for the post-processing
+            unlockRecord();
+            currentRecordFile = null;
+        }
+    }
+
+    /**
+     * Indexes the given record file and moves its data into the data repository (see {@link #addToIndex(Path, Map)}).
+     *
+     * @param cmsFile Record file
+     * @param reindexSettings
+     * @return List of successfully indexed record identifiers
+     * @throws IOException
+     * @throws FatalIndexerException
+     */
+    private List<String> indexRecordFile(Path cmsFile, Map<String, Boolean> reindexSettings) throws IOException, FatalIndexerException {
         Map<String, Path> dataFolders = new HashMap<>();
 
         String sourceFileNameRoot = FilenameUtils.getBaseName(cmsFile.getFileName().toString());
 
         IndexingResult result = index(cmsFile, dataFolders, null, SolrIndexerDaemon.getInstance().getConfiguration().getPageCountStart());
+        if (IndexingResultStatus.SKIPPED.equals(result.getStatus())) {
+            deleteSupersededRecordFile(cmsFile, dataFolders, reindexSettings);
+            return Collections.emptyList();
+        }
         if (IndexingResultStatus.OK.equals(result.getStatus())) {
             String newCmsFileName = result.getRecordFileName();
             String pi = result.getPi();
@@ -224,6 +248,11 @@ public class CmsPageIndexer extends Indexer {
                 indexObj.setTopstructPI(pi);
                 logger.debug("PI: {}", indexObj.getPi());
 
+            // Serialize with other record files carrying the same PI (other hotfolders, other file names)
+            if (!lockRecord(pi)) {
+                return skipSupersededRecord(ret, pi);
+            }
+
                 // Determine the data repository to use
                 selectDataRepository(indexObj, pi, cmsFile, dataFolders);
 
@@ -334,6 +363,7 @@ public class CmsPageIndexer extends Indexer {
             ret.setError(e.getMessage() != null ? e.getMessage() : e.getClass().getName());
             SolrIndexerDaemon.getInstance().getSearchIndex().rollback();
         } finally {
+            unlockRecordAfterIndex();
             if (useWriteStrategy != null) {
                 useWriteStrategy.cleanup();
             }

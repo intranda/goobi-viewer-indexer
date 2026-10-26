@@ -442,4 +442,48 @@ class SolrSearchIndexTest extends AbstractSolrEnabledTest {
         Assertions.assertEquals(3, attempts.get());
         Assertions.assertTrue(searchIndex.isUnavailable());
     }
+
+    /**
+     * 
+     * @param pi
+     * @return Minimal document of the record with the given PI
+     */
+    private static SolrInputDocument createRecordDoc(String pi) {
+        SolrInputDocument doc = new SolrInputDocument();
+        String iddoc = UUID.randomUUID().toString();
+        doc.addField(SolrConstants.IDDOC, iddoc);
+        doc.addField(SolrConstants.GROUPFIELD, iddoc);
+        doc.addField(SolrConstants.DATEUPDATED, System.currentTimeMillis());
+        doc.addField(SolrConstants.PI_TOPSTRUCT, pi);
+        return doc;
+    }
+
+    /**
+     * @see SolrSearchIndex#commitIfUncommitted(String)
+     * @verifies commit if record has uncommitted docs
+     */
+    @Test
+    void commitIfUncommitted_shouldCommitIfRecordHasUncommittedDocs() throws Exception {
+        searchIndex.writeToIndex(createRecordDoc("UNCOMMITTED_TEST_1"));
+        Assertions.assertTrue(searchIndex.isUncommitted("UNCOMMITTED_TEST_1"));
+
+        searchIndex.commitIfUncommitted("UNCOMMITTED_TEST_1");
+        Assertions.assertFalse(searchIndex.isUncommitted("UNCOMMITTED_TEST_1"));
+        Assertions.assertEquals(1, searchIndex.search(SolrConstants.PI_TOPSTRUCT + ":UNCOMMITTED_TEST_1", null).size());
+    }
+
+    /**
+     * @see SolrSearchIndex#commitIfUncommitted(String)
+     * @verifies not commit if record has no uncommitted docs
+     */
+    @Test
+    void commitIfUncommitted_shouldNotCommitIfRecordHasNoUncommittedDocs() throws Exception {
+        searchIndex.writeToIndex(Collections.singletonList(createRecordDoc("UNCOMMITTED_TEST_2")));
+        searchIndex.commitIfUncommitted("UNCOMMITTED_TEST_3");
+        Assertions.assertTrue(searchIndex.isUncommitted("UNCOMMITTED_TEST_2"), "another record's docs must not have been committed");
+
+        // Draining also commits records that are only known as uncommitted
+        searchIndex.commitPending();
+        Assertions.assertFalse(searchIndex.isUncommitted("UNCOMMITTED_TEST_2"));
+    }
 }
