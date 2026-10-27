@@ -479,8 +479,8 @@ public final class MetadataHelper {
 
     /**
      * Retrieves the authority data record for the given URL. A {@link NullPointerException} thrown during retrieval is treated like a failed
-     * retrieval (null): normdataimporter (up to 2.1.5) throws it instead of returning null if the authority service answers with an error
-     * status (e.g. the DNB SRU interface under load), which would otherwise fail the entire record.
+     * retrieval (null): normdataimporter up to 2.1.5 threw it instead of returning null if the authority service answered with an error
+     * status (e.g. the DNB SRU interface under load), which would otherwise fail the entire record. Fixed in 2.1.6; kept as a safety net.
      *
      * @param url Authority data URL
      * @param proxyUrl Optional proxy URL
