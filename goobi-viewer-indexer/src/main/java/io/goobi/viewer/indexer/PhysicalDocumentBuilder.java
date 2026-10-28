@@ -810,6 +810,7 @@ public class PhysicalDocumentBuilder {
      * @param order
      * @param eleFptr
      * @return List<PhysicalElement>
+     * @should add parent page PHYSID to shape docs
      */
     protected List<PhysicalElement> getShapes(Integer order, Element eleFptr) {
         List<PhysicalElement> shapes = new ArrayList<>();
@@ -831,6 +832,9 @@ public class PhysicalDocumentBuilder {
                     shapePage.getDoc().addField(FIELD_COORDS, coords);
                     shapePage.getDoc().addField(FIELD_SHAPE, shape);
                     shapePage.getDoc().addField("ORDER_PARENT", order);
+                    if (eleFptr.getParentElement() != null) {
+                        shapePage.getDoc().addField(Indexer.FIELD_PHYSID_PARENT, eleFptr.getParentElement().getAttributeValue("ID"));
+                    }
                     shapes.add(shapePage);
                     count++;
                     logger.debug("Added SHAPE page document: {}", shapePage.getOrder());

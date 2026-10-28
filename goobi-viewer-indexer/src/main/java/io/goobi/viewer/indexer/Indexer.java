@@ -138,6 +138,8 @@ public abstract class Indexer {
     protected static final String FIELD_IMAGEAVAILABLE = "BOOL_IMAGEAVAILABLE";
     protected static final String FIELD_FILESIZE = "MDNUM_FILESIZE";
     protected static final String FIELD_OWNERDEPTH = "MDNUM_OWNERDEPTH";
+    /** Internal field on SHAPE docs containing the PHYSID of the page that contains the shape. SHAPE docs are never written to the index. */
+    protected static final String FIELD_PHYSID_PARENT = "PHYSID_PARENT";
     protected static final String FIELD_SHAPE = "MD_SHAPE";
     protected static final String FIELD_TEXT = "MD_TEXT";
     protected static final String LOG_ADDED_FULLTEXT_FROM_REGULAR_ALTO = "Added FULLTEXT from regular ALTO for page {}";

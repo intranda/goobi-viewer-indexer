@@ -22,10 +22,15 @@ import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.List;
 
+import org.jdom2.Element;
+import org.jdom2.Namespace;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import io.goobi.viewer.indexer.helper.JDomXP;
+import io.goobi.viewer.indexer.model.PhysicalElement;
+import io.goobi.viewer.indexer.model.SolrConstants;
 import io.goobi.viewer.indexer.model.SolrConstants.DocType;
 
 class PhysicalDocumentBuilderTest extends AbstractSolrEnabledTest {
@@ -127,6 +132,34 @@ class PhysicalDocumentBuilderTest extends AbstractSolrEnabledTest {
                 builder.getFilename("https://localhost:8080/viewer/rest/image/AC05725455/00000001.tif/full/!400,400/0/default.jpg"));
         assertEquals("AFE_1284_1999-17-557-1_a.jpg", builder.getFilename(
                 "https://pecunia2.zaw.uni-heidelberg.de:49200/iiif/2/AFE_1284_1999-17-557-1_a.jpg/full/full/0/default.jpg"));
+    }
+
+    /**
+     * @see PhysicalDocumentBuilder#getShapes(Integer,Element)
+     * @verifies add parent page PHYSID to shape docs
+     */
+    @Test
+    void getShapes_shouldAddParentPagePhysidToShapeDocs() throws Exception {
+        Path metPath = Paths.get("src/test/resources/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005.xml").toAbsolutePath();
+        JDomXP xp = new JDomXP(JDomXP.readXmlFile(metPath.toAbsolutePath().toString()));
+        PhysicalDocumentBuilder builder = new PhysicalDocumentBuilder(List.of("PRESENTATION"), Collections.emptyList(), Collections.emptyMap(),
+                xp, null, null, DocType.PAGE);
+
+        Namespace nsMets = SolrIndexerDaemon.getInstance().getConfiguration().getNamespaces().get("mets");
+        Element eleDiv = new Element("div", nsMets).setAttribute("ID", "PHYS_0007");
+        Element eleFptr = new Element("fptr", nsMets).setAttribute("FILEID", "FILE_0006_PRESENTATION");
+        Element eleSeq = new Element("seq", nsMets);
+        eleSeq.addContent(new Element("area", nsMets).setAttribute("ID", "PHYS_0008").setAttribute("COORDS", "30,986,2440,2440"));
+        eleSeq.addContent(new Element("area", nsMets).setAttribute("ID", "PHYS_0009").setAttribute("COORDS", "5,15,2464,971"));
+        eleFptr.addContent(eleSeq);
+        eleDiv.addContent(eleFptr);
+
+        List<PhysicalElement> shapes = builder.getShapes(7, eleFptr);
+        assertEquals(2, shapes.size());
+        for (PhysicalElement shape : shapes) {
+            assertEquals("PHYS_0007", shape.getDoc().getFieldValue(Indexer.FIELD_PHYSID_PARENT));
+        }
+        assertEquals("PHYS_0008", shapes.get(0).getDoc().getFieldValue(SolrConstants.PHYSID));
     }
 
 }

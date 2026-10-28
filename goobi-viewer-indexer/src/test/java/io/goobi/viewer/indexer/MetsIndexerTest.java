@@ -1858,4 +1858,71 @@ class MetsIndexerTest extends AbstractSolrEnabledTest {
             hotfolders.clear();
         }
     }
+
+    /**
+     * @see MetsIndexer#addShapeAccessConditionsToParentPages(ISolrWriteStrategy)
+     * @verifies add restricted shape access conditions to parent page and remove open access
+     */
+    @Test
+    void addShapeAccessConditionsToParentPages_shouldAddRestrictedShapeAccessConditionsToParentPageAndRemoveOpenAccess() throws Exception {
+        ISolrWriteStrategy writeStrategy = AbstractWriteStrategy.create(null, new HashMap<>(), hotfolder);
+        PhysicalElement page = createPage(writeStrategy, 7, "PHYS_0007", SolrConstants.OPEN_ACCESS_VALUE);
+        createShape(writeStrategy, 7, 1, "PHYS_0008", "PHYS_0007", "restricted_access_metadata_only");
+
+        MetsIndexer.addShapeAccessConditionsToParentPages(writeStrategy);
+        assertEquals(List.of("restricted_access_metadata_only"), new ArrayList<>(page.getDoc().getFieldValues(SolrConstants.ACCESSCONDITION)));
+    }
+
+    /**
+     * @see MetsIndexer#addShapeAccessConditionsToParentPages(ISolrWriteStrategy)
+     * @verifies not change parent page if shape is open access
+     */
+    @Test
+    void addShapeAccessConditionsToParentPages_shouldNotChangeParentPageIfShapeIsOpenAccess() throws Exception {
+        ISolrWriteStrategy writeStrategy = AbstractWriteStrategy.create(null, new HashMap<>(), hotfolder);
+        PhysicalElement page = createPage(writeStrategy, 7, "PHYS_0007", "restricted");
+        createShape(writeStrategy, 7, 1, "PHYS_0008", "PHYS_0007", SolrConstants.OPEN_ACCESS_VALUE);
+
+        MetsIndexer.addShapeAccessConditionsToParentPages(writeStrategy);
+        assertEquals(List.of("restricted"), new ArrayList<>(page.getDoc().getFieldValues(SolrConstants.ACCESSCONDITION)));
+    }
+
+    /**
+     * @see MetsIndexer#addShapeAccessConditionsToParentPages(ISolrWriteStrategy)
+     * @verifies add access conditions from multiple shapes without duplicates
+     */
+    @Test
+    void addShapeAccessConditionsToParentPages_shouldAddAccessConditionsFromMultipleShapesWithoutDuplicates() throws Exception {
+        ISolrWriteStrategy writeStrategy = AbstractWriteStrategy.create(null, new HashMap<>(), hotfolder);
+        PhysicalElement page = createPage(writeStrategy, 7, "PHYS_0007", "restricted1");
+        PhysicalElement otherPage = createPage(writeStrategy, 8, "PHYS_0010", SolrConstants.OPEN_ACCESS_VALUE);
+        createShape(writeStrategy, 7, 1, "PHYS_0008", "PHYS_0007", "restricted1");
+        createShape(writeStrategy, 7, 2, "PHYS_0009", "PHYS_0007", "restricted2");
+
+        MetsIndexer.addShapeAccessConditionsToParentPages(writeStrategy);
+        assertEquals(List.of("restricted1", "restricted2"), new ArrayList<>(page.getDoc().getFieldValues(SolrConstants.ACCESSCONDITION)));
+        assertEquals(List.of(SolrConstants.OPEN_ACCESS_VALUE), new ArrayList<>(otherPage.getDoc().getFieldValues(SolrConstants.ACCESSCONDITION)));
+    }
+
+    private static PhysicalElement createPage(ISolrWriteStrategy writeStrategy, int order, String physId, String accessCondition) {
+        PhysicalElement page = new PhysicalElement(order);
+        page.getDoc().addField(SolrConstants.DOCTYPE, DocType.PAGE.name());
+        page.getDoc().addField(SolrConstants.ORDER, order);
+        page.getDoc().addField(SolrConstants.PHYSID, physId);
+        page.getDoc().addField(SolrConstants.ACCESSCONDITION, accessCondition);
+        writeStrategy.addPage(page);
+        return page;
+    }
+
+    private static PhysicalElement createShape(ISolrWriteStrategy writeStrategy, int parentOrder, int count, String physId, String parentPhysId,
+            String accessCondition) {
+        PhysicalElement shape = new PhysicalElement(Utils.generateLongOrderNumber(parentOrder, count));
+        shape.getDoc().addField(SolrConstants.DOCTYPE, DocType.SHAPE.name());
+        shape.getDoc().addField(SolrConstants.ORDER, shape.getOrder());
+        shape.getDoc().addField(SolrConstants.PHYSID, physId);
+        shape.getDoc().addField(Indexer.FIELD_PHYSID_PARENT, parentPhysId);
+        shape.getDoc().addField(SolrConstants.ACCESSCONDITION, accessCondition);
+        writeStrategy.addPage(shape);
+        return shape;
+    }
 }

@@ -35,8 +35,10 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
 import java.util.SortedMap;
@@ -621,6 +623,9 @@ public class MetsIndexer extends Indexer {
                 List<IndexObject> childObjectList = indexAllChildren(indexObj, hierarchyLevel + 1, writeStrategy);
                 indexObj.addChildMetadata(childObjectList);
 
+                // Access conditions of docstructs mapped to shapes (mets:area) must also restrict the page containing them
+                addShapeAccessConditionsToParentPages(writeStrategy);
+
                 if (indexObj.getNumPages() > 0) {
                     // Write number of pages
                     indexObj.addToLucene(SolrConstants.NUMPAGES, String.valueOf(indexObj.getNumPages()));
@@ -1083,6 +1088,64 @@ public class MetsIndexer extends Indexer {
         }
 
         return ret;
+    }
+
+    /**
+     * Adds the non-open access conditions of all SHAPE docs (docstructs mapped to a mets:area) to the page containing the shape. Since SHAPE
+     * docs are not written to the index, restrictions mapped to an area would otherwise not apply to the page at all. A single restricted
+     * shape restricts the entire page and replaces any OPENACCESS value of that page. Must be called after all docstructs have been mapped
+     * to pages.
+     *
+     * @param writeStrategy
+     * @throws FatalIndexerException
+     * @should add restricted shape access conditions to parent page and remove open access
+     * @should not change parent page if shape is open access
+     * @should add access conditions from multiple shapes without duplicates
+     */
+    protected static void addShapeAccessConditionsToParentPages(ISolrWriteStrategy writeStrategy) throws FatalIndexerException {
+        // Collect restrictive access conditions of all shapes, grouped by the PHYSID of their parent page
+        Map<String, Set<String>> parentPhysIdAccessConditions = new LinkedHashMap<>();
+        for (int order : writeStrategy.getPageOrderNumbers()) {
+            SolrInputDocument doc = writeStrategy.getPageDocForOrder(order);
+            if (doc == null || !DocType.SHAPE.name().equals(doc.getFieldValue(SolrConstants.DOCTYPE))
+                    || doc.getFieldValues(SolrConstants.ACCESSCONDITION) == null) {
+                continue;
+            }
+            String parentPhysId = (String) doc.getFieldValue(FIELD_PHYSID_PARENT);
+            if (StringUtils.isEmpty(parentPhysId)) {
+                logger.warn("Shape document {} has no parent PHYSID, cannot add its access conditions to the page.",
+                        doc.getFieldValue(SolrConstants.PHYSID));
+                continue;
+            }
+            for (Object obj : doc.getFieldValues(SolrConstants.ACCESSCONDITION)) {
+                if (!SolrConstants.OPEN_ACCESS_VALUE.equals(obj)) {
+                    parentPhysIdAccessConditions.computeIfAbsent(parentPhysId, k -> new LinkedHashSet<>()).add((String) obj);
+                }
+            }
+        }
+
+        for (Entry<String, Set<String>> entry : parentPhysIdAccessConditions.entrySet()) {
+            for (PhysicalElement page : writeStrategy.getPagesForPhysIdList(Collections.singletonList(entry.getKey()))) {
+                Set<String> accessConditions = new LinkedHashSet<>();
+                if (page.getDoc().getFieldValues(SolrConstants.ACCESSCONDITION) != null) {
+                    for (Object obj : page.getDoc().getFieldValues(SolrConstants.ACCESSCONDITION)) {
+                        accessConditions.add((String) obj);
+                    }
+                }
+                if (accessConditions.containsAll(entry.getValue()) && !accessConditions.contains(SolrConstants.OPEN_ACCESS_VALUE)) {
+                    continue;
+                }
+                // Replace all page access conditions with the existing ones (minus OPENACCESS) plus those of the shapes
+                accessConditions.remove(SolrConstants.OPEN_ACCESS_VALUE);
+                accessConditions.addAll(entry.getValue());
+                page.getDoc().removeField(SolrConstants.ACCESSCONDITION);
+                for (String s : accessConditions) {
+                    page.getDoc().addField(SolrConstants.ACCESSCONDITION, s);
+                }
+                writeStrategy.updatePage(page);
+                logger.debug("Added shape access conditions {} to page {}", entry.getValue(), entry.getKey());
+            }
+        }
     }
 
     protected void addAccessConditionToPage(IndexObject indexObj, PhysicalElement page, boolean overrideOpenAccess) {
