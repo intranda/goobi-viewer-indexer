@@ -36,6 +36,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.solr.client.solrj.SolrServerException;
+import org.apache.solr.common.SolrException;
 import org.apache.solr.common.SolrInputDocument;
 import org.jdom2.Element;
 import org.jdom2.JDOMException;
@@ -92,6 +93,26 @@ public class DublinCoreIndexer extends Indexer {
     /** {@inheritDoc} */
     @Override
     public List<String> addToIndex(Path dcFile, Map<String, Boolean> reindexSettings) throws IOException, FatalIndexerException {
+        currentRecordFile = dcFile;
+        try {
+            return indexRecordFile(dcFile, reindexSettings);
+        } finally {
+            // Release the record lock acquired in index(), which is held for the post-processing
+            unlockRecord();
+            currentRecordFile = null;
+        }
+    }
+
+    /**
+     * Indexes the given record file and moves its data into the data repository (see {@link #addToIndex(Path, Map)}).
+     *
+     * @param dcFile Record file
+     * @param reindexSettings
+     * @return List of successfully indexed record identifiers
+     * @throws IOException
+     * @throws FatalIndexerException
+     */
+    private List<String> indexRecordFile(Path dcFile, Map<String, Boolean> reindexSettings) throws IOException, FatalIndexerException {
         String fileNameRoot = FilenameUtils.getBaseName(dcFile.getFileName().toString());
 
         // Check data folders in the hotfolder
@@ -101,6 +122,10 @@ public class DublinCoreIndexer extends Indexer {
         checkReindexSettings(dataFolders, reindexSettings);
 
         IndexingResult result = index(dcFile, dataFolders, null, SolrIndexerDaemon.getInstance().getConfiguration().getPageCountStart());
+        if (IndexingResultStatus.SKIPPED.equals(result.getStatus())) {
+            deleteSupersededRecordFile(dcFile, dataFolders, reindexSettings);
+            return Collections.emptyList();
+        }
         if (IndexingResultStatus.OK.equals(result.getStatus())) {
             String newDcFileName = result.getRecordFileName();
             String pi = result.getPi();
@@ -123,7 +148,7 @@ public class DublinCoreIndexer extends Indexer {
                     hotfolder.getDataRepositoryStrategy().getAllDataRepositories()) > 0) {
                 String msg = Utils.removeRecordImagesFromCache(baseFileName);
                 if (msg != null) {
-                    logger.info(msg);
+                    logger.debug(msg);
                 }
             }
 
@@ -138,7 +163,7 @@ public class DublinCoreIndexer extends Indexer {
                     hotfolder.getDataRepositoryStrategy().getAllDataRepositories());
 
             // Delete unsupported data folders
-            FileTools.deleteUnsupportedDataFolders(hotfolder.getHotfolderPath(), fileNameRoot);
+            hotfolder.deleteUnsupportedDataFolders(fileNameRoot);
 
             try {
                 Files.delete(dcFile);
@@ -155,10 +180,10 @@ public class DublinCoreIndexer extends Indexer {
                 }
             }
             prerenderPagePdfsIfRequired(pi);
-            logger.info("Successfully finished indexing '{}'.", dcFile.getFileName());
+            recordIndexed(result);
 
-            // Remove this file from lower priority hotfolders to avoid overriding changes with older version
-            SolrIndexerDaemon.getInstance().removeRecordFileFromLowerPriorityHotfolders(pi, hotfolder);
+            // Older copies of this record in lower-priority hotfolders must not overwrite this version
+            SolrIndexerDaemon.getInstance().registerIndexedRecord(pi, hotfolder);
 
             return result.isSubmitPiToViewer() ? Collections.singletonList(pi) : Collections.emptyList();
         }
@@ -222,6 +247,11 @@ public class DublinCoreIndexer extends Indexer {
 
             // Set PI
             String pi = validateAndApplyPI(findPI("/record/"), indexObj, false);
+
+            // Serialize with other record files carrying the same PI (other hotfolders, other file names)
+            if (!lockRecord(pi)) {
+                return skipSupersededRecord(ret, pi);
+            }
 
             // Evaluate the full-text suppression trigger for this record
             this.suppressFulltext = isFulltextSuppressed();
@@ -341,13 +371,15 @@ public class DublinCoreIndexer extends Indexer {
 
             logger.debug("Writing document to index...");
             useWriteStrategy.writeDocs(SolrIndexerDaemon.getInstance().getConfiguration().isAggregateRecords());
-            logger.info("Finished writing data for '{}' to Solr.", pi);
-        } catch (IOException | IndexerException | FatalIndexerException | JDOMException | SolrServerException e) {
+            ret.setDocStructType(indexObj.getType()).setNumPages(recordNumPages).setNumSourcePages(recordNumSourcePages);
+            logger.debug("Finished writing data for '{}' to Solr.", pi);
+        } catch (IOException | IndexerException | FatalIndexerException | JDOMException | SolrServerException | SolrException e) {
             logger.error("Indexing of '{}' could not be finished due to an error.", dcFile.getFileName());
             logger.error(e.getMessage(), e);
             ret.setError(e.getMessage() != null ? e.getMessage() : e.getClass().getName());
             SolrIndexerDaemon.getInstance().getSearchIndex().rollback();
         } finally {
+            unlockRecordAfterIndex();
             if (useWriteStrategy != null) {
                 useWriteStrategy.cleanup();
             }
@@ -536,7 +568,8 @@ public class DublinCoreIndexer extends Indexer {
         // Get all physical elements
         String xpath = "/record/dc:relation";
         List<Element> eleImageList = xp.evaluateToElements(xpath, null);
-        logger.info("Generating {} page documents (count starts at {})...", eleImageList.size(), pageCountStart);
+        recordNumSourcePages = eleImageList.size();
+        logger.debug("Generating {} page documents (count starts at {})...", eleImageList.size(), pageCountStart);
 
         // Generate pages sequentially
         int order = pageCountStart;
@@ -547,6 +580,7 @@ public class DublinCoreIndexer extends Indexer {
                 order++;
             }
         }
+        recordNumPages = writeStrategy.getPageDocsSize();
         logger.info("Generated {} page documents.", writeStrategy.getPageDocsSize());
     }
 

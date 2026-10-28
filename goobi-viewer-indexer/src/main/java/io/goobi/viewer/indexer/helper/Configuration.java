@@ -45,6 +45,7 @@ import org.jdom2.Namespace;
 
 import io.goobi.viewer.indexer.EadIndexer;
 import io.goobi.viewer.indexer.exceptions.FatalIndexerException;
+import io.goobi.viewer.indexer.helper.logging.LoggingTools;
 import io.goobi.viewer.indexer.model.config.FulltextSuppressionCondition;
 import io.goobi.viewer.indexer.model.config.ImageUrlReplaceRule;
 import io.goobi.viewer.indexer.model.config.MetadataConfigurationManager;
@@ -61,6 +62,8 @@ public final class Configuration {
 
     /** Constant <code>CONFIG_FILE_NAME="config_indexer.xml"</code> */
     public static final String CONFIG_FILE_NAME = "config_indexer.xml";
+
+    private static final String XPATH_CONSOLE_LOGGING = "init.logging.console";
 
     private ReloadingFileBasedConfigurationBuilder<XMLConfiguration> builder;
     private MetadataConfigurationManager metadataConfigurationManager;
@@ -129,6 +132,8 @@ public final class Configuration {
         metadataConfigurationManager = new MetadataConfigurationManager(config);
         namespaces = new HashMap<>();
         initNamespaces();
+        // Read from the given config object; getConfig() would trigger another reload check
+        LoggingTools.setConsoleAppenderEnabled(config.getBoolean(XPATH_CONSOLE_LOGGING, true));
     }
 
     /**
@@ -465,14 +470,106 @@ public final class Configuration {
     }
 
     /**
-     * <p>
-     * getThreads.
-     * </p>
+     * If true, large records without pages (currently EAD) that exceed the size thresholds are written with the streaming write strategy, which
+     * sends their documents to Solr in batches while they are created, instead of serializing every document to a temp file first. Default true.
      *
-     * @return Number of CPU threads to be used for page generation.
+     * @return true if the streaming write strategy is enabled; false otherwise
+     * @should return correct value
+     */
+    public boolean isStreamingWriteStrategy() {
+        return getBoolean("performance.streamingWriteStrategy", true);
+    }
+
+    /**
+     * <p>
+     * getThreads. The top-level worker-thread count, interpreted per {@link #isSharedWorkerPool()}:
+     * </p>
+     * <ul>
+     * <li>two-pool model ({@code sharedWorkerPool=false}): number of whole records indexed concurrently (record-level
+     * parallelism); total worker threads is approximately this value multiplied by {@link #getPageThreads()}. Record
+     * files with the same PI are indexed one after the other.</li>
+     * <li>shared model ({@code sharedWorkerPool=true}): parallelism of the single work-stealing pool that record and
+     * intra-record (page/child-node) work draw from. Size it with headroom above the core count as I/O headroom for the
+     * blocking Solr/file/HTTP work.</li>
+     * </ul>
+     * Default 1 (serial). Note: this key formerly configured page-generation parallelism; that role moved to
+     * {@link #getPageThreads()}.
+     *
+     * @return top-level worker thread count; at least 1
      */
     public int getThreads() {
-        return getInt("performance.threads", 1);
+        return Math.max(1, getInt("performance.threads", 1));
+    }
+
+    /**
+     * <p>
+     * getPageThreads. Intra-record parallelism: the number of threads used within a single record for page-document
+     * generation, EAD child-node indexing and serializing page writes. Applies only in the two-pool model
+     * ({@code sharedWorkerPool=false}); in the shared model this work nests into the shared pool and this value is
+     * ignored. Default 1 (intra-record work runs serially).
+     * </p>
+     *
+     * @return intra-record (page/child-node) thread count; at least 1
+     */
+    public int getPageThreads() {
+        return Math.max(1, getInt("performance.pageThreads", 1));
+    }
+
+    /**
+     * Detects a configuration written for older versions, in which <code>performance.threads</code> was the number of threads used for page
+     * generation within one record. Such a configuration sets <code>threads</code> above 1 but has no <code>pageThreads</code>, so it now
+     * silently indexes several records in parallel (different memory and Solr load) while page generation runs serially. Not relevant for
+     * the shared worker pool, which has to be enabled explicitly.
+     *
+     * @return true if <code>performance.threads</code> is greater than 1, <code>performance.pageThreads</code> is missing and the shared worker
+     *         pool is disabled; false otherwise
+     * @should return true if threads above one and page threads missing
+     * @should return false if page threads configured
+     * @should return false if threads is one
+     * @should return false if shared worker pool enabled
+     */
+    public boolean isLegacyThreadsConfiguration() {
+        return getThreads() > 1 && !isSharedWorkerPool() && !getConfig().containsKey("performance.pageThreads");
+    }
+
+    /**
+     * When true, record-level and intra-record (page/child-node/serializing-write) parallelism share a
+     * single work-stealing {@link java.util.concurrent.ForkJoinPool} sized by {@link #getThreads()}, which auto-balances
+     * the two: few large records let page tasks fill the pool, many small records let the records fill it. Replaces the
+     * separate {@link #getThreads()} × {@link #getPageThreads()} pools of the two-pool model. Default false (two-pool
+     * model). Note: pool tasks block on Solr/file/HTTP I/O, so size {@link #getThreads()} with headroom above the core
+     * count to hide that latency (a plain core-sized pool can underperform the oversubscribed two-pool model).
+     *
+     * @return a boolean
+     */
+    public boolean isSharedWorkerPool() {
+        return getBoolean("performance.sharedWorkerPool", false);
+    }
+
+    /**
+     * Number of successfully indexed records to accumulate before issuing a single Solr commit. Default 1 = commit after
+     * every record (legacy behavior). Values &gt; 1 batch commits to reduce hard-commit contention under record-level
+     * parallelism; a batch is also flushed when the hotfolder queue drains and on shutdown, so a sub-batch remainder is
+     * never left uncommitted (see {@link #getCommitMaxSeconds()} for the time bound).
+     *
+     * @return records per commit; at least 1
+     */
+    public int getCommitBatchSize() {
+        return Math.max(1, getInt("performance.commitBatchSize", 1));
+    }
+
+    /**
+     * Maximum number of seconds a pending (uncommitted) batch may age before it is committed even if
+     * {@link #getCommitBatchSize()} has not been reached. This is a wall-time bound for a sustained, never-draining
+     * stream; it is <b>not</b> needed to flush the tail of a finished batch, which the hotfolder does the moment its
+     * queue drains. Default <b>0 (disabled)</b>, so by default only {@link #getCommitBatchSize()} and the queue-drain
+     * flush govern and active indexing is never interrupted by a timer. Set &gt; 0 only to bound visibility during long
+     * continuous imports.
+     *
+     * @return max seconds before a pending batch is force-committed; 0 (default) disables the time bound
+     */
+    public int getCommitMaxSeconds() {
+        return Math.max(0, getInt("performance.commitMaxSeconds", 0));
     }
 
     /**
@@ -485,6 +582,16 @@ public final class Configuration {
      */
     public boolean isCountHotfolderFiles() {
         return getBoolean("performance.countHotfolderFiles", true);
+    }
+
+    /**
+     * If false, log output to the console (stdout) is disabled. Applied at startup and on every configuration reload.
+     *
+     * @should return correct value
+     * @return true if log output to the console is enabled; false otherwise
+     */
+    public boolean isConsoleLoggingEnabled() {
+        return getBoolean(XPATH_CONSOLE_LOGGING, true);
     }
 
     /**
@@ -822,28 +929,49 @@ public final class Configuration {
      * @should return false until all values configured
      */
     boolean checkEmailConfiguration() {
+        return checkEmailConfiguration(true);
+    }
+
+    /**
+     *
+     * @param logProblems if true, log why the configuration is incomplete; false checks silently
+     * @return true if all email configuration date is complete; false otherwise
+     */
+    boolean checkEmailConfiguration(boolean logProblems) {
         if (StringUtils.isNotEmpty(getString("init.email.recipients"))) {
-            logger.warn("init.email.recipients is configured as a single string. Reconfgure using <address> subelements.");
+            if (logProblems) {
+                logger.warn("init.email.recipients is configured as a single string. Reconfgure using <address> subelements.");
+            }
             return false;
         }
         if (getEmailRecipients().isEmpty()) {
-            logger.warn("init.email.recipients.address not configured, cannot send e-mail report.");
+            if (logProblems) {
+                logger.warn("init.email.recipients.address not configured, cannot send e-mail report.");
+            }
             return false;
         }
         if (StringUtils.isEmpty(getString("init.email.smtpServer"))) {
-            logger.warn("init.email.smtpServer not configured, cannot send e-mail report.");
+            if (logProblems) {
+                logger.warn("init.email.smtpServer not configured, cannot send e-mail report.");
+            }
             return false;
         }
         if (StringUtils.isEmpty(getString("init.email.smtpSenderAddress"))) {
-            logger.debug("init.email.smtpSenderAddress not configured, cannot send e-mail report.");
+            if (logProblems) {
+                logger.debug("init.email.smtpSenderAddress not configured, cannot send e-mail report.");
+            }
             return false;
         }
         if (StringUtils.isEmpty(getString("init.email.smtpSenderName"))) {
-            logger.warn("init.email.smtpSenderName not configured, cannot send e-mail report.");
+            if (logProblems) {
+                logger.warn("init.email.smtpSenderName not configured, cannot send e-mail report.");
+            }
             return false;
         }
         if (StringUtils.isEmpty(getString("init.email.smtpSecurity"))) {
-            logger.warn("init.email.smtpSecurity not configured, cannot send e-mail report.");
+            if (logProblems) {
+                logger.warn("init.email.smtpSecurity not configured, cannot send e-mail report.");
+            }
             return false;
         }
 

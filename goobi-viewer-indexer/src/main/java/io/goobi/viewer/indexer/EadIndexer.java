@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.ForkJoinTask;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.stream.IntStream;
@@ -34,7 +35,9 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.ThreadContext;
 import org.apache.solr.client.solrj.SolrServerException;
+import org.apache.solr.common.SolrException;
 import org.apache.solr.common.SolrInputDocument;
 import org.jdom2.Element;
 import org.jdom2.JDOMException;
@@ -104,6 +107,26 @@ public class EadIndexer extends Indexer {
     /** {@inheritDoc} */
     @Override
     public List<String> addToIndex(Path eadFile, Map<String, Boolean> reindexSettings) throws IOException, FatalIndexerException {
+        currentRecordFile = eadFile;
+        try {
+            return indexRecordFile(eadFile, reindexSettings);
+        } finally {
+            // Release the record lock acquired in index(), which is held for the post-processing
+            unlockRecord();
+            currentRecordFile = null;
+        }
+    }
+
+    /**
+     * Indexes the given record file and moves its data into the data repository (see {@link #addToIndex(Path, Map)}).
+     *
+     * @param eadFile Record file
+     * @param reindexSettings
+     * @return List of successfully indexed record identifiers
+     * @throws IOException
+     * @throws FatalIndexerException
+     */
+    private List<String> indexRecordFile(Path eadFile, Map<String, Boolean> reindexSettings) throws IOException, FatalIndexerException {
         String fileNameRoot = FilenameUtils.getBaseName(eadFile.getFileName().toString());
 
         // Check data folders in the hotfolder
@@ -113,6 +136,10 @@ public class EadIndexer extends Indexer {
         checkReindexSettings(dataFolders, reindexSettings);
 
         IndexingResult result = index(eadFile, dataFolders, null);
+        if (IndexingResultStatus.SKIPPED.equals(result.getStatus())) {
+            deleteSupersededRecordFile(eadFile, dataFolders, reindexSettings);
+            return Collections.emptyList();
+        }
         if (IndexingResultStatus.OK.equals(result.getStatus())) {
             String newFileName = result.getRecordFileName();
             String pi = result.getPi();
@@ -131,7 +158,7 @@ public class EadIndexer extends Indexer {
             }
 
             // Delete unsupported data folders
-            FileTools.deleteUnsupportedDataFolders(hotfolder.getHotfolderPath(), fileNameRoot);
+            hotfolder.deleteUnsupportedDataFolders(fileNameRoot);
 
             try {
                 Files.delete(eadFile);
@@ -148,10 +175,10 @@ public class EadIndexer extends Indexer {
                 }
             }
             prerenderPagePdfsIfRequired(pi);
-            logger.info("Successfully finished indexing '{}'.", eadFile.getFileName());
+            recordIndexed(result);
 
-            // Remove this file from lower priority hotfolders to avoid overriding changes with older version
-            SolrIndexerDaemon.getInstance().removeRecordFileFromLowerPriorityHotfolders(pi, hotfolder);
+            // Older copies of this record in lower-priority hotfolders must not overwrite this version
+            SolrIndexerDaemon.getInstance().registerIndexedRecord(pi, hotfolder);
 
             return Collections.singletonList(pi); // Always submit EAD record identifiers
         }
@@ -220,6 +247,11 @@ public class EadIndexer extends Indexer {
             String pi = validateAndApplyPI(MetadataHelper.applyIdentifierModifications(FilenameUtils.getBaseName(baseFileName)),
                     indexObj, false);
 
+            // Serialize with other record files carrying the same PI (other hotfolders, other file names)
+            if (!lockRecord(pi)) {
+                return skipSupersededRecord(ret, pi);
+            }
+
             // Determine the data repository to use
             selectDataRepository(indexObj, pi, eadFile, dataFolders);
 
@@ -229,8 +261,8 @@ public class EadIndexer extends Indexer {
             checkOldDataFolders(dataFolders, new String[] { DataRepository.PARAM_ANNOTATIONS }, pi);
 
             if (writeStrategy == null) {
-                // Request appropriate write strategy
-                writeStrategy = AbstractWriteStrategy.create(eadFile, dataFolders, hotfolder);
+                // Request appropriate write strategy. EAD structure docs are final once added, so large files can be streamed to Solr.
+                writeStrategy = AbstractWriteStrategy.create(eadFile, dataFolders, hotfolder, true);
             } else {
                 logger.info("Solr write strategy injected by caller: {}", writeStrategy.getClass().getName());
             }
@@ -270,8 +302,9 @@ public class EadIndexer extends Indexer {
             indexObj.addToLucene(SolrConstants.MIMETYPE, "application/xml");
 
             // Index all child elements recursively
-            List<IndexObject> childObjectList =
-                    indexAllChildren(indexObj, 1, writeStrategy, SolrIndexerDaemon.getInstance().getConfiguration().getThreads() > 1);
+            boolean allowParallelChildren = SolrIndexerDaemon.getInstance().getConfiguration().isSharedWorkerPool()
+                    || SolrIndexerDaemon.getInstance().getConfiguration().getPageThreads() > 1;
+            List<IndexObject> childObjectList = indexAllChildren(indexObj, 1, writeStrategy, allowParallelChildren);
             indexObj.addChildMetadata(childObjectList);
 
             // Add grouped metadata as separate documents
@@ -291,13 +324,15 @@ public class EadIndexer extends Indexer {
             writeStrategy.setRootDoc(rootDoc);
 
             writeStrategy.writeDocs(SolrIndexerDaemon.getInstance().getConfiguration().isAggregateRecords());
-            logger.info("Finished writing data for '{}' to Solr.", pi);
-        } catch (FatalIndexerException | IndexerException | IOException | JDOMException | SolrServerException e) {
+            ret.setDocStructType(indexObj.getType()).setNumPages(recordNumPages).setNumSourcePages(recordNumSourcePages);
+            logger.debug("Finished writing data for '{}' to Solr.", pi);
+        } catch (FatalIndexerException | IndexerException | IOException | JDOMException | SolrServerException | SolrException e) {
             logger.error("Indexing of '{}' could not be finished due to an error.", eadFile.getFileName());
             logger.error(e.getMessage(), e);
             ret.setError(e.getMessage() != null ? e.getMessage() : e.getClass().getName());
             SolrIndexerDaemon.getInstance().getSearchIndex().rollback();
         } finally {
+            unlockRecordAfterIndex();
             if (writeStrategy != null) {
                 writeStrategy.cleanup();
             }
@@ -343,15 +378,41 @@ public class EadIndexer extends Indexer {
             logger.debug("{} child elements found", childrenNodeList.size());
         }
 
-        if (allowParallelProcessing && pool == null && childrenNodeList.size() >= SolrIndexerDaemon.getInstance().getConfiguration().getThreads()) {
+        if (allowParallelProcessing && SolrIndexerDaemon.getInstance().getConfiguration().isSharedWorkerPool()
+                && ForkJoinTask.inForkJoinPool() && childrenNodeList.size() > 1) {
+            // Already running as a record task on the shared work-stealing pool: fork child-node indexing into that same
+            // pool rather than creating a nested pool, so record and child parallelism share one budget.
+            logger.info("Processing {} nodes in parallel on the shared pool (node depth={})...", childrenNodeList.size(), depth);
+            final List<Element> children = new ArrayList<>(childrenNodeList);
+            final Map<String, String> loggingContext = ThreadContext.getImmutableContext();
+            IntStream.range(0, children.size()).parallel().forEach(order -> {
+                ThreadContext.putAll(loggingContext);
+                Element node = children.get(order);
+                try {
+                    // Do not use parallel processing in recursion
+                    IndexObject obj = indexChild(node, parentIndexObject, depth, order, writeStrategy, false);
+                    if (obj != null) {
+                        ret.add(obj);
+                    }
+                } catch (FatalIndexerException e) {
+                    logger.error("Should be exiting here now...");
+                } catch (IOException e) {
+                    logger.error(e.getMessage());
+                }
+            });
+        } else if (allowParallelProcessing && pool == null
+                && childrenNodeList.size() >= SolrIndexerDaemon.getInstance().getConfiguration().getPageThreads()) {
             // Generate each page document in its own thread
             logger.info("Processing {} nodes in parallel in {} threads (node depth={})...", childrenNodeList.size(),
-                    SolrIndexerDaemon.getInstance().getConfiguration().getThreads(), depth);
-            pool = new ForkJoinPool(SolrIndexerDaemon.getInstance().getConfiguration().getThreads());
+                    SolrIndexerDaemon.getInstance().getConfiguration().getPageThreads(), depth);
+            pool = new ForkJoinPool(SolrIndexerDaemon.getInstance().getConfiguration().getPageThreads());
             // Snapshot into an ArrayList so get(order) is O(1); JDOM2's filtered child list has O(n) random access
             final List<Element> children = new ArrayList<>(childrenNodeList);
+            // Capture the logging context (MDC) so the pool's worker threads keep this record's log tag.
+            final Map<String, String> loggingContext = ThreadContext.getImmutableContext();
             try {
                 pool.submit(() -> IntStream.range(0, children.size()).parallel().forEach(order -> {
+                    ThreadContext.putAll(loggingContext);
                     Element node = children.get(order);
                     try {
                         // Do not use parallel processing in recursion

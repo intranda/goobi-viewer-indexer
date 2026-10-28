@@ -22,9 +22,15 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLStreamConstants;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamReader;
 
 import org.apache.commons.io.output.FileWriterWithEncoding;
 import org.apache.logging.log4j.LogManager;
@@ -109,13 +115,28 @@ public class JDomXP {
     private static final String XPATH_TEXT = "/text()"; //NOSONAR XPath expression, not URI
 
     /**
+     * Maximum number of compiled XPath expressions cached per thread. Must stay above the number of distinct expressions a single record
+     * uses, otherwise the LRU evicts entries that are still needed and almost every expression gets recompiled: the shipped
+     * config_indexer.xml contains 364 distinct XPath expressions (some used with several return-type filters, which are separate cache
+     * keys), plus hard-coded ones. Record-specific expressions (e.g. containing DMDIDs or file IDs) are used once and drop out at the tail.
+     */
+    static final int XPATH_CACHE_MAX_ENTRIES = 1024;
+
+    /**
      * Per-thread cache of compiled XPath expressions, keyed by return-type filter, instance-namespace signature and the
      * (normalized) expression string. Compiling an expression re-parses the XPath and re-binds all ~18 configuration
      * namespaces on every call, which dominates the per-record cost on metadata-rich records; caching removes nearly all
      * of it. JDOM {@link XPathExpression} instances are reusable across evaluations but are <b>not</b> thread-safe, and
      * page-document generation runs on a {@link java.util.concurrent.ForkJoinPool}, so the cache is held per thread.
+     * <p>
+     * The cache is a bounded LRU map, so it is kept across records on long-lived threads (configured expressions are the same for every
+     * record and need not be recompiled) without growing indefinitely through record-specific expressions (e.g. containing DMDIDs).
+     * It is deliberately not removed after each record: its size is bounded by {@link #XPATH_CACHE_MAX_ENTRIES}, and it goes away with the
+     * (pool) thread that owns it.
      */
-    private static final ThreadLocal<Map<String, XPathExpression<Object>>> XPATH_CACHE = ThreadLocal.withInitial(HashMap::new);
+    // Bounded per-thread cache, intentionally kept for the lifetime of the thread (see Javadoc)
+    private static final ThreadLocal<Map<XPathCacheKey, XPathExpression<Object>>> XPATH_CACHE = //NOSONAR java:S5164 bounded, kept on purpose
+            ThreadLocal.withInitial(() -> newLruCache(XPATH_CACHE_MAX_ENTRIES));
 
     private Document doc;
 
@@ -124,6 +145,9 @@ public class JDomXP {
      * evaluation, so a prefix such as <code>ead</code> can resolve to a document-specific URI (e.g. EAD2 vs. EAD3) without mutating shared state.
      */
     private final Map<String, Namespace> localNamespaces = new HashMap<>();
+
+    /** Signature of {@link #localNamespaces} for the XPath cache key; updated whenever a namespace is registered. */
+    private String localNamespaceSignature = "";
 
     /**
      * Constructor that reads a Document from the given file.
@@ -160,6 +184,7 @@ public class JDomXP {
     public JDomXP addNamespace(Namespace namespace) {
         if (namespace != null) {
             localNamespaces.put(namespace.getPrefix(), namespace);
+            localNamespaceSignature = buildNamespaceSignature(localNamespaces);
         }
         return this;
     }
@@ -173,7 +198,7 @@ public class JDomXP {
      * @return {@link java.util.List}
      */
     public List<Object> evaluate(String expr, final Object parent) {
-        return evaluate(expr, parent != null ? parent : doc, Filters.fpassthrough(), localNamespaces);
+        return evaluate(expr, parent != null ? parent : doc, Filters.fpassthrough(), localNamespaces, localNamespaceSignature);
     }
 
     /**
@@ -183,15 +208,44 @@ public class JDomXP {
      * @param parent If not null, the expression is evaluated relative to this element.
      * @param filter Return type filter.
      * @param localNamespaces Instance namespaces applied on top of (and overriding) the global configuration namespaces; may be null.
+     * @param localNamespaceSignature Signature of <code>localNamespaces</code> (see {@link #buildNamespaceSignature(Map)}); empty if none
      * @return List<Object>
      */
     @SuppressWarnings({ "rawtypes" })
-    private static List<Object> evaluate(String expr, Object parent, Filter filter, Map<String, Namespace> localNamespaces) {
+    private static List<Object> evaluate(String expr, Object parent, Filter filter, Map<String, Namespace> localNamespaces,
+            String localNamespaceSignature) {
         if (expr == null) {
             throw new IllegalArgumentException("expr may not be null");
         }
 
-        return getCompiledExpression(expr, filter, localNamespaces).evaluate(parent);
+        return getCompiledExpression(expr, filter, localNamespaces, localNamespaceSignature).evaluate(parent);
+    }
+
+    /**
+     * Removes the calling thread's compiled XPath cache. Call at the end of a unit of work (e.g. a record) on threads that
+     * outlive it, so cached expressions are not retained indefinitely.
+     */
+    public static void clearXPathCache() {
+        XPATH_CACHE.remove();
+    }
+
+    /**
+     * Creates a non-thread-safe map that evicts its least recently used entry once it holds more than the given number of entries.
+     *
+     * @param maxEntries maximum number of entries
+     * @return new LRU map
+     * @should evict least recently used entry beyond max entries
+     */
+    static <K, V> Map<K, V> newLruCache(final int maxEntries) {
+        return new LinkedHashMap<>(256, 0.75f, true) {
+
+            private static final long serialVersionUID = 1L;
+
+            @Override
+            protected boolean removeEldestEntry(Map.Entry<K, V> eldest) {
+                return size() > maxEntries;
+            }
+        };
     }
 
     /**
@@ -199,20 +253,24 @@ public class JDomXP {
      * reusing a per-thread cached instance when possible. Only the compilation (XPath parsing and namespace binding) is
      * cached; evaluation against a concrete context node still happens on every call. The global configuration namespaces
      * are effectively constant for the lifetime of the process, so they do not need to be part of the cache key.
+     * <p>
+     * The cache key uses the expression as given (normalized only when compiling), so a cache hit does not create any new strings: the
+     * expressions usually come from the configuration as the same string instances, whose hash codes are cached.
      *
      * @param expr XPath expression to compile; may not be null
      * @param filter return type filter
      * @param localNamespaces instance namespaces applied on top of (and overriding) the global configuration namespaces; may be null
+     * @param localNamespaceSignature Signature of <code>localNamespaces</code> (see {@link #buildNamespaceSignature(Map)}); empty if none
      * @return compiled, reusable {@link XPathExpression}
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    private static XPathExpression<Object> getCompiledExpression(String expr, Filter filter, Map<String, Namespace> localNamespaces) {
-        String normalizedExpr = expr.trim().replace("\n", "");
-        String cacheKey = buildCacheKey(normalizedExpr, filter, localNamespaces);
-        Map<String, XPathExpression<Object>> cache = XPATH_CACHE.get();
+    private static XPathExpression<Object> getCompiledExpression(String expr, Filter filter, Map<String, Namespace> localNamespaces,
+            String localNamespaceSignature) {
+        XPathCacheKey cacheKey = new XPathCacheKey(filter.getClass(), localNamespaceSignature, expr);
+        Map<XPathCacheKey, XPathExpression<Object>> cache = XPATH_CACHE.get();
         XPathExpression<Object> xpath = cache.get(cacheKey);
         if (xpath == null) {
-            XPathBuilder<Object> builder = new XPathBuilder<>(normalizedExpr, filter);
+            XPathBuilder<Object> builder = new XPathBuilder<>(expr.trim().replace("\n", ""), filter);
             // Add all global namespaces
             for (Namespace value : SolrIndexerDaemon.getInstance().getConfiguration().getNamespaces().values()) {
                 builder.setNamespace(value.getPrefix(), value.getURI());
@@ -230,26 +288,33 @@ public class JDomXP {
     }
 
     /**
-     * Builds a stable cache key from the return-type filter, the instance namespaces and the normalized expression. The
-     * filter is distinguished by its class (all filters used here are parameterless), and the instance namespaces are
-     * emitted sorted by prefix so that iteration order does not affect the key.
+     * Builds a stable signature of the given instance namespaces for the XPath cache key, sorted by prefix so that iteration order does not
+     * matter.
      *
-     * @param normalizedExpr expression with surrounding whitespace and newlines already stripped
-     * @param filter return type filter
      * @param localNamespaces instance namespaces; may be null or empty
-     * @return cache key
+     * @return signature; empty if there are no instance namespaces
+     * @should build same signature regardless of insertion order
+     * @should return empty string if no namespaces
      */
-    @SuppressWarnings({ "rawtypes" })
-    private static String buildCacheKey(String normalizedExpr, Filter filter, Map<String, Namespace> localNamespaces) {
-        StringBuilder sb = new StringBuilder(filter.getClass().getName());
-        sb.append(' ');
-        if (localNamespaces != null && !localNamespaces.isEmpty()) {
-            for (Map.Entry<String, Namespace> entry : new TreeMap<>(localNamespaces).entrySet()) {
-                sb.append(entry.getKey()).append('=').append(entry.getValue().getURI()).append(';');
-            }
+    static String buildNamespaceSignature(Map<String, Namespace> localNamespaces) {
+        if (localNamespaces == null || localNamespaces.isEmpty()) {
+            return "";
         }
-        sb.append(' ').append(normalizedExpr);
+        StringBuilder sb = new StringBuilder();
+        for (Map.Entry<String, Namespace> entry : new TreeMap<>(localNamespaces).entrySet()) {
+            sb.append(entry.getKey()).append('=').append(entry.getValue().getURI()).append(';');
+        }
         return sb.toString();
+    }
+
+    /**
+     * Key of the per-thread compiled XPath cache.
+     *
+     * @param filterClass Class of the return type filter (all filters used here are parameterless)
+     * @param namespaceSignature Signature of the instance namespaces
+     * @param expr Expression as given
+     */
+    record XPathCacheKey(Class<?> filterClass, String namespaceSignature, String expr) {
     }
 
     /**
@@ -261,7 +326,7 @@ public class JDomXP {
      * @should return all values
      */
     public List<Element> evaluateToElements(String expr, final Object parent) {
-        return toElementList(evaluate(expr, parent != null ? parent : doc, Filters.element(), localNamespaces));
+        return toElementList(evaluate(expr, parent != null ? parent : doc, Filters.element(), localNamespaces, localNamespaceSignature));
     }
 
     /**
@@ -273,7 +338,7 @@ public class JDomXP {
      * @return {@link java.util.ArrayList} or null
      */
     public static List<Element> evaluateToElementsStatic(String expr, Object parent) {
-        return toElementList(evaluate(expr, parent, Filters.element(), null));
+        return toElementList(evaluate(expr, parent, Filters.element(), null, ""));
     }
 
     /**
@@ -306,7 +371,7 @@ public class JDomXP {
      */
     public List<Attribute> evaluateToAttributes(String expr, final Object parent) {
         List<Attribute> retList = new ArrayList<>();
-        List<Object> list = evaluate(expr, parent != null ? parent : doc, Filters.attribute(), localNamespaces);
+        List<Object> list = evaluate(expr, parent != null ? parent : doc, Filters.attribute(), localNamespaces, localNamespaceSignature);
         if (list == null) {
             return Collections.emptyList();
         }
@@ -328,7 +393,7 @@ public class JDomXP {
      * @should return value correctly
      */
     public String evaluateToAttributeStringValue(String expr, final Object parent) {
-        List<Object> list = evaluate(expr, parent != null ? parent : doc, Filters.attribute(), localNamespaces);
+        List<Object> list = evaluate(expr, parent != null ? parent : doc, Filters.attribute(), localNamespaces, localNamespaceSignature);
         if (list == null || list.isEmpty()) {
             return null;
         }
@@ -358,7 +423,7 @@ public class JDomXP {
         if (!expression.endsWith(XPATH_TEXT)) {
             expression += XPATH_TEXT;
         }
-        List<Object> list = evaluate(expression, parent != null ? parent : doc, Filters.text(), localNamespaces);
+        List<Object> list = evaluate(expression, parent != null ? parent : doc, Filters.text(), localNamespaces, localNamespaceSignature);
         if (list == null || list.isEmpty()) {
             return null;
         }
@@ -378,7 +443,7 @@ public class JDomXP {
      * @should convert strings to NFC
      */
     public List<String> evaluateToStringList(String expr, final Object parent) {
-        return toStringList(evaluate(expr, parent != null ? parent : doc, Filters.fpassthrough(), localNamespaces));
+        return toStringList(evaluate(expr, parent != null ? parent : doc, Filters.fpassthrough(), localNamespaces, localNamespaceSignature));
     }
 
     /**
@@ -390,7 +455,7 @@ public class JDomXP {
      * @return {@link java.util.ArrayList} or null
      */
     public static List<String> evaluateToStringListStatic(String expr, Object parent) {
-        return toStringList(evaluate(expr, parent, Filters.fpassthrough(), null));
+        return toStringList(evaluate(expr, parent, Filters.fpassthrough(), null, ""));
     }
 
     /**
@@ -429,7 +494,7 @@ public class JDomXP {
         if (!useExpr.endsWith(XPATH_TEXT)) {
             useExpr += XPATH_TEXT;
         }
-        List<Object> list = evaluate(useExpr, parent != null ? parent : doc, Filters.cdata(), localNamespaces);
+        List<Object> list = evaluate(useExpr, parent != null ? parent : doc, Filters.cdata(), localNamespaces, localNamespaceSignature);
         if (list == null || list.isEmpty()) {
             return null;
         }
@@ -670,59 +735,144 @@ public class JDomXP {
      * @should detect cms files correctly
      */
     public static FileFormat determineFileFormat(File file) throws IOException {
-        try {
-            JDomXP xp = new JDomXP(file);
-            if (xp.doc.getRootElement() == null) {
-                return FileFormat.UNKNOWN;
-            }
-
-            if (xp.doc.getRootElement().getNamespace("mets") != null) {
-                // Records containing both MODS and MARC should be treated as METS/MODS
-                List<Element> elements = evaluateToElementsStatic("mets:dmdSec/mets:mdWrap[@MDTYPE='MODS']", xp.doc.getRootElement());
-                if (elements != null && !elements.isEmpty()) {
-                    return FileFormat.METS;
+        // Only the root element (and, for METS, the dmdSec/mdWrap elements) is needed, so the file is streamed and reading stops as soon as
+        // the format is known, instead of building a complete document that the indexer then parses a second time.
+        XMLInputFactory factory = XMLInputFactory.newInstance();
+        factory.setProperty(XMLInputFactory.SUPPORT_DTD, false);
+        factory.setProperty(XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES, false);
+        factory.setProperty(XMLInputFactory.IS_NAMESPACE_AWARE, true);
+        XMLStreamReader reader = null;
+        try (FileInputStream fis = new FileInputStream(file)) {
+            reader = factory.createXMLStreamReader(fis);
+            while (reader.hasNext()) {
+                int event = reader.next();
+                if (event == XMLStreamConstants.DTD) {
+                    // Same as the SAX builder used for indexing, which disallows DOCTYPE declarations
+                    logger.error("DOCTYPE is disallowed: {}", file.getName());
+                    return FileFormat.UNKNOWN;
                 }
-                elements = evaluateToElementsStatic("mets:dmdSec/mets:mdWrap[@MDTYPE='MARC']", xp.doc.getRootElement());
-                if (elements != null && !elements.isEmpty()) {
-                    return FileFormat.METS_MARC;
+                if (event == XMLStreamConstants.START_ELEMENT) {
+                    return determineFileFormat(reader);
                 }
-                return FileFormat.METS;
             }
-            if (xp.doc.getRootElement().getNamespace("lido") != null) {
-                return FileFormat.LIDO;
-            }
-            if (xp.doc.getRootElement().getNamespace() != null
-                    && (xp.doc.getRootElement().getNamespace().getURI().equals("urn:isbn:1-931666-22-9"))) {
-                return FileFormat.EAD;
-            }
-            if (xp.doc.getRootElement().getNamespace() != null
-                    && (xp.doc.getRootElement().getNamespace().getURI().equals("http://ead3.archivists.org/schema/")
-                            || xp.doc.getRootElement().getNamespace().getURI().equals("https://archivists.org/ns/ead/v4"))) {
-                return FileFormat.EAD3;
-            }
-            if (xp.doc.getRootElement().getNamespace() != null
-                    && xp.doc.getRootElement().getNamespace().getURI().equals("http://denkxweb.de/")) {
-                return FileFormat.DENKXWEB;
-            }
-            if (xp.doc.getRootElement().getNamespace("dc") != null) {
-                return FileFormat.DUBLINCORE;
-            }
-            if (xp.doc.getRootElement().getName().equals("worldviews")) {
-                return FileFormat.WORLDVIEWS;
-            }
-            if (xp.doc.getRootElement().getNamespace().getURI().contains("abbyy")) {
-                return FileFormat.ABBYYXML;
-            }
-            if (xp.doc.getRootElement().getName().equals("TEI.2")) {
-                return FileFormat.TEI;
-            }
-            if (xp.doc.getRootElement().getName().equals("cmsPage")) {
-                return FileFormat.CMS;
-            }
-        } catch (JDOMException e) {
+        } catch (XMLStreamException e) {
             logger.error(e.getMessage());
+        } finally {
+            if (reader != null) {
+                try {
+                    reader.close();
+                } catch (XMLStreamException e) {
+                    logger.error(e.getMessage());
+                }
+            }
         }
 
         return FileFormat.UNKNOWN;
+    }
+
+    /**
+     * Determines the file format from the root element the given reader is positioned at.
+     *
+     * @param reader Reader positioned at the root START_ELEMENT
+     * @return Detected {@link FileFormat}
+     * @throws XMLStreamException
+     */
+    private static FileFormat determineFileFormat(XMLStreamReader reader) throws XMLStreamException {
+        String rootNamespaceUri = reader.getNamespaceURI() != null ? reader.getNamespaceURI() : "";
+        String rootName = reader.getLocalName();
+
+        if (isPrefixDeclaredOnRoot(reader, "mets")) {
+            return determineMetsType(reader);
+        }
+        if (isPrefixDeclaredOnRoot(reader, "lido")) {
+            return FileFormat.LIDO;
+        }
+        if (rootNamespaceUri.equals("urn:isbn:1-931666-22-9")) {
+            return FileFormat.EAD;
+        }
+        if (rootNamespaceUri.equals("http://ead3.archivists.org/schema/") || rootNamespaceUri.equals("https://archivists.org/ns/ead/v4")) {
+            return FileFormat.EAD3;
+        }
+        if (rootNamespaceUri.equals("http://denkxweb.de/")) {
+            return FileFormat.DENKXWEB;
+        }
+        if (isPrefixDeclaredOnRoot(reader, "dc")) {
+            return FileFormat.DUBLINCORE;
+        }
+        if (rootName.equals("worldviews")) {
+            return FileFormat.WORLDVIEWS;
+        }
+        if (rootNamespaceUri.contains("abbyy")) {
+            return FileFormat.ABBYYXML;
+        }
+        if (rootName.equals("TEI.2")) {
+            return FileFormat.TEI;
+        }
+        if (rootName.equals("cmsPage")) {
+            return FileFormat.CMS;
+        }
+
+        return FileFormat.UNKNOWN;
+    }
+
+    /**
+     * Equivalent of JDOM's <code>Element.getNamespace(prefix) != null</code> for the root element: true if the root element itself uses the
+     * given prefix or declares a namespace for it.
+     *
+     * @param reader Reader positioned at the root START_ELEMENT
+     * @param prefix Namespace prefix
+     * @return true if the prefix is bound on the root element; false otherwise
+     */
+    private static boolean isPrefixDeclaredOnRoot(XMLStreamReader reader, String prefix) {
+        if (prefix.equals(reader.getPrefix())) {
+            return true;
+        }
+        for (int i = 0; i < reader.getNamespaceCount(); i++) {
+            if (prefix.equals(reader.getNamespacePrefix(i))) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Distinguishes METS/MODS from METS/MARC by the MDTYPE of the root's <code>mets:dmdSec/mets:mdWrap</code> elements. Records containing
+     * both MODS and MARC are treated as METS/MODS, so reading stops at the first MODS wrapper.
+     *
+     * @param reader Reader positioned at the root START_ELEMENT
+     * @return {@link FileFormat#METS} or {@link FileFormat#METS_MARC}
+     * @throws XMLStreamException
+     */
+    private static FileFormat determineMetsType(XMLStreamReader reader) throws XMLStreamException {
+        Namespace metsNamespace = SolrIndexerDaemon.getInstance().getConfiguration().getNamespaces().get("mets");
+        String metsUri = metsNamespace != null ? metsNamespace.getURI() : "http://www.loc.gov/METS/";
+        boolean marcFound = false;
+        int depth = 1; // root
+        boolean inDmdSec = false;
+        while (reader.hasNext()) {
+            int event = reader.next();
+            if (event == XMLStreamConstants.START_ELEMENT) {
+                depth++;
+                boolean isMets = metsUri.equals(reader.getNamespaceURI());
+                if (depth == 2) {
+                    inDmdSec = isMets && "dmdSec".equals(reader.getLocalName());
+                } else if (depth == 3 && inDmdSec && isMets && "mdWrap".equals(reader.getLocalName())) {
+                    String mdType = reader.getAttributeValue(null, "MDTYPE");
+                    if ("MODS".equals(mdType)) {
+                        return FileFormat.METS;
+                    }
+                    if ("MARC".equals(mdType)) {
+                        marcFound = true;
+                    }
+                }
+            } else if (event == XMLStreamConstants.END_ELEMENT) {
+                depth--;
+                if (depth == 1) {
+                    inDmdSec = false;
+                }
+            }
+        }
+
+        return marcFound ? FileFormat.METS_MARC : FileFormat.METS;
     }
 }

@@ -34,11 +34,14 @@ import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.ForkJoinTask;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Consumer;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.ThreadContext;
 import org.apache.solr.common.SolrInputDocument;
 import org.jdom2.Element;
 import org.jdom2.Namespace;
@@ -117,6 +120,10 @@ public class PhysicalDocumentBuilder {
 
     private boolean hasImages = false;
     private boolean hasFulltext = false;
+    /** Number of pages in the physical structMap, as of the last {@link #generatePageDocuments} call. */
+    private int numSourcePages = 0;
+    /** Number of generated page documents (without shapes), as of the last {@link #generatePageDocuments} call. */
+    private final AtomicInteger numPages = new AtomicInteger();
 
     /**
      * Create a builder for pages and other documents based on physical files
@@ -239,46 +246,60 @@ public class PhysicalDocumentBuilder {
         // Get all physical elements
         String xpath = buildPagesXpathExpresson();
         List<Element> eleStructMapPhysicalList = xp.evaluateToElements(xpath, null);
+        numSourcePages = eleStructMapPhysicalList.size();
+        numPages.set(0);
         if (eleStructMapPhysicalList.isEmpty()) {
             logger.info("No pages found.");
             return Collections.emptyList();
         }
 
-        logger.info("Image file groups selected: {}", useFileGroups);
-        logger.info("Generating {} page documents (count starts at {})...", eleStructMapPhysicalList.size(), pageCountStart);
+        logger.debug("Image file groups selected: {}", useFileGroups);
+        logger.debug("Generating {} page documents (count starts at {})...", eleStructMapPhysicalList.size(), pageCountStart);
 
         Collection<PhysicalElement> pages = Collections.synchronizedList(new ArrayList<PhysicalElement>());
-        if (SolrIndexerDaemon.getInstance().getConfiguration().getThreads() > 1) {
-            // Generate each page document in its own thread
-            ForkJoinTask<?> task = null;
-            try (ForkJoinPool pool = new ForkJoinPool(SolrIndexerDaemon.getInstance().getConfiguration().getThreads())) {
-                task = pool.submit(() -> eleStructMapPhysicalList.parallelStream().forEach(eleStructMapPhysical -> {
-                    try {
-                        String iddoc = Indexer.getNextIddoc();
-                        PhysicalElement page =
-                                generatePageDocument(eleStructMapPhysical, String.valueOf(iddoc), pi, null, dataFolders, dataRepository,
-                                        downloadExternalImages);
-                        if (page != null) {
-                            pages.add(page);
-                            // Shapes must be added as regular pages to the WriteStrategy to ensure correct docstrcut mapping
-                            for (PhysicalElement shape : page.getShapes()) {
-                                pages.add(shape);
-                            }
-                            page.getShapes().clear();
+        boolean sharedWorkerPool = SolrIndexerDaemon.getInstance().getConfiguration().isSharedWorkerPool();
+        if (SolrIndexerDaemon.getInstance().getConfiguration().getPageThreads() > 1 || sharedWorkerPool) {
+            // Generate each page document in parallel. Capture the current logging context (MDC) so the worker threads
+            // can re-apply it and their log lines stay attributed to this record.
+            final Map<String, String> loggingContext = ThreadContext.getImmutableContext();
+            final Consumer<Element> pageTask = eleStructMapPhysical -> {
+                ThreadContext.putAll(loggingContext);
+                try {
+                    String iddoc = Indexer.getNextIddoc();
+                    PhysicalElement page =
+                            generatePageDocument(eleStructMapPhysical, String.valueOf(iddoc), pi, null, dataFolders, dataRepository,
+                                    downloadExternalImages);
+                    if (page != null) {
+                        pages.add(page);
+                        numPages.incrementAndGet();
+                        // Shapes must be added as regular pages to the WriteStrategy to ensure correct docstrcut mapping
+                        for (PhysicalElement shape : page.getShapes()) {
+                            pages.add(shape);
                         }
-                    } catch (FatalIndexerException e) {
-                        logger.error("Should be exiting here now...");
+                        page.getShapes().clear();
                     }
-                }));
-                task.get(GENERATE_PAGE_DOCUMENT_TIMEOUT_HOURS, TimeUnit.HOURS);
-            } catch (ExecutionException e) {
-                logger.error(e.getMessage(), e);
-                SolrIndexerDaemon.getInstance().stop();
-            } catch (TimeoutException e) {
-                if (task != null) {
-                    task.cancel(true);
+                } catch (FatalIndexerException e) {
+                    logger.error("Should be exiting here now...");
                 }
-                throw new InterruptedException("Generating page documents timed out for object " + pi);
+            };
+            if (sharedWorkerPool && ForkJoinTask.inForkJoinPool()) {
+                // Already running as a record task on the shared work-stealing pool: fork page work into that same pool
+                // (parallelStream from within a pool worker uses that pool) so record and page parallelism share one budget.
+                eleStructMapPhysicalList.parallelStream().forEach(pageTask);
+            } else {
+                ForkJoinTask<?> task = null;
+                try (ForkJoinPool pool = new ForkJoinPool(SolrIndexerDaemon.getInstance().getConfiguration().getPageThreads())) {
+                    task = pool.submit(() -> eleStructMapPhysicalList.parallelStream().forEach(pageTask));
+                    task.get(GENERATE_PAGE_DOCUMENT_TIMEOUT_HOURS, TimeUnit.HOURS);
+                } catch (ExecutionException e) {
+                    logger.error(e.getMessage(), e);
+                    SolrIndexerDaemon.getInstance().stop();
+                } catch (TimeoutException e) {
+                    if (task != null) {
+                        task.cancel(true);
+                    }
+                    throw new InterruptedException("Generating page documents timed out for object " + pi);
+                }
             }
         } else {
             // Generate pages sequentially
@@ -288,6 +309,7 @@ public class PhysicalDocumentBuilder {
                         pi, order, dataFolders, dataRepository, downloadExternalImages);
                 if (page != null) {
                     pages.add(page);
+                    numPages.incrementAndGet();
                     // Shapes must be added as regular pages to the WriteStrategy to ensure correct docstrcut mapping
                     for (PhysicalElement shape : page.getShapes()) {
                         pages.add(shape);
@@ -300,7 +322,7 @@ public class PhysicalDocumentBuilder {
                 }
             }
         }
-        logger.info("Generated {} pages.", pages.size());
+        logger.debug("Generated {} pages.", pages.size());
         return pages;
     }
 
@@ -310,6 +332,20 @@ public class PhysicalDocumentBuilder {
 
     public boolean isHasImages() {
         return hasImages;
+    }
+
+    /**
+     * @return Number of pages in the physical structMap, as of the last {@link #generatePageDocuments} call
+     */
+    public int getNumSourcePages() {
+        return numSourcePages;
+    }
+
+    /**
+     * @return Number of generated page documents (without shapes), as of the last {@link #generatePageDocuments} call
+     */
+    public int getNumPages() {
+        return numPages.get();
     }
 
     /**

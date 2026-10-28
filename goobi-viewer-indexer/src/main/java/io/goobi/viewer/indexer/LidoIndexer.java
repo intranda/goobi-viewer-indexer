@@ -36,6 +36,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.solr.client.solrj.SolrServerException;
+import org.apache.solr.common.SolrException;
 import org.apache.solr.common.SolrInputDocument;
 import org.jdom2.Document;
 import org.jdom2.Element;
@@ -102,6 +103,26 @@ public class LidoIndexer extends Indexer {
     /** {@inheritDoc} */
     @Override
     public List<String> addToIndex(Path lidoFile, Map<String, Boolean> reindexSettings) throws IOException, FatalIndexerException {
+        currentRecordFile = lidoFile;
+        try {
+            return indexRecordFile(lidoFile, reindexSettings);
+        } finally {
+            // Release the record lock acquired in index(), which is held for the post-processing
+            unlockRecord();
+            currentRecordFile = null;
+        }
+    }
+
+    /**
+     * Indexes the given record file and moves its data into the data repository (see {@link #addToIndex(Path, Map)}).
+     *
+     * @param lidoFile Record file
+     * @param reindexSettings
+     * @return List of successfully indexed record identifiers
+     * @throws IOException
+     * @throws FatalIndexerException
+     */
+    private List<String> indexRecordFile(Path lidoFile, Map<String, Boolean> reindexSettings) throws IOException, FatalIndexerException {
         logger.debug("Indexing LIDO file '{}'...", lidoFile.getFileName());
         String fileNameRoot = FilenameUtils.getBaseName(lidoFile.getFileName().toString());
 
@@ -127,6 +148,8 @@ public class LidoIndexer extends Indexer {
 
         List<String> ret = new ArrayList<>(lidoDocs.size());
         for (Document doc : lidoDocs) {
+            // Release the lock of the previous record (held for its post-processing)
+            unlockRecord();
             IndexingResult result = index(doc, dataFolders, null, SolrIndexerDaemon.getInstance().getConfiguration().getPageCountStart(),
                     SolrIndexerDaemon.getInstance().getConfiguration().getStringList("init.lido.imageXPath"),
                     dataFolders.containsKey(DataRepository.PARAM_DOWNLOAD_IMAGES_TRIGGER),
@@ -156,7 +179,7 @@ public class LidoIndexer extends Indexer {
                 if (imageCounter > 0) {
                     String msg = Utils.removeRecordImagesFromCache(identifier);
                     if (msg != null) {
-                        logger.info(msg);
+                        logger.debug(msg);
                     }
                 }
 
@@ -194,16 +217,16 @@ public class LidoIndexer extends Indexer {
                     }
                 }
                 prerenderPagePdfsIfRequired(identifier);
-                logger.info("Successfully finished indexing '{}'.", identifier);
+                recordIndexed(result);
 
-                // Remove this file from lower priority hotfolders to avoid overriding changes with older version
-                SolrIndexerDaemon.getInstance().removeRecordFileFromLowerPriorityHotfolders(identifier, hotfolder);
+                // Older copies of this record in lower-priority hotfolders must not overwrite this version
+                SolrIndexerDaemon.getInstance().registerIndexedRecord(identifier, hotfolder);
 
                 // Add identifier to return list
                 if (result.isSubmitPiToViewer()) {
                     ret.add(identifier);
                 }
-            } else {
+            } else if (!IndexingResultStatus.SKIPPED.equals(result.getStatus())) {
                 handleError(lidoFile, result.getError(), FileFormat.LIDO);
             }
         }
@@ -260,6 +283,11 @@ public class LidoIndexer extends Indexer {
 
             // Set PI
             pi = validateAndApplyPI(findPI("/lido:lido/"), indexObj, false);
+
+            // Serialize with other record files carrying the same PI (other hotfolders, other file names)
+            if (!lockRecord(pi)) {
+                return skipSupersededRecord(ret, pi);
+            }
 
             // Determine the data repository to use
             selectDataRepository(indexObj, pi, null, dataFolders);
@@ -358,11 +386,12 @@ public class LidoIndexer extends Indexer {
 
             logger.debug("Writing document to index...");
             writeStrategy.writeDocs(SolrIndexerDaemon.getInstance().getConfiguration().isAggregateRecords());
+            ret.setDocStructType(indexObj.getType()).setNumPages(recordNumPages).setNumSourcePages(recordNumSourcePages);
 
             // Set image file names belonging to this record
             ret.setMediaImageFileNames(imgFileNames);
-            logger.info("Finished writing data for '{}' to Solr.", pi);
-        } catch (FatalIndexerException | IndexerException | IOException | JDOMException | SolrServerException e) {
+            logger.debug("Finished writing data for '{}' to Solr.", pi);
+        } catch (FatalIndexerException | IndexerException | IOException | JDOMException | SolrServerException | SolrException e) {
             if ("No image resource sets found.".equals(e.getMessage())) {
                 logger.error("Indexing of '{}' could not be finished due to an error: {}", pi, e.getMessage());
             } else {
@@ -372,6 +401,7 @@ public class LidoIndexer extends Indexer {
             ret.setError(e.getMessage());
             SolrIndexerDaemon.getInstance().getSearchIndex().rollback();
         } finally {
+            unlockRecordAfterIndex();
             if (writeStrategy != null) {
                 writeStrategy.cleanup();
             }
@@ -591,12 +621,14 @@ public class LidoIndexer extends Indexer {
             List<String> imageXPaths, boolean downloadExternalImages, boolean useOldImageFolderIfAvailable) {
         String xpath = "/lido:lido/lido:administrativeMetadata/lido:resourceWrap/lido:resourceSet";
         List<Element> resourceSetList = xp.evaluateToElements(xpath, null);
+        recordNumSourcePages = resourceSetList != null ? resourceSetList.size() : 0;
+        recordNumPages = 0;
         if (resourceSetList == null || resourceSetList.isEmpty()) {
             // No pages
             return;
         }
 
-        logger.info("Generating {} page documents (count starts at {})...", resourceSetList.size(), pageCountStart);
+        logger.debug("Generating {} page documents (count starts at {})...", resourceSetList.size(), pageCountStart);
 
         if (imageXPaths == null || imageXPaths.isEmpty()) {
             logger.error("No init.lido.imageXPath configuration elements found, cannot add images!");
@@ -622,6 +654,7 @@ public class LidoIndexer extends Indexer {
             }
         }
 
+        recordNumPages = writeStrategy.getPageDocsSize();
         logger.info("Generated {} page documents.", writeStrategy.getPageDocsSize());
     }
 

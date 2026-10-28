@@ -25,11 +25,17 @@ import java.util.Map;
  */
 public class SubfieldConfig {
 
+    /** Default separator for concatenated values */
+    public static final String DEFAULT_SEPARATOR = ". ";
+
     private final String fieldname;
     private final boolean multivalued;
     private final boolean addSortField;
     private final List<XPathConfig> xpaths = new ArrayList<>();
     private final Map<String, String> defaultValues = new HashMap<>();
+    /** If true, all values found via an XPath expression are joined into a single value */
+    private boolean concatenate = false;
+    private String separator = DEFAULT_SEPARATOR;
 
     /**
      *
@@ -102,5 +108,33 @@ public class SubfieldConfig {
      */
     public Map<String, String> getDefaultValues() {
         return defaultValues;
+    }
+
+    /**
+     * @return the concatenate
+     */
+    public boolean isConcatenate() {
+        return concatenate;
+    }
+
+    /**
+     * @param concatenate the concatenate to set
+     */
+    public void setConcatenate(boolean concatenate) {
+        this.concatenate = concatenate;
+    }
+
+    /**
+     * @return the separator
+     */
+    public String getSeparator() {
+        return separator;
+    }
+
+    /**
+     * @param separator the separator to set
+     */
+    public void setSeparator(String separator) {
+        this.separator = separator;
     }
 }

@@ -37,12 +37,14 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ForkJoinTask;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.ThreadContext;
 import org.apache.solr.client.solrj.impl.BaseHttpSolrClient.RemoteSolrException;
 import org.apache.solr.common.SolrInputDocument;
 
@@ -302,8 +304,22 @@ public class SerializingSolrWriteStrategy extends AbstractWriteStrategy {
         List<Integer> orderList = new ArrayList<>(pageDocOrderIddocMap.keySet());
         Collections.sort(orderList);
 
-        if (SolrIndexerDaemon.getInstance().getConfiguration().getThreads() > 1) {
-            try (ExecutorService executor = Executors.newFixedThreadPool(SolrIndexerDaemon.getInstance().getConfiguration().getThreads())) {
+        boolean sharedWorkerPool = SolrIndexerDaemon.getInstance().getConfiguration().isSharedWorkerPool();
+        if (sharedWorkerPool && ForkJoinTask.inForkJoinPool()) {
+            // Already running as a record task on the shared work-stealing pool: fork the page writes into that same pool.
+            final Map<String, String> loggingContext = ThreadContext.getImmutableContext();
+            orderList.parallelStream().forEach(order -> {
+                ThreadContext.putAll(loggingContext);
+                try {
+                    writePageDoc(order, rootDoc, aggregateRecords);
+                } catch (FatalIndexerException e) {
+                    logger.error(e.getMessage());
+                }
+            });
+        } else if (SolrIndexerDaemon.getInstance().getConfiguration().getPageThreads() > 1) {
+            // Capture the logging context (MDC) so the pool's worker threads keep this record's log tag.
+            final Map<String, String> loggingContext = ThreadContext.getImmutableContext();
+            try (ExecutorService executor = Executors.newFixedThreadPool(SolrIndexerDaemon.getInstance().getConfiguration().getPageThreads())) {
                 for (final int order : orderList) {
 
                     // Generate write page document in its own thread
@@ -311,6 +327,7 @@ public class SerializingSolrWriteStrategy extends AbstractWriteStrategy {
 
                         @Override
                         public void run() {
+                            ThreadContext.putAll(loggingContext);
                             try {
                                 writePageDoc(order, rootDoc, aggregateRecords);
                             } catch (FatalIndexerException e) {
@@ -338,7 +355,7 @@ public class SerializingSolrWriteStrategy extends AbstractWriteStrategy {
             throw new IndexerException(e.getMessage());
         }
 
-        searchIndex.commit(searchIndex.isOptimize());
+        searchIndex.commitAfterRecord();
     }
 
     /**

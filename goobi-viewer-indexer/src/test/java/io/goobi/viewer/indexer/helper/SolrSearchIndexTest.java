@@ -15,6 +15,7 @@
  */
 package io.goobi.viewer.indexer.helper;
 
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -26,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
@@ -33,6 +35,8 @@ import org.apache.logging.log4j.Logger;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
+import org.apache.solr.common.SolrException;
+import org.apache.solr.common.SolrException.ErrorCode;
 import org.apache.solr.common.SolrInputDocument;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -42,6 +46,7 @@ import org.junit.jupiter.api.Test;
 import io.goobi.viewer.indexer.AbstractSolrEnabledTest;
 import io.goobi.viewer.indexer.MetsIndexer;
 import io.goobi.viewer.indexer.SolrIndexerDaemon;
+import io.goobi.viewer.indexer.exceptions.SolrUnavailableException;
 import io.goobi.viewer.indexer.model.IndexingResult;
 import io.goobi.viewer.indexer.model.LuceneField;
 import io.goobi.viewer.indexer.model.SolrConstants;
@@ -329,5 +334,156 @@ class SolrSearchIndexTest extends AbstractSolrEnabledTest {
                         "AC06736966");
         Assertions.assertEquals(1, duplicates.size());
         Assertions.assertTrue(duplicates.contains("H030001"));
+    }
+
+    /**
+     * @see SolrSearchIndex#search(String,List)
+     * @verifies return all hits
+     */
+    @Test
+    void search_shouldReturnAllHits() throws Exception {
+        for (int i = 1; i <= 3; i++) {
+            SolrInputDocument doc = new SolrInputDocument();
+            doc.addField(SolrConstants.IDDOC, "SEARCHTEST" + i);
+            doc.addField(SolrConstants.GROUPFIELD, "SEARCHTEST" + i);
+            doc.addField(SolrConstants.PI_TOPSTRUCT, "PPN_SEARCHTEST");
+            searchIndex.writeToIndex(doc);
+        }
+        searchIndex.commit(false);
+
+        SolrDocumentList result = searchIndex.search(SolrConstants.PI_TOPSTRUCT + ":PPN_SEARCHTEST", Collections.singletonList(SolrConstants.IDDOC));
+        Assertions.assertEquals(3, result.getNumFound());
+        Assertions.assertEquals(3, result.size());
+    }
+
+    /**
+     * @see SolrSearchIndex#search(String,List)
+     * @verifies return empty list if no hits
+     */
+    @Test
+    void search_shouldReturnEmptyListIfNoHits() throws Exception {
+        SolrDocumentList result = searchIndex.search(SolrConstants.PI_TOPSTRUCT + ":PPN_DOES_NOT_EXIST", null);
+        Assertions.assertNotNull(result);
+        Assertions.assertEquals(0, result.getNumFound());
+        Assertions.assertTrue(result.isEmpty());
+    }
+
+    /**
+     * @see SolrSearchIndex#isTransient(SolrException)
+     * @verifies return true for server errors and unavailable collection
+     */
+    @Test
+    void isTransient_shouldReturnTrueForServerErrorsAndUnavailableCollection() {
+        Assertions.assertTrue(SolrSearchIndex.isTransient(new SolrException(ErrorCode.SERVICE_UNAVAILABLE, "Cannot talk to ZooKeeper")));
+        Assertions.assertTrue(SolrSearchIndex.isTransient(new SolrException(ErrorCode.SERVER_ERROR, "Error reading collection properties")));
+        Assertions.assertTrue(SolrSearchIndex.isTransient(new SolrException(ErrorCode.NOT_FOUND, "Searching for Solr?")));
+        Assertions.assertTrue(SolrSearchIndex.isTransient(new SolrException(ErrorCode.TOO_MANY_REQUESTS, "slow down")));
+        Assertions.assertTrue(SolrSearchIndex.isTransient(new SolrException(ErrorCode.UNKNOWN, "unknown")));
+    }
+
+    /**
+     * @see SolrSearchIndex#isTransient(SolrException)
+     * @verifies return false for rejected requests
+     */
+    @Test
+    void isTransient_shouldReturnFalseForRejectedRequests() {
+        Assertions.assertFalse(SolrSearchIndex.isTransient(new SolrException(ErrorCode.BAD_REQUEST, "unknown field")));
+        Assertions.assertFalse(SolrSearchIndex.isTransient(new SolrException(ErrorCode.CONFLICT, "version conflict")));
+    }
+
+    /**
+     * @see SolrSearchIndex#execute(String,SolrSearchIndex.SolrOperation)
+     * @verifies return result after transient failure
+     */
+    @Test
+    void execute_shouldReturnResultAfterTransientFailure() {
+        searchIndex.setRetryPolicy(3, 1);
+        AtomicInteger attempts = new AtomicInteger();
+        String result = searchIndex.execute("test", () -> {
+            if (attempts.incrementAndGet() == 1) {
+                throw new SolrException(ErrorCode.SERVICE_UNAVAILABLE, "Cannot talk to ZooKeeper - Updates are disabled.");
+            }
+            return "ok";
+        });
+        Assertions.assertEquals("ok", result);
+        Assertions.assertEquals(2, attempts.get());
+        Assertions.assertFalse(searchIndex.isUnavailable());
+    }
+
+    /**
+     * @see SolrSearchIndex#execute(String,SolrSearchIndex.SolrOperation)
+     * @verifies throw permanent solr error immediately
+     */
+    @Test
+    void execute_shouldThrowPermanentSolrErrorImmediately() {
+        searchIndex.setRetryPolicy(3, 1);
+        AtomicInteger attempts = new AtomicInteger();
+        SolrException e = Assertions.assertThrows(SolrException.class, () -> searchIndex.execute("test", () -> {
+            attempts.incrementAndGet();
+            throw new SolrException(ErrorCode.BAD_REQUEST, "unknown field");
+        }));
+        Assertions.assertEquals(400, e.code());
+        Assertions.assertEquals(1, attempts.get());
+        Assertions.assertFalse(searchIndex.isUnavailable());
+    }
+
+    /**
+     * @see SolrSearchIndex#execute(String,SolrSearchIndex.SolrOperation)
+     * @verifies throw SolrUnavailableException after all attempts failed
+     */
+    @Test
+    void execute_shouldThrowSolrUnavailableExceptionAfterAllAttemptsFailed() {
+        searchIndex.setRetryPolicy(3, 1);
+        AtomicInteger attempts = new AtomicInteger();
+        Assertions.assertThrows(SolrUnavailableException.class, () -> searchIndex.execute("test", () -> {
+            attempts.incrementAndGet();
+            throw new IOException("Connection refused");
+        }));
+        Assertions.assertEquals(3, attempts.get());
+        Assertions.assertTrue(searchIndex.isUnavailable());
+    }
+
+    /**
+     * 
+     * @param pi
+     * @return Minimal document of the record with the given PI
+     */
+    private static SolrInputDocument createRecordDoc(String pi) {
+        SolrInputDocument doc = new SolrInputDocument();
+        String iddoc = UUID.randomUUID().toString();
+        doc.addField(SolrConstants.IDDOC, iddoc);
+        doc.addField(SolrConstants.GROUPFIELD, iddoc);
+        doc.addField(SolrConstants.DATEUPDATED, System.currentTimeMillis());
+        doc.addField(SolrConstants.PI_TOPSTRUCT, pi);
+        return doc;
+    }
+
+    /**
+     * @see SolrSearchIndex#commitIfUncommitted(String)
+     * @verifies commit if record has uncommitted docs
+     */
+    @Test
+    void commitIfUncommitted_shouldCommitIfRecordHasUncommittedDocs() throws Exception {
+        searchIndex.writeToIndex(createRecordDoc("UNCOMMITTED_TEST_1"));
+        Assertions.assertTrue(searchIndex.isUncommitted("UNCOMMITTED_TEST_1"));
+
+        searchIndex.commitIfUncommitted("UNCOMMITTED_TEST_1");
+        Assertions.assertFalse(searchIndex.isUncommitted("UNCOMMITTED_TEST_1"));
+        Assertions.assertEquals(1, searchIndex.search(SolrConstants.PI_TOPSTRUCT + ":UNCOMMITTED_TEST_1", null).size());
+    }
+
+    /**
+     * @see SolrSearchIndex#commitIfUncommitted(String)
+     * @verifies not commit if record has no uncommitted docs
+     */
+    @Test
+    void commitIfUncommitted_shouldNotCommitIfRecordHasNoUncommittedDocs() throws Exception {
+        searchIndex.writeToIndex(Collections.singletonList(createRecordDoc("UNCOMMITTED_TEST_2")));
+        searchIndex.commitIfUncommitted("UNCOMMITTED_TEST_3");
+        Assertions.assertTrue(searchIndex.isUncommitted("UNCOMMITTED_TEST_2"), "another record's docs must not have been committed");
+
+        // Draining also commits records that are only known as uncommitted
+        searchIndex.commitPending();
+        Assertions.assertFalse(searchIndex.isUncommitted("UNCOMMITTED_TEST_2"));
     }
 }

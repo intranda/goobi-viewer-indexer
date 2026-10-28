@@ -41,6 +41,7 @@ import org.junit.jupiter.api.Test;
 
 import de.intranda.digiverso.normdataimporter.model.NormData;
 import de.intranda.digiverso.normdataimporter.model.NormDataValue;
+import de.intranda.digiverso.normdataimporter.model.Record;
 import io.goobi.viewer.indexer.AbstractTest;
 import io.goobi.viewer.indexer.SolrIndexerDaemon;
 import io.goobi.viewer.indexer.helper.JDomXP.FileFormat;
@@ -64,6 +65,29 @@ class MetadataHelperTest extends AbstractTest {
         AbstractTest.setUpClass();
 
         hotfolder = new Hotfolder(SolrIndexerDaemon.getInstance().getConfiguration().getHotfolderPath());
+    }
+
+    /**
+     * @see MetadataHelper#fetchAuthorityRecord(String, String, int, MetadataHelper.AuthorityRecordRetriever)
+     * @verifies return null if retrieval throws NullPointerException
+     */
+    @Test
+    void fetchAuthorityRecord_shouldReturnNullIfRetrievalThrowsNullPointerException() {
+        Assertions.assertNull(MetadataHelper.fetchAuthorityRecord("https://d-nb.info/gnd/11856014X", null, 0, (url, proxyUrl, proxyPort) -> {
+            throw new NullPointerException("Cannot invoke \"java.lang.CharSequence.toString()\" because \"src\" is null");
+        }));
+    }
+
+    /**
+     * @see MetadataHelper#fetchAuthorityRecord(String, String, int, MetadataHelper.AuthorityRecordRetriever)
+     * @verifies return retrieved record
+     */
+    @Test
+    void fetchAuthorityRecord_shouldReturnRetrievedRecord() {
+        Record rec = new Record() {
+        };
+        Assertions.assertSame(rec,
+                MetadataHelper.fetchAuthorityRecord("https://d-nb.info/gnd/11856014X", null, 0, (url, proxyUrl, proxyPort) -> rec));
     }
 
     /**
@@ -251,6 +275,77 @@ class MetadataHelperTest extends AbstractTest {
         for (LuceneField field : gmd.getAuthorityDataFields()) {
             assertFalse(SolrConstants.BOOL_AUTHORITY_DATA_INCOMPLETE.equals(field.getField()));
         }
+    }
+
+    /**
+     * Builds a corporate <code>mods:name</code> element with two untyped <code>mods:namePart</code> children.
+     *
+     * @return mods:name element attached to a new document
+     */
+    private static Element createCorporateNameElement() {
+        Namespace nsMods = SolrIndexerDaemon.getInstance().getConfiguration().getNamespaces().get("mods");
+        Element eleName = new Element("name", nsMods).setAttribute("type", "corporate");
+        eleName.addContent(new Element("namePart", nsMods).setText("Weltausstellung"));
+        eleName.addContent(new Element("namePart", nsMods).setText("1873; Wien"));
+        new Document(eleName);
+        return eleName;
+    }
+
+    /**
+     * @see GroupedMetadata#collectGroupMetadataValues(java.util.Map,java.util.Map,Element,boolean,java.util.Map,FieldConfig,JDomXP,FileFormat)
+     * @verifies concatenate values if concatenate enabled
+     */
+    @Test
+    void collectGroupMetadataValues_shouldConcatenateValuesIfConcatenateEnabled() throws Exception {
+        Configuration shippedConfig = new Configuration(new File("src/main/resources/config_indexer.xml").getAbsolutePath());
+        FieldConfig fieldConfig = shippedConfig.getMetadataConfigurationManager().getConfigurationListForField("MD_CORPORATEAUTHOR").get(0);
+        assertNotNull(fieldConfig);
+        // Shipped config enables concatenation for untyped corporate name parts
+        assertTrue(fieldConfig.getGroupEntity().getSubfields().get(SolrConstants.MD_VALUE).isConcatenate());
+
+        Element eleName = createCorporateNameElement();
+        SubfieldConfig subfield = new SubfieldConfig(SolrConstants.MD_VALUE, true, false);
+        subfield.setConcatenate(true);
+        subfield.setSeparator(". ");
+        subfield.getXpaths().add(new XPathConfig("mods:namePart[not(@type)]", null, null, SolrConstants.MD_VALUE));
+
+        GroupedMetadata gmd = new GroupedMetadata();
+        Map<String, List<String>> collected = new HashMap<>();
+        gmd.collectGroupMetadataValues(collected, Map.of(SolrConstants.MD_VALUE, subfield), eleName, false, null, fieldConfig,
+                new JDomXP(eleName.getDocument()), FileFormat.METS);
+        assertEquals(List.of("Weltausstellung. 1873; Wien"), collected.get(SolrConstants.MD_VALUE));
+        List<String> mdValues = gmd.getFields()
+                .stream()
+                .filter(f -> SolrConstants.MD_VALUE.equals(f.getField()))
+                .map(LuceneField::getValue)
+                .toList();
+        assertEquals(List.of("Weltausstellung. 1873; Wien"), mdValues);
+    }
+
+    /**
+     * @see GroupedMetadata#collectGroupMetadataValues(java.util.Map,java.util.Map,Element,boolean,java.util.Map,FieldConfig,JDomXP,FileFormat)
+     * @verifies keep separate values if concatenate disabled
+     */
+    @Test
+    void collectGroupMetadataValues_shouldKeepSeparateValuesIfConcatenateDisabled() throws Exception {
+        Configuration shippedConfig = new Configuration(new File("src/main/resources/config_indexer.xml").getAbsolutePath());
+        FieldConfig fieldConfig = shippedConfig.getMetadataConfigurationManager().getConfigurationListForField("MD_CORPORATEAUTHOR").get(0);
+        assertNotNull(fieldConfig);
+
+        Element eleName = createCorporateNameElement();
+        SubfieldConfig subfield = new SubfieldConfig(SolrConstants.MD_VALUE, true, false);
+        subfield.getXpaths().add(new XPathConfig("mods:namePart[not(@type)]", null, null, SolrConstants.MD_VALUE));
+
+        GroupedMetadata gmd = new GroupedMetadata();
+        Map<String, List<String>> collected = new HashMap<>();
+        gmd.collectGroupMetadataValues(collected, Map.of(SolrConstants.MD_VALUE, subfield), eleName, false, null, fieldConfig,
+                new JDomXP(eleName.getDocument()), FileFormat.METS);
+        List<String> mdValues = gmd.getFields()
+                .stream()
+                .filter(f -> SolrConstants.MD_VALUE.equals(f.getField()))
+                .map(LuceneField::getValue)
+                .toList();
+        assertEquals(List.of("Weltausstellung", "1873; Wien"), mdValues);
     }
 
     /**

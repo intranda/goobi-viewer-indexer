@@ -7,6 +7,13 @@
 		<!-- Minimum required free space to index (MB) -->
 		<minStorageSpace>2048</minStorageSpace>
 
+		<logging>
+			<!-- If false, log output to stdout (console) is disabled. Turn off on production systems where stdout is discarded (the shipped
+				systemd unit redirects it to /dev/null); keep on for development (e.g. Eclipse console) and setups that read stdout (e.g. Docker).
+				Changes take effect at runtime. Default is true. -->
+			<console>true</console>
+		</logging>
+
 		<!-- Main Solr index URL -->
 		<solrUrl>https://viewer-testing-index.goobi.io/solr/indexer-andrey</solrUrl>
 		<!-- Old Solr index URL (for migration purposes) -->
@@ -14,6 +21,12 @@
 		<viewerUrl>http://localhost:8080/viewer/</viewerUrl>
 
 		<!-- Folder configuration -->
+		<!-- Hotfolder(s): several <hotFolder> elements may be configured, the first one has the highest priority. A record (identified by its PI,
+			regardless of the file name) that has been indexed from a higher-priority hotfolder is not overwritten by an older copy in a
+			lower-priority hotfolder: a copy that was last modified before the newer version was indexed is skipped and deleted.
+			Caveat: this relies on file modification times. Tools that preserve them when copying (e.g. rsync -a / rsync -t, cp -p) make fresh
+			copies look old, so they may be skipped. Copy files into lower-priority hotfolders without preserving modification times, or touch
+			them afterwards. -->
 		<hotFolder>/opt/digiverso/viewer/hotfolder/</hotFolder>
 		<!--hotFolder>/opt/digiverso/viewer/reindex_hotfolder/</hotFolder-->
 		<tempFolder>/opt/digiverso/indexer/temp/</tempFolder>
@@ -145,7 +158,7 @@
             </physicalElementTypes>
             
             <!-- volumeCheckXPath: XPath expression to check whether the currently processed records has an anchor host. -->
-            <volumeCheckXPath>/mets:mets/mets:dmdSec[1]/mets:mdWrap[@MDTYPE="MODS"]/mets:xmlData/mods:mods/mods:relatedItem[@type="host"][not(@otherType) or @otherType="hierarchical"][not(@containerType)]/mods:recordInfo/mods:recordIdentifier[not(@source)]</volumeCheckXPath>
+            <volumeCheckXPath>/mets:mets/mets:dmdSec[1]/mets:mdWrap[@MDTYPE="MODS"]/mets:xmlData/mods:mods/mods:relatedItem[@type="host"][not(@otherType) or @otherType="hierarchical"][not(@containerType)]/mods:recordInfo/mods:recordIdentifier[not(@source) or @source="gbv-ppn"]</volumeCheckXPath>
 		</mets>
 
 		<lido>
@@ -234,14 +247,51 @@
 		<!-- If a data folder size exceeds the given number (in bytes), an alternate Solr write strategy will be used to avoid memory overflows (default is 157286400 bytes) -->
 		<dataFolderSizeThreshold>157286400</dataFolderSizeThreshold>
 
-		<!-- Number of documents written to Solr in one commit when using SerializingWriteStrategyBatch -->
+		<!-- Number of documents sent to Solr per request when using the serializing or streaming write strategy (see below) -->
 		<serializingWriteStrategyBatchSize>1000</serializingWriteStrategyBatchSize>
+
+		<!-- If true, large EAD files (exceeding metsFileSizeThreshold) are indexed with a streaming write strategy: their documents are sent
+			to Solr in batches while the file is being indexed, instead of first serializing every document to a file in tempFolder. This
+			avoids writing up to millions of temp files for very large archives. The documents only become visible with the commit at the
+			end of the record (unless Solr itself is configured with autoSoftCommit or autoCommit with openSearcher=true); if indexing
+			fails, the documents already sent are deleted again. Default is true. -->
+		<streamingWriteStrategy>true</streamingWriteStrategy>
 
 		<!-- If true, an optimize query will be sent to Solr after every indexed object. -->
 		<autoOptimize>false</autoOptimize>
 
-		<!-- If more than 1, page documents will be generated in parallel threads. Default is 1. -->
+		<!-- Top-level worker-thread count. Meaning depends on sharedWorkerPool (see below):
+			- sharedWorkerPool=false (default): number of whole records indexed concurrently (record-level parallelism).
+			  Total worker threads is roughly threads * pageThreads, so size both together against CPU and Solr capacity.
+			  Record files with the same PI (also from different hotfolders) are indexed one after the other.
+			- sharedWorkerPool=true: parallelism of the single shared work-stealing pool (pageThreads is ignored).
+			Default is 1 (serial). NOTE: this key formerly configured page-generation parallelism; that role has moved to
+			pageThreads. Update existing configs accordingly. -->
 		<threads>4</threads>
+
+		<!-- Intra-record parallelism: threads used WITHIN one record for page-document generation, EAD child-node indexing
+			and serializing page writes. Applies only when sharedWorkerPool=false; in the shared pool this work nests into
+			the shared pool and pageThreads is ignored. Default is 1 (intra-record work runs serially). -->
+		<pageThreads>4</pageThreads>
+
+		<!-- Number of successfully indexed records to accumulate before issuing a single Solr commit. 1 (default) commits
+			after every record. Larger values batch commits to reduce hard-commit contention under record-level
+			parallelism; a batch is also committed when the hotfolder queue drains and on shutdown, so a remainder is
+			never left uncommitted. -->
+		<commitBatchSize>1</commitBatchSize>
+
+		<!-- Maximum seconds a pending (uncommitted) batch may age before it is committed even if commitBatchSize has not
+			been reached. A wall-time bound for sustained, never-draining imports; NOT needed to flush a finished batch
+			(the queue-drain flush handles that). Default 0 (disabled): only commitBatchSize and queue drain govern, and
+			active indexing is never interrupted by a timer. Set > 0 only to bound visibility during long continuous imports. -->
+		<commitMaxSeconds>0</commitMaxSeconds>
+
+		<!-- If true, record-level and page-level parallelism share a single work-stealing pool (sized by threads) that
+			auto-balances the two instead of the separate threads x pageThreads pools: few large records let their page
+			tasks fill the pool, many small records let the records fill it. When enabled, threads is the shared pool's
+			parallelism and pageThreads is ignored; size threads with headroom above the core count as I/O headroom, since
+			pool tasks block on Solr/file/HTTP work. Default false (two-pool model: threads and pageThreads apply). -->
+		<sharedWorkerPool>false</sharedWorkerPool>
 
 		<!-- If true, the indexer will report the remaining number of record files in the hotfolder to the viewer REST API after every indexed record.
 			Should be turned off when indexing large numbers of records at once or if the storage is slow. Default is true. -->
@@ -906,7 +956,7 @@
 					<groupEntity type="CORPORATION">
 						<field name="MD_VALUE">mods:displayForm</field>
 						<field name="MD_LINK">@xlink:href</field>
-						<field name="MD_CORPORATION">mods:namePart[not(@type)]</field>
+						<field name="MD_CORPORATION" concatenate="true" separator=". ">mods:namePart[not(@type)]</field>
 						<field name="MD_LASTNAME">mods:namePart[@type="family"]</field>
 						<field name="MD_FIRSTNAME">mods:namePart[@type="given"]</field>
 						<field name="MD_LIFEPERIOD">mods:namePart[@type="date"]</field>
@@ -1862,7 +1912,7 @@
 					<groupEntity type="PERSON">
 						<field name="MD_VALUE">mods:displayForm</field>
 						<field name="MD_LINK">@xlink:href</field>
-						<field name="MD_CORPORATION">mods:namePart[not(@type)]</field>
+						<field name="MD_CORPORATION" concatenate="true" separator=". ">mods:namePart[not(@type)]</field>
 						<field name="MD_LASTNAME">mods:namePart[@type="family"]</field>
 						<field name="MD_FIRSTNAME">mods:namePart[@type="given"]</field>
 						<field name="MD_LIFEPERIOD">mods:namePart[@type="date"]</field>
@@ -1957,7 +2007,7 @@
 					<groupEntity type="CORPORATION">
 						<field name="MD_VALUE">mods:displayForm</field>
 						<field name="MD_LINK">@xlink:href</field>
-						<field name="MD_CORPORATION">mods:namePart[not(@type)]</field>
+						<field name="MD_CORPORATION" concatenate="true" separator=". ">mods:namePart[not(@type)]</field>
 						<field name="MD_LASTNAME">mods:namePart[@type="family"]</field>
 						<field name="MD_FIRSTNAME">mods:namePart[@type="given"]</field>
 						<field name="MD_LIFEPERIOD">mods:namePart[@type="date"]</field>
@@ -1974,7 +2024,7 @@
 					<groupEntity type="CORPORATION">
 						<field name="MD_VALUE">mods:displayForm</field>
 						<field name="MD_LINK">@xlink:href</field>
-						<field name="MD_CORPORATION">mods:namePart[not(@type)]</field>
+						<field name="MD_CORPORATION" concatenate="true" separator=". ">mods:namePart[not(@type)]</field>
 						<field name="MD_LASTNAME">mods:namePart[@type="family"]</field>
 						<field name="MD_FIRSTNAME">mods:namePart[@type="given"]</field>
 						<field name="MD_LIFEPERIOD">mods:namePart[@type="date"]</field>
@@ -1989,9 +2039,9 @@
 				<item>
 					<xpath>mets:xmlData/mods:mods/mods:name[@type="corporate"][mods:role/mods:roleTerm="aut"[@authority="marcrelator"][@type="code"]]</xpath>
 					<groupEntity type="CORPORATION">
-						<field name="MD_VALUE">mods:displayForm</field>
+						<field name="MD_VALUE" concatenate="true" separator=". ">mods:namePart[not(@type)]</field>
 						<field name="MD_LINK">@xlink:href</field>
-						<field name="MD_CORPORATION">mods:namePart[not(@type)]</field>
+						<field name="MD_CORPORATION" concatenate="true" separator=". ">mods:namePart[not(@type)]</field>
 						<field name="MD_LASTNAME">mods:namePart[@type="family"]</field>
 						<field name="MD_FIRSTNAME">mods:namePart[@type="given"]</field>
 						<field name="MD_LIFEPERIOD">mods:namePart[@type="date"]</field>
@@ -2008,7 +2058,7 @@
 					<groupEntity type="CORPORATION">
 						<field name="MD_VALUE">mods:displayForm</field>
 						<field name="MD_LINK">@xlink:href</field>
-						<field name="MD_CORPORATION">mods:namePart[not(@type)]</field>
+						<field name="MD_CORPORATION" concatenate="true" separator=". ">mods:namePart[not(@type)]</field>
 						<field name="MD_LASTNAME">mods:namePart[@type="family"]</field>
 						<field name="MD_FIRSTNAME">mods:namePart[@type="given"]</field>
 						<field name="MD_LIFEPERIOD">mods:namePart[@type="date"]</field>
@@ -2025,7 +2075,7 @@
 					<groupEntity type="CORPORATION">
 						<field name="MD_VALUE">mods:displayForm</field>
 						<field name="MD_LINK">@xlink:href</field>
-						<field name="MD_CORPORATION">mods:namePart[not(@type)]</field>
+						<field name="MD_CORPORATION" concatenate="true" separator=". ">mods:namePart[not(@type)]</field>
 						<field name="MD_LASTNAME">mods:namePart[@type="family"]</field>
 						<field name="MD_FIRSTNAME">mods:namePart[@type="given"]</field>
 						<field name="MD_LIFEPERIOD">mods:namePart[@type="date"]</field>
@@ -2042,7 +2092,7 @@
 					<groupEntity type="CORPORATION">
 						<field name="MD_VALUE">mods:displayForm</field>
 						<field name="MD_LINK">@xlink:href</field>
-						<field name="MD_CORPORATION">mods:namePart[not(@type)]</field>
+						<field name="MD_CORPORATION" concatenate="true" separator=". ">mods:namePart[not(@type)]</field>
 						<field name="MD_LASTNAME">mods:namePart[@type="family"]</field>
 						<field name="MD_FIRSTNAME">mods:namePart[@type="given"]</field>
 						<field name="MD_LIFEPERIOD">mods:namePart[@type="date"]</field>
@@ -2059,7 +2109,7 @@
 					<groupEntity type="CORPORATION">
 						<field name="MD_VALUE">mods:displayForm</field>
 						<field name="MD_LINK">@xlink:href</field>
-						<field name="MD_CORPORATION">mods:namePart[not(@type)]</field>
+						<field name="MD_CORPORATION" concatenate="true" separator=". ">mods:namePart[not(@type)]</field>
 						<field name="MD_LASTNAME">mods:namePart[@type="family"]</field>
 						<field name="MD_FIRSTNAME">mods:namePart[@type="given"]</field>
 						<field name="MD_LIFEPERIOD">mods:namePart[@type="date"]</field>
@@ -2076,7 +2126,7 @@
 					<groupEntity type="CORPORATION">
 						<field name="MD_VALUE">mods:displayForm</field>
 						<field name="MD_LINK">@xlink:href</field>
-						<field name="MD_CORPORATION">mods:namePart[not(@type)]</field>
+						<field name="MD_CORPORATION" concatenate="true" separator=". ">mods:namePart[not(@type)]</field>
 						<field name="MD_LASTNAME">mods:namePart[@type="family"]</field>
 						<field name="MD_FIRSTNAME">mods:namePart[@type="given"]</field>
 						<field name="MD_LIFEPERIOD">mods:namePart[@type="date"]</field>
@@ -2093,7 +2143,7 @@
 					<groupEntity type="CORPORATION">
 						<field name="MD_VALUE">mods:displayForm</field>
 						<field name="MD_LINK">@xlink:href</field>
-						<field name="MD_CORPORATION">mods:namePart[not(@type)]</field>
+						<field name="MD_CORPORATION" concatenate="true" separator=". ">mods:namePart[not(@type)]</field>
 						<field name="MD_LASTNAME">mods:namePart[@type="family"]</field>
 						<field name="MD_FIRSTNAME">mods:namePart[@type="given"]</field>
 						<field name="MD_LIFEPERIOD">mods:namePart[@type="date"]</field>
@@ -2110,7 +2160,7 @@
                     <groupEntity type="CORPORATION">
                         <field name="MD_VALUE">mods:displayForm</field>
                         <field name="MD_LINK">@xlink:href</field>
-                        <field name="MD_CORPORATION">mods:namePart[not(@type)]</field>
+                        <field name="MD_CORPORATION" concatenate="true" separator=". ">mods:namePart[not(@type)]</field>
                         <field name="MD_LASTNAME">mods:namePart[@type="family"]</field>
                         <field name="MD_FIRSTNAME">mods:namePart[@type="given"]</field>
                         <field name="MD_LIFEPERIOD">mods:namePart[@type="date"]</field>
@@ -3875,7 +3925,7 @@
                 <item>
                     <xpath>mets:xmlData/mods:mods/mods:originInfo[@eventType="publication"]/mods:dateIssued[@encoding="iso8601"]</xpath>
                     <addToDefault>false</addToDefault>
-                    <replace string="-"></replace>
+                    <replace regex="-|T.*"></replace>
                 </item>
             </list>
         </GROUPORDER_NEWSPAPER>

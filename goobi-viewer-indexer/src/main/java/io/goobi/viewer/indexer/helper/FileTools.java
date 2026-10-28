@@ -29,11 +29,13 @@ import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.AtomicMoveNotSupportedException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -392,6 +394,78 @@ public final class FileTools {
     }
 
     /**
+     * Transfers all files from the given source directory (including files in its subdirectories) into the given target directory with
+     * the same result as {@link #copyDirectory(Path, Path)}, but renames the files instead of copying them if source and target are on the
+     * same file store, which avoids copying their content. If they are on different file stores (or the file store cannot be determined),
+     * the files are copied via {@link #copyDirectory(Path, Path)}, exactly as before. Renaming uses
+     * {@link StandardCopyOption#ATOMIC_MOVE}, so a file is never moved by copying and deleting it; if a rename is not possible after all, that
+     * file is copied instead. Deleting the source directory afterwards remains the responsibility of the caller.
+     *
+     * @param sourceLocation Source directory
+     * @param targetLocation Target directory; created if it does not exist yet
+     * @return Number of entries in the source directory (same semantics as {@link #copyDirectory(Path, Path)})
+     * @throws IOException
+     * @should move files if on same file store
+     * @should replace existing files
+     */
+    public static int moveOrCopyDirectoryContents(Path sourceLocation, Path targetLocation) throws IOException {
+        if (sourceLocation == null) {
+            throw new IllegalArgumentException("sourceLocation may not be null");
+        }
+        if (targetLocation == null) {
+            throw new IllegalArgumentException("targetLocation may not be null");
+        }
+
+        int count = sourceLocation.toFile().listFiles().length;
+        if (count == 0) {
+            return count;
+        }
+        if (!Files.exists(targetLocation)) {
+            Files.createDirectory(targetLocation);
+        }
+        if (!isSameFileStore(sourceLocation, targetLocation)) {
+            logger.debug("'{}' and '{}' are on different file stores, copying files.", sourceLocation, targetLocation);
+            return copyDirectory(sourceLocation, targetLocation);
+        }
+
+        try (Stream<Path> walk = Files.walk(sourceLocation)) {
+            walk.filter(Files::isRegularFile).forEach(file -> {
+                Path newFile = Paths.get(targetLocation.toAbsolutePath().toString(), file.getFileName().toString());
+                try {
+                    // ATOMIC_MOVE: rename only (atomically replacing an existing target file); never falls back to copy + delete
+                    Files.move(file, newFile, StandardCopyOption.ATOMIC_MOVE);
+                } catch (AtomicMoveNotSupportedException e) {
+                    logger.debug("Cannot rename '{}', copying instead: {}", file, e.getMessage());
+                    try {
+                        Files.copy(file, newFile, StandardCopyOption.REPLACE_EXISTING);
+                    } catch (IOException e1) {
+                        logger.error(e1.getMessage());
+                    }
+                } catch (IOException e) {
+                    logger.error(e.getMessage());
+                }
+            });
+        }
+
+        return count;
+    }
+
+    /**
+     * 
+     * @param path1
+     * @param path2
+     * @return true if both paths exist and are on the same file store (mount); false otherwise or if this cannot be determined
+     */
+    static boolean isSameFileStore(Path path1, Path path2) {
+        try {
+            return Files.getFileStore(path1).equals(Files.getFileStore(path2));
+        } catch (IOException e) {
+            logger.debug("Could not determine file stores of '{}' and '{}': {}", path1, path2, e.getMessage());
+            return false;
+        }
+    }
+
+    /**
      * <p>
      * isFolderEmpty.
      * </p>
@@ -414,18 +488,49 @@ public final class FileTools {
      * @should only delete folders that match fileNameRoot
      */
     public static void deleteUnsupportedDataFolders(Path hotfolderPath, String fileNameRoot) throws IOException {
+        deleteUnsupportedDataFolders(hotfolderPath, fileNameRoot, null);
+    }
+
+    /**
+     * Deletes all remaining folders named <code>fileNameRoot_[a-z]+</code> in the hotfolder.
+     *
+     * @param hotfolderPath
+     * @param fileNameRoot
+     * @param candidateNames Names of hotfolder entries that may be data folders of this record (e.g. collected by a previous listing of the
+     *            hotfolder); if null, the entire hotfolder is listed to find them, which is expensive for hotfolders with many entries
+     * @throws IOException
+     * @should only delete folders that match fileNameRoot
+     * @should only check candidate names if given
+     */
+    public static void deleteUnsupportedDataFolders(Path hotfolderPath, String fileNameRoot, Collection<String> candidateNames) throws IOException {
         Pattern p = Pattern.compile(Pattern.quote(fileNameRoot) + "_[a-z]+");
+        if (candidateNames != null) {
+            for (String name : candidateNames) {
+                if (p.matcher(name).matches()) {
+                    deleteUnsupportedDataFolder(hotfolderPath.resolve(name));
+                }
+            }
+            return;
+        }
         try (DirectoryStream<Path> stream = Files.newDirectoryStream(
                 hotfolderPath,
                 entry -> p.matcher(entry.getFileName().toString()).matches())) {
             for (Path path : stream) {
-                if (Files.isDirectory(path)) {
-                    if (Utils.deleteDirectory(path)) {
-                        logger.info("Deleted unsupported folder '{}'.", path.getFileName());
-                    } else {
-                        logger.warn(StringConstants.LOG_COULD_NOT_BE_DELETED, path.toAbsolutePath());
-                    }
-                }
+                deleteUnsupportedDataFolder(path);
+            }
+        }
+    }
+
+    /**
+     *
+     * @param path
+     */
+    private static void deleteUnsupportedDataFolder(Path path) {
+        if (Files.isDirectory(path)) {
+            if (Utils.deleteDirectory(path)) {
+                logger.info("Deleted unsupported folder '{}'.", path.getFileName());
+            } else {
+                logger.warn(StringConstants.LOG_COULD_NOT_BE_DELETED, path.toAbsolutePath());
             }
         }
     }

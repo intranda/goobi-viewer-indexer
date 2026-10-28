@@ -33,6 +33,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.solr.client.solrj.SolrServerException;
+import org.apache.solr.common.SolrException;
 import org.apache.solr.common.SolrInputDocument;
 import org.jdom2.Document;
 import org.jdom2.Element;
@@ -86,11 +87,35 @@ public class CmsPageIndexer extends Indexer {
      */
     @Override
     public List<String> addToIndex(Path cmsFile, Map<String, Boolean> reindexSettings) throws IOException, FatalIndexerException {
+        currentRecordFile = cmsFile;
+        try {
+            return indexRecordFile(cmsFile, reindexSettings);
+        } finally {
+            // Release the record lock acquired in index(), which is held for the post-processing
+            unlockRecord();
+            currentRecordFile = null;
+        }
+    }
+
+    /**
+     * Indexes the given record file and moves its data into the data repository (see {@link #addToIndex(Path, Map)}).
+     *
+     * @param cmsFile Record file
+     * @param reindexSettings
+     * @return List of successfully indexed record identifiers
+     * @throws IOException
+     * @throws FatalIndexerException
+     */
+    private List<String> indexRecordFile(Path cmsFile, Map<String, Boolean> reindexSettings) throws IOException, FatalIndexerException {
         Map<String, Path> dataFolders = new HashMap<>();
 
         String sourceFileNameRoot = FilenameUtils.getBaseName(cmsFile.getFileName().toString());
 
         IndexingResult result = index(cmsFile, dataFolders, null, SolrIndexerDaemon.getInstance().getConfiguration().getPageCountStart());
+        if (IndexingResultStatus.SKIPPED.equals(result.getStatus())) {
+            deleteSupersededRecordFile(cmsFile, dataFolders, reindexSettings);
+            return Collections.emptyList();
+        }
         if (IndexingResultStatus.OK.equals(result.getStatus())) {
             String newCmsFileName = result.getRecordFileName();
             String pi = result.getPi();
@@ -113,7 +138,7 @@ public class CmsPageIndexer extends Indexer {
                     hotfolder.getDataRepositoryStrategy().getAllDataRepositories()) > 0) {
                 String msg = Utils.removeRecordImagesFromCache(baseFileName);
                 if (msg != null) {
-                    logger.info(msg);
+                    logger.debug(msg);
                 }
             }
 
@@ -122,7 +147,7 @@ public class CmsPageIndexer extends Indexer {
                     hotfolder.getDataRepositoryStrategy().getAllDataRepositories());
 
             // Delete unsupported data folders
-            FileTools.deleteUnsupportedDataFolders(hotfolder.getHotfolderPath(), sourceFileNameRoot);
+            hotfolder.deleteUnsupportedDataFolders(sourceFileNameRoot);
 
             try {
                 Files.delete(cmsFile);
@@ -222,6 +247,11 @@ public class CmsPageIndexer extends Indexer {
                 indexObj.setPi(pi);
                 indexObj.setTopstructPI(pi);
                 logger.debug("PI: {}", indexObj.getPi());
+
+            // Serialize with other record files carrying the same PI (other hotfolders, other file names)
+            if (!lockRecord(pi)) {
+                return skipSupersededRecord(ret, pi);
+            }
 
                 // Determine the data repository to use
                 selectDataRepository(indexObj, pi, cmsFile, dataFolders);
@@ -325,13 +355,15 @@ public class CmsPageIndexer extends Indexer {
 
             logger.debug("Writing document to index...");
             useWriteStrategy.writeDocs(SolrIndexerDaemon.getInstance().getConfiguration().isAggregateRecords());
-            logger.info("Successfully finished indexing '{}'.", cmsFile.getFileName());
-        } catch (IOException | IndexerException | FatalIndexerException | SolrServerException | JDOMException e) {
+            ret.setDocStructType(indexObj.getType()).setNumPages(recordNumPages).setNumSourcePages(recordNumSourcePages);
+            recordIndexed(ret);
+        } catch (IOException | IndexerException | FatalIndexerException | SolrServerException | JDOMException | SolrException e) {
             logger.error("Indexing of '{}' could not be finished due to an error.", cmsFile.getFileName());
             logger.error(e.getMessage(), e);
             ret.setError(e.getMessage() != null ? e.getMessage() : e.getClass().getName());
             SolrIndexerDaemon.getInstance().getSearchIndex().rollback();
         } finally {
+            unlockRecordAfterIndex();
             if (useWriteStrategy != null) {
                 useWriteStrategy.cleanup();
             }

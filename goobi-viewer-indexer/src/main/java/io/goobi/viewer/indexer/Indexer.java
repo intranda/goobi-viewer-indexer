@@ -57,6 +57,7 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.ThreadContext;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
@@ -103,8 +104,11 @@ import io.goobi.viewer.indexer.helper.TextHelper;
 import io.goobi.viewer.indexer.helper.Utils;
 import io.goobi.viewer.indexer.helper.WebAnnotationTools;
 import io.goobi.viewer.indexer.helper.XmlTools;
+import io.goobi.viewer.indexer.helper.logging.SecondaryAppender;
 import io.goobi.viewer.indexer.model.GroupedMetadata;
 import io.goobi.viewer.indexer.model.IndexObject;
+import io.goobi.viewer.indexer.model.IndexingResult;
+import io.goobi.viewer.indexer.model.IndexingResult.IndexingResultStatus;
 import io.goobi.viewer.indexer.model.LuceneField;
 import io.goobi.viewer.indexer.model.PhysicalElement;
 import io.goobi.viewer.indexer.model.SolrConstants;
@@ -143,6 +147,14 @@ public abstract class Indexer {
     static final String FOLDER_SUFFIX_MEDIA = "_media";
     static final String FOLDER_SUFFIX_TXTCROWD = "_txtcrowd";
 
+    /**
+     * Suffixes of all data folders that may accompany a record file in the hotfolder ({@code <fileNameRoot><suffix>}). Resolving these
+     * directly instead of globbing the hotfolder keeps per-record lookups independent of the number of files in the hotfolder.
+     */
+    public static final List<String> DATA_FOLDER_SUFFIXES = List.of("_tif", FOLDER_SUFFIX_MEDIA, "_txt", FOLDER_SUFFIX_TXTCROWD, "_wc", "_alto",
+            "_neralto", FOLDER_SUFFIX_ALTOCROWD, "_xml", "_pdf", "_mix", "_src", "_ugc", "_cms", "_mei", "_tei", "_annotations",
+            FOLDER_SUFFIX_DOWNLOADIMAGES);
+
     static final String LOG_COULD_NOT_BE_DELETED = "'{}' could not be deleted! Please delete it manually!";
     static final String LOG_FOUND_DATA_FOLDER = "Found data folder: {}";
 
@@ -174,12 +186,27 @@ public abstract class Indexer {
     protected boolean recordHasFulltext = false;
     /** Indicates whether full-text indexing is suppressed for this record (see {@link #isFulltextSuppressed()}). */
     protected boolean suppressFulltext = false;
+    /** Number of generated page documents of the current record (without shapes); null if no pages were generated. */
+    protected Integer recordNumPages = null;
+    /** Number of pages in the source document of the current record; null if no pages were generated. */
+    protected Integer recordNumSourcePages = null;
+    /** Successfully indexed records of the current source file, for the per-record summary log line. */
+    private final List<IndexingResult> indexedRecords = new ArrayList<>();
 
     protected final HttpConnector httpConnector;
 
     private final ObjectMapper mapper = new ObjectMapper();
 
     protected Set<String> iddocsToDelete = new HashSet<>();
+
+    /**
+     * Record file processed by {@link #addToIndex(Path, Map)}; null if <code>index()</code> is called directly. If set, the record lock acquired in
+     * <code>index()</code> is kept for the post-processing in <code>addToIndex()</code> (moving files into the data repository) and the record
+     * is checked for being superseded (see {@link #lockRecord(String)}).
+     */
+    protected Path currentRecordFile;
+    /** PI of the record whose lock is currently held by this indexer (see {@link #lockRecord(String)}). */
+    private String lockedPi;
 
     protected Indexer() {
         httpConnector = new HttpConnector(HTTP_CONNECTION_TIMEOUT);
@@ -199,6 +226,95 @@ public abstract class Indexer {
      * @return List of successfully indexed record identifiers
      */
     public abstract List<String> addToIndex(Path recordFile, Map<String, Boolean> reindexSettings) throws IOException, FatalIndexerException;
+
+    /**
+     * Registers the given result as a successfully indexed record (see {@link #getIndexedRecords()}).
+     * 
+     * @param result Result of the successfully indexed record
+     */
+    protected void recordIndexed(IndexingResult result) {
+        indexedRecords.add(result);
+    }
+
+    /**
+     * Acquires the record lock for the given PI (see {@link io.goobi.viewer.indexer.helper.RecordLocks}), waiting while another record file with
+     * the same PI is being indexed. Must be called as soon as the PI is known, before the data repository is selected and before the previous
+     * instance is looked up. Any lock this indexer holds for another PI is released first (multi-record files are processed one record at a
+     * time).
+     * <p>
+     * If called during {@link #addToIndex(Path, Map)}, also checks whether the record file is an older copy of a record that has been indexed
+     * from a higher-priority hotfolder meanwhile (see {@link SolrIndexerDaemon#isSupersededByHigherPriorityHotfolder(String, Hotfolder, Path)});
+     * the lock is then released again.
+     *
+     * @param pi Record identifier
+     * @return true if the record may be indexed; false if it is superseded
+     */
+    protected boolean lockRecord(String pi) {
+        unlockRecord();
+        SolrIndexerDaemon.getInstance().getRecordLocks().lock(pi);
+        lockedPi = pi;
+        if (currentRecordFile != null && SolrIndexerDaemon.getInstance().isSupersededByHigherPriorityHotfolder(pi, hotfolder, currentRecordFile)) {
+            unlockRecord();
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * Releases the record lock held by this indexer, if any.
+     */
+    protected void unlockRecord() {
+        if (lockedPi != null) {
+            SolrIndexerDaemon.getInstance().getRecordLocks().unlock(lockedPi);
+            lockedPi = null;
+        }
+    }
+
+    /**
+     * Releases the record lock at the end of <code>index()</code>, unless <code>index()</code> was called by {@link #addToIndex(Path, Map)},
+     * which releases it after its post-processing.
+     */
+    protected void unlockRecordAfterIndex() {
+        if (currentRecordFile == null) {
+            unlockRecord();
+        }
+    }
+
+    /**
+     * Result for a record that is not indexed because a newer version has been indexed from a higher-priority hotfolder.
+     *
+     * @param ret Result to update
+     * @param pi Record identifier
+     * @return ret
+     */
+    protected IndexingResult skipSupersededRecord(IndexingResult ret, String pi) {
+        logger.info("Skipping '{}' ('{}'): a newer version of this record has been indexed from a higher-priority hotfolder.",
+                currentRecordFile != null ? currentRecordFile.getFileName() : null, pi);
+        return ret.setPi(pi).setStatus(IndexingResultStatus.SKIPPED);
+    }
+
+    /**
+     * Deletes a superseded record file and its data folders from the hotfolder (see {@link #skipSupersededRecord(IndexingResult, String)}).
+     *
+     * @param recordFile Record file
+     * @param dataFolders Data folders of the record file
+     * @param reindexSettings
+     */
+    protected static void deleteSupersededRecordFile(Path recordFile, Map<String, Path> dataFolders, Map<String, Boolean> reindexSettings) {
+        try {
+            Files.deleteIfExists(recordFile);
+        } catch (IOException e) {
+            logger.error(LOG_COULD_NOT_BE_DELETED, recordFile.toAbsolutePath());
+        }
+        DataRepository.deleteDataFoldersFromHotfolder(dataFolders, reindexSettings);
+    }
+
+    /**
+     * @return Results of the records successfully indexed by the last {@link #addToIndex(Path, Map)} call
+     */
+    public List<IndexingResult> getIndexedRecords() {
+        return indexedRecords;
+    }
 
     /**
      * 
@@ -312,6 +428,8 @@ public abstract class Indexer {
         if (searchIndex == null) {
             throw new IllegalArgumentException("searchIndex may not be null.");
         }
+        // Make documents of this record that were added but not committed yet (batched commits) visible, so they are deleted as well
+        searchIndex.commitIfUncommitted(pi);
         // Check whether this is an anchor record
         try {
             SolrDocumentList hits = searchIndex.search(new StringBuilder(SolrConstants.PI).append(":").append(pi).toString(),
@@ -338,7 +456,7 @@ public abstract class Indexer {
                 // Clear cache for record
                 String msg = Utils.removeRecordImagesFromCache(pi);
                 if (msg != null) {
-                    logger.info(msg);
+                    logger.debug(msg);
                 }
 
                 return true;
@@ -1712,6 +1830,14 @@ public abstract class Indexer {
      */
     protected void selectDataRepository(IndexObject indexObj, String pi, Path recordFile, Map<String, Path> dataFolders)
             throws FatalIndexerException {
+        if (StringUtils.isNotBlank(pi)) {
+            // Enrich the displayed record log tag with the (now known) PI. Keep the file name, because files exported
+            // from Goobi workflow are named by the process title, which may differ entirely from the PI (catalog id), so
+            // the file name is what correlates a log line to the file on disk. Show "<file name> (<PI>)". The stable
+            // buffer key (MDC_KEY_ID) is left unchanged so the record's log stays in a single buffer.
+            String recordFileName = ThreadContext.get(SecondaryAppender.MDC_KEY_ID);
+            ThreadContext.put(SecondaryAppender.MDC_KEY, recordFileName != null ? recordFileName + " (" + pi + ")" : pi);
+        }
         DataRepository[] repositories =
                 hotfolder.getDataRepositoryStrategy()
                         .selectDataRepository(pi, recordFile, dataFolders, SolrIndexerDaemon.getInstance().getSearchIndex(),
@@ -1724,8 +1850,8 @@ public abstract class Indexer {
     }
 
     /**
-     * Prepares the given record for an update. Creation timestamp and representative thumbnail and anchor IDDOC are preserved. A new update timestamp
-     * is added, child docs are removed.
+     * Prepares the given record for an update. Creation timestamp and representative thumbnail are preserved. A new update timestamp is added,
+     * child docs are removed. The record is re-indexed with a new IDDOC (also anchors; their volumes link to them via the stable PI_PARENT).
      *
      * @param indexObj {@link io.goobi.viewer.indexer.model.IndexObject}
      * @throws java.io.IOException
@@ -1734,11 +1860,13 @@ public abstract class Indexer {
      * @should keep creation timestamp
      * @should set update timestamp correctly
      * @should keep representation thumbnail
-     * @should keep anchor IDDOC
      * @should delete anchor secondary docs
      */
     protected void prepareUpdate(IndexObject indexObj) throws IOException, SolrServerException, FatalIndexerException {
         String pi = indexObj.getPi().trim();
+        // Make a previous version of this record that was added but not committed yet (batched commits) visible, so it is found and
+        // deleted below; otherwise both versions would remain in the index
+        SolrIndexerDaemon.getInstance().getSearchIndex().commitIfUncommitted(pi);
         SolrDocumentList hits = SolrIndexerDaemon.getInstance().getSearchIndex().search(SolrConstants.PI + ":\"" + pi + '"', null);
         // Retrieve record from old index, if available
         boolean fromOldIndex = false;
@@ -1962,16 +2090,16 @@ public abstract class Indexer {
      * @return {@code Map<String, Path>}
      * @throws IOException
      * @should add data folder paths correctly
+     * @should prefer ner alto folder over alto folder
      */
     static Map<String, Path> checkDataFolders(Path hotfolderPath, String fileNameRoot) throws IOException {
         Map<String, Path> dataFolders = new HashMap<>();
 
-        try (DirectoryStream<Path> stream =
-                Files.newDirectoryStream(hotfolderPath, new StringBuilder(fileNameRoot).append("_*").toString())) {
-            for (Path path : stream) {
-                logger.info(LOG_FOUND_DATA_FOLDER, path.getFileName());
-                String fileNameSansRoot = path.getFileName().toString().substring(fileNameRoot.length());
-                switch (fileNameSansRoot) {
+        for (String suffix : DATA_FOLDER_SUFFIXES) {
+            Path path = hotfolderPath.resolve(fileNameRoot + suffix);
+            if (Files.exists(path)) {
+                logger.debug(LOG_FOUND_DATA_FOLDER, path.getFileName());
+                switch (suffix) {
                     case "_tif", FOLDER_SUFFIX_MEDIA: // GBVMETSAdapter uses _media folders
                         dataFolders.put(DataRepository.PARAM_MEDIA, path);
                         break;
@@ -2097,22 +2225,44 @@ public abstract class Indexer {
     }
 
     /**
-     * Send a request to the viewer rest api to start a task to prerender page PDF files if it is required. The task is required if either
-     * hasNewMediaFiles is true, of if a non-empty _media folder exists in the {@link #getDataRepository()}. In the first case, always overwrite any
-     * existing page PDFs; in the second case, only do so if {@link Configuration#isForcePrerenderPdfs()} is true
+     * Requests a task from the viewer rest api to prerender the page PDF files of the given record, if required (see
+     * {@link #isPrerenderPagePdfsRequired(String)}). Existing page PDFs are only overwritten if {@link Configuration#isForcePrerenderPdfs()}
+     * is true. The request is sent in the background, so the record does not wait for the viewer.
      * 
      * @param pi The identifier of the process to create pdfs for
      */
     void prerenderPagePdfsIfRequired(String pi) {
+        if (isPrerenderPagePdfsRequired(pi)) {
+            boolean force = SolrIndexerDaemon.getInstance().getConfiguration().isForcePrerenderPdfs();
+            logger.debug("Process with media files: Trigger prerenderPDFs task in viewer; overwrite existing files: {}", force);
+            Utils.prerenderPdfsInBackground(pi, force);
+        }
+    }
+
+    /**
+     * Page PDFs need to be prerendered if prerendering is enabled and the record has a non-empty media folder in its data repository.
+     * 
+     * @param pi The identifier of the record
+     * @return true if page PDFs should be prerendered for the given record; false otherwise
+     * @should return true if record media folder not empty
+     * @should return false if record media folder missing or empty
+     * @should return false if prerendering disabled
+     */
+    boolean isPrerenderPagePdfsRequired(String pi) {
+        if (StringUtils.isEmpty(pi) || dataRepository == null || !SolrIndexerDaemon.getInstance().getConfiguration().isPrerenderPdfsEnabled()) {
+            return false;
+        }
+        Path mediaFolder = dataRepository.getDir(DataRepository.PARAM_MEDIA);
+        if (mediaFolder == null) {
+            return false;
+        }
+        // The media folder of this record, not the media folder of the entire data repository
+        Path recordMediaFolder = mediaFolder.resolve(pi);
         try {
-            Path mediaFolder = this.dataRepository.getDir(DataRepository.PARAM_MEDIA);
-            if (mediaFolder != null && !FileTools.isFolderEmpty(mediaFolder)) {
-                boolean force = SolrIndexerDaemon.getInstance().getConfiguration().isForcePrerenderPdfs();
-                logger.debug("Reindexed process with media files: Trigger prerenderPDFs task in viewer; overwrite existing files: {}", pi);
-                Utils.prerenderPdfs(pi, force);
-            }
-        } catch (IOException | HTTPException e) {
-            logger.error(e.getMessage());
+            return Files.isDirectory(recordMediaFolder) && !FileTools.isFolderEmpty(recordMediaFolder);
+        } catch (IOException e) {
+            logger.error("Could not check media folder '{}': {}", recordMediaFolder, e.getMessage());
+            return false;
         }
     }
 

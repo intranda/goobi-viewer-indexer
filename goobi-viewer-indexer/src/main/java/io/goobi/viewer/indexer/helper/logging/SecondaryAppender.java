@@ -16,7 +16,8 @@
 package io.goobi.viewer.indexer.helper.logging;
 
 import java.io.Serializable;
-import java.io.StringWriter;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -32,18 +33,41 @@ import org.apache.logging.log4j.core.config.plugins.PluginFactory;
 import org.apache.logging.log4j.core.layout.PatternLayout;
 
 /**
- * Appender that logs the indexing of a single records. The contents can be then e-mailed to configured recipients in case of errors.
+ * Appender that captures the log of a single record's indexing so it can be e-mailed to configured recipients on error.
+ * <p>
+ * With record-level parallelism ({@code performance.threads} &gt; 1) several records are indexed on different
+ * threads at once, so a single shared buffer would interleave and clobber. Instead this appender keeps one buffer per
+ * record, keyed by the {@link org.apache.logging.log4j.ThreadContext} (MDC) value {@value #MDC_KEY}, which the indexer
+ * sets to the record's file name at the start of processing and propagates to the intra-record worker pools. Log events
+ * without that key (framework/startup logging) collect under an empty-string key and are ignored by callers.
  */
 @Plugin(name = "SecondaryAppender", category = "Core", elementType = "appender", printObject = false)
 public class SecondaryAppender extends AbstractAppender {
 
     private static final Logger logger = LogManager.getLogger(SecondaryAppender.class);
 
-    private static final StringWriter WRITER = new StringWriter(); // static to ensure it's the same object over different appender instances
+    /**
+     * MDC/{@link org.apache.logging.log4j.ThreadContext} key for the <b>displayed</b> record tag (referenced as
+     * {@code %X{rec}} in the log pattern). It starts as the record's file name and is upgraded to the PI once the record
+     * is parsed, so log lines carry the most meaningful identifier available at the time they were written.
+     */
+    public static final String MDC_KEY = "rec";
+
+    /**
+     * MDC key for the <b>stable</b> record identifier used to route events into this appender's per-record buffer. Unlike
+     * {@link #MDC_KEY} it never changes during a record's processing, so all of a record's lines (before and after the PI
+     * becomes known) land in the same buffer and the error e-mail contains the complete log.
+     */
+    public static final String MDC_KEY_ID = "recId";
+
+    private static final String NO_RECORD_KEY = "";
+
+    /** One buffer per record identifier. {@link StringBuffer} is used because a record's worker pool threads append concurrently. */
+    private static final Map<String, StringBuffer> BUFFERS = new ConcurrentHashMap<>();
 
     /**
      * Constructor.
-     * 
+     *
      * @param name
      * @param filter
      * @param layout
@@ -55,8 +79,18 @@ public class SecondaryAppender extends AbstractAppender {
 
     @Override
     public void append(LogEvent logEvent) {
-        logger.trace("APPENDING ({} / {})", System.identityHashCode(this), System.identityHashCode(WRITER));
-        WRITER.append(getLayout().toSerializable(logEvent).toString());
+        BUFFERS.computeIfAbsent(resolveKey(logEvent), k -> new StringBuffer()).append(getLayout().toSerializable(logEvent).toString());
+    }
+
+    /**
+     * Resolves the record key for the given event from its context data, falling back to {@link #NO_RECORD_KEY}.
+     *
+     * @param logEvent event to inspect
+     * @return record key, never null
+     */
+    private static String resolveKey(LogEvent logEvent) {
+        String key = logEvent.getContextData() != null ? logEvent.getContextData().getValue(MDC_KEY_ID) : null;
+        return key != null ? key : NO_RECORD_KEY;
     }
 
     @PluginFactory
@@ -70,16 +104,24 @@ public class SecondaryAppender extends AbstractAppender {
         return new SecondaryAppender(name, filter, layout != null ? layout : PatternLayout.createDefaultLayout(), true);
     }
 
-    public String getLog() {
-        logger.trace("getLog ({} / {})", System.identityHashCode(this), System.identityHashCode(WRITER));
-        return WRITER.toString();
+    /**
+     * Returns the accumulated log for the given record identifier.
+     *
+     * @param record record identifier (the MDC {@value #MDC_KEY} value); null is treated as the no-record key
+     * @return the captured log, or an empty string if nothing was captured for that record
+     */
+    public String getLog(String record) {
+        StringBuffer buffer = BUFFERS.get(record != null ? record : NO_RECORD_KEY);
+        return buffer != null ? buffer.toString() : "";
     }
 
     /**
+     * Discards the buffer for the given record identifier (both to start fresh and to release memory when done).
+     *
+     * @param record record identifier (the MDC {@value #MDC_KEY} value); null is treated as the no-record key
      * @should reset writer correctly
      */
-    public void reset() {
-        logger.debug("resetting writer");
-        WRITER.getBuffer().setLength(0);
+    public void reset(String record) {
+        BUFFERS.remove(record != null ? record : NO_RECORD_KEY);
     }
 }
