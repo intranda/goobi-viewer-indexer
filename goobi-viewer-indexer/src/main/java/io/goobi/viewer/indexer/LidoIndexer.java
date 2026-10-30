@@ -100,7 +100,11 @@ public class LidoIndexer extends Indexer {
         this.hotfolder = hotfolder;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     *
+     * @should report copied media files in indexing result
+     */
     @Override
     public List<String> addToIndex(Path lidoFile, Map<String, Boolean> reindexSettings) throws IOException, FatalIndexerException {
         currentRecordFile = lidoFile;
@@ -176,6 +180,7 @@ public class LidoIndexer extends Indexer {
                 int imageCounter = dataRepository.copyImagesFromMultiRecordMediaFolder(dataFolders.get(DataRepository.PARAM_MEDIA), identifier,
                         lidoFile.getFileName().toString(), hotfolder.getDataRepositoryStrategy(), result.getMediaFileNames(),
                         reindexSettings.get(DataRepository.PARAM_MEDIA) != null && reindexSettings.get(DataRepository.PARAM_MEDIA));
+                result.addCopiedDataFileCounts(Collections.singletonMap(DataRepository.PARAM_MEDIA, imageCounter));
                 if (imageCounter > 0) {
                     String msg = Utils.removeRecordImagesFromCache(identifier);
                     if (msg != null) {
@@ -204,6 +209,7 @@ public class LidoIndexer extends Indexer {
                                 }
                             }
                             logger.info("{} MIX file(s) copied.", counter);
+                            result.addCopiedDataFileCounts(Collections.singletonMap(DataRepository.PARAM_MIX, counter));
                         }
                     }
                 }

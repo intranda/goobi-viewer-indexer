@@ -134,8 +134,10 @@ public class CmsPageIndexer extends Indexer {
             }
 
             // Copy and delete media folder
-            if (dataRepository.checkCopyAndDeleteDataFolder(pi, dataFolders, reindexSettings, DataRepository.PARAM_MEDIA,
-                    hotfolder.getDataRepositoryStrategy().getAllDataRepositories()) > 0) {
+            int copiedMediaFiles = dataRepository.checkCopyAndDeleteDataFolder(pi, dataFolders, reindexSettings,
+                    DataRepository.PARAM_MEDIA, hotfolder.getDataRepositoryStrategy().getAllDataRepositories());
+            result.addCopiedDataFileCounts(Collections.singletonMap(DataRepository.PARAM_MEDIA, copiedMediaFiles));
+            if (copiedMediaFiles > 0) {
                 String msg = Utils.removeRecordImagesFromCache(baseFileName);
                 if (msg != null) {
                     logger.debug(msg);
@@ -143,8 +145,8 @@ public class CmsPageIndexer extends Indexer {
             }
 
             // Copy data folders
-            dataRepository.copyAndDeleteAllDataFolders(pi, dataFolders, reindexSettings,
-                    hotfolder.getDataRepositoryStrategy().getAllDataRepositories());
+            result.addCopiedDataFileCounts(dataRepository.copyAndDeleteAllDataFolders(pi, dataFolders, reindexSettings,
+                    hotfolder.getDataRepositoryStrategy().getAllDataRepositories()));
 
             // Delete unsupported data folders
             hotfolder.deleteUnsupportedDataFolders(sourceFileNameRoot);

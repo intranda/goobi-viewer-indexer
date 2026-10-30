@@ -16,7 +16,9 @@
 package io.goobi.viewer.indexer;
 
 import java.io.File;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -24,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
 import org.jdom2.Document;
@@ -470,5 +473,25 @@ class LidoIndexerTest extends AbstractSolrEnabledTest {
                 }
             }
         }
+    }
+
+    /**
+     * @see LidoIndexer#addToIndex(Path,Map)
+     * @verifies report copied media files in indexing result
+     */
+    @Test
+    void addToIndex_shouldReportCopiedMediaFilesInIndexingResult() throws Exception {
+        Path lidoFileInHotfolder = hotfolder.getHotfolderPath().resolve("1292624.xml");
+        Files.copy(Paths.get("src/test/resources/LIDO/1292624.xml"), lidoFileInHotfolder);
+        FileUtils.copyDirectory(new File("src/test/resources/LIDO/1292624_media"),
+                hotfolder.getHotfolderPath().resolve("1292624_media").toFile());
+
+        LidoIndexer indexer = new LidoIndexer(hotfolder);
+        indexer.addToIndex(lidoFileInHotfolder, new HashMap<>());
+
+        Assertions.assertEquals(1, indexer.getIndexedRecords().size());
+        IndexingResult result = indexer.getIndexedRecords().get(0);
+        Assertions.assertEquals("1292624", result.getPi());
+        Assertions.assertEquals(1, result.getCopiedDataFileCounts().get(DataRepository.PARAM_MEDIA));
     }
 }

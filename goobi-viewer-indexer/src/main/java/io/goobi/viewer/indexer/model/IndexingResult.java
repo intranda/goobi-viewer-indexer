@@ -16,6 +16,8 @@
 package io.goobi.viewer.indexer.model;
 
 import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Set;
 
 public class IndexingResult {
@@ -40,6 +42,8 @@ public class IndexingResult {
     private Integer numPages;
     /** Number of pages in the source document (e.g. METS physical structMap); null if the format has no pages. */
     private Integer numSourcePages;
+    /** Number of files copied into the data repository per data folder param, in copy order. */
+    private final Map<String, Integer> copiedDataFileCounts = new LinkedHashMap<>();
 
     /**
      * @return the status
@@ -197,6 +201,30 @@ public class IndexingResult {
      */
     public IndexingResult setNumSourcePages(Integer numSourcePages) {
         this.numSourcePages = numSourcePages;
+        return this;
+    }
+
+    /**
+     * @return Number of files copied into the data repository per data folder param (e.g. {@code mediaFolder}), in copy order
+     */
+    public Map<String, Integer> getCopiedDataFileCounts() {
+        return copiedDataFileCounts;
+    }
+
+    /**
+     * Adds the given numbers of copied files per data folder param. Zero counts are ignored.
+     *
+     * @param counts Number of copied files per data folder param
+     * @return this
+     */
+    public IndexingResult addCopiedDataFileCounts(Map<String, Integer> counts) {
+        if (counts != null) {
+            counts.forEach((param, count) -> {
+                if (count != null && count > 0) {
+                    copiedDataFileCounts.merge(param, count, Integer::sum);
+                }
+            });
+        }
         return this;
     }
 }

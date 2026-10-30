@@ -1190,6 +1190,8 @@ public class Hotfolder {
      * @should mention commit batch if batch size greater than one
      * @should omit page counts if not available
      * @should omit remaining files if not counted
+     * @should list copied files per data folder
+     * @should omit copied files if none copied
      */
     static String buildRecordSummary(IndexingResult result, Long remainingFiles, int commitBatchSize) {
         StringBuilder sb = new StringBuilder(commitBatchSize > 1 ? "Prepared '" : "Indexed '")
@@ -1205,6 +1207,11 @@ public class Hotfolder {
         if (!details.isEmpty()) {
             sb.append(" (").append(String.join(", ", details)).append(')');
         }
+        if (!result.getCopiedDataFileCounts().isEmpty()) {
+            List<String> copied = new ArrayList<>(result.getCopiedDataFileCounts().size());
+            result.getCopiedDataFileCounts().forEach((param, count) -> copied.add(getDataFolderLabel(param) + " " + count));
+            sb.append("; copied files: ").append(String.join(", ", copied));
+        }
         if (commitBatchSize > 1) {
             sb.append("; will be committed with the next commit batch");
         }
@@ -1213,6 +1220,14 @@ public class Hotfolder {
         }
 
         return sb.append('.').toString();
+    }
+
+    /**
+     * @param param Data folder param, e.g. {@link DataRepository#PARAM_MEDIA}
+     * @return Short label for log output, e.g. "media" for "mediaFolder"
+     */
+    private static String getDataFolderLabel(String param) {
+        return StringUtils.removeEnd(param, "Folder");
     }
 
     /**

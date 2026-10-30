@@ -21,6 +21,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -481,6 +482,34 @@ class DataRepositoryTest extends AbstractTest {
         Assertions.assertTrue(dataFolder.exists());
         useRepository.deleteDataFoldersForRecord(BASE_FILE_NAME);
         Assertions.assertFalse(dataFolder.exists());
+    }
+
+    /**
+     * @see DataRepository#copyAndDeleteAllDataFolders(String,Map,Map,List)
+     * @verifies return number of copied files per data folder
+     */
+    @Test
+    void copyAndDeleteAllDataFolders_shouldReturnNumberOfCopiedFilesPerDataFolder() throws Exception {
+        DataRepository useRepository = new DataRepository("target/viewer/data/", true);
+        Path sourceRoot = Files.createDirectories(Paths.get("target/indexer/hotfolder_counts"));
+        Path fulltextFolder = Files.createDirectory(sourceRoot.resolve(BASE_FILE_NAME + "_txt"));
+        Path meiFolder = Files.createDirectory(sourceRoot.resolve(BASE_FILE_NAME + "_mei"));
+        Path emptyAltoFolder = Files.createDirectory(sourceRoot.resolve(BASE_FILE_NAME + "_alto"));
+        Files.writeString(fulltextFolder.resolve("00000001.txt"), "text");
+        Files.writeString(fulltextFolder.resolve("00000002.txt"), "text");
+        Files.writeString(meiFolder.resolve("score.mei"), "<mei/>");
+
+        Map<String, Path> dataFolders = new HashMap<>();
+        dataFolders.put(DataRepository.PARAM_FULLTEXT, fulltextFolder);
+        dataFolders.put(DataRepository.PARAM_MEI, meiFolder);
+        dataFolders.put(DataRepository.PARAM_ALTO, emptyAltoFolder);
+        Map<String, Integer> counts =
+                useRepository.copyAndDeleteAllDataFolders(BASE_FILE_NAME, dataFolders, new HashMap<>(), List.of(useRepository));
+
+        Assertions.assertEquals(2, counts.size());
+        Assertions.assertEquals(2, counts.get(DataRepository.PARAM_FULLTEXT));
+        Assertions.assertEquals(1, counts.get(DataRepository.PARAM_MEI));
+        Assertions.assertFalse(counts.containsKey(DataRepository.PARAM_ALTO));
     }
 
     /**

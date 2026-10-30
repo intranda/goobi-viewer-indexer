@@ -25,6 +25,7 @@ import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -104,6 +105,14 @@ public class DataRepository {
     public static final String PARAM_ANNOTATIONS = "annotationFolder";
     /** Constant <code>PARAM_MEI="meiFolder"</code> */
     public static final String PARAM_MEI = "meiFolder";
+
+    /**
+     * Data folder params handled by {@link #copyAndDeleteAllDataFolders(String, Map, Map, List)}, in copy order. Crowdsourcing ALTO and
+     * full-text must be copied AFTER their regular counterparts. The image download trigger folder is only deleted, not copied.
+     */
+    private static final List<String> COPIED_DATA_FOLDER_PARAMS = List.of(PARAM_ALTO, PARAM_ALTOCROWD, PARAM_FULLTEXT, PARAM_FULLTEXTCROWD,
+            PARAM_CMDI, PARAM_TEIMETADATA, PARAM_TEIWC, PARAM_ABBYY, PARAM_MIX, PARAM_PAGEPDF, PARAM_SOURCE, PARAM_UGC, PARAM_CMS,
+            PARAM_ANNOTATIONS, PARAM_DOWNLOAD_IMAGES_TRIGGER, PARAM_MEI);
 
     /**
      * Data folder params that hold full-text content (ALTO, plain text, ABBYY, TEI word coordinates and their crowdsourcing variants). Used when
@@ -627,9 +636,11 @@ public class DataRepository {
      * @param dataFolders Map with source data folders
      * @param reindexSettings Boolean map for data folders which are mapped for re-indexing (i.e. no new data folder in the hotfolder)
      * @param dataRepositories a {@link java.util.List} object.
+     * @return Number of copied files per data folder param (only folders with copied files), in copy order
      * @throws java.io.IOException
+     * @should return number of copied files per data folder
      */
-    public void copyAndDeleteAllDataFolders(String pi, Map<String, Path> dataFolders, Map<String, Boolean> reindexSettings,
+    public Map<String, Integer> copyAndDeleteAllDataFolders(String pi, Map<String, Path> dataFolders, Map<String, Boolean> reindexSettings,
             List<DataRepository> dataRepositories) throws IOException {
         if (dataFolders == null) {
             throw new IllegalArgumentException("dataFolders may not be null");
@@ -638,38 +649,15 @@ public class DataRepository {
             throw new IllegalArgumentException("reindexSettings may not be null");
         }
 
-        // Copy and delete ALTO folder
-        checkCopyAndDeleteDataFolder(pi, dataFolders, reindexSettings, DataRepository.PARAM_ALTO, dataRepositories);
-        // Copy and delete crowdsourcing ALTO folder (AFTER regular ALTO!)
-        checkCopyAndDeleteDataFolder(pi, dataFolders, reindexSettings, DataRepository.PARAM_ALTOCROWD, dataRepositories);
-        // Copy and delete fulltext folder
-        checkCopyAndDeleteDataFolder(pi, dataFolders, reindexSettings, DataRepository.PARAM_FULLTEXT, dataRepositories);
-        // Copy and delete crowdsourcing fulltext folder (AFTER regular FULLTEXT!)
-        checkCopyAndDeleteDataFolder(pi, dataFolders, reindexSettings, DataRepository.PARAM_FULLTEXTCROWD, dataRepositories);
-        // Copy and delete CMDI metadata folder
-        checkCopyAndDeleteDataFolder(pi, dataFolders, reindexSettings, DataRepository.PARAM_CMDI, dataRepositories);
-        // Copy and delete TEI metadata folder
-        checkCopyAndDeleteDataFolder(pi, dataFolders, reindexSettings, DataRepository.PARAM_TEIMETADATA, dataRepositories);
-        // Copy and delete TEI word coordinates folder
-        checkCopyAndDeleteDataFolder(pi, dataFolders, reindexSettings, DataRepository.PARAM_TEIWC, dataRepositories);
-        // Copy and delete ABBYY word coordinates folder
-        checkCopyAndDeleteDataFolder(pi, dataFolders, reindexSettings, DataRepository.PARAM_ABBYY, dataRepositories);
-        // Copy and delete MIX files
-        checkCopyAndDeleteDataFolder(pi, dataFolders, reindexSettings, DataRepository.PARAM_MIX, dataRepositories);
-        // Copy and delete page PDF files
-        checkCopyAndDeleteDataFolder(pi, dataFolders, reindexSettings, DataRepository.PARAM_PAGEPDF, dataRepositories);
-        // Copy and delete original content files
-        checkCopyAndDeleteDataFolder(pi, dataFolders, reindexSettings, DataRepository.PARAM_SOURCE, dataRepositories);
-        // Copy and delete user generated content files
-        checkCopyAndDeleteDataFolder(pi, dataFolders, reindexSettings, DataRepository.PARAM_UGC, dataRepositories);
-        // Copy and delete CMS page text files
-        checkCopyAndDeleteDataFolder(pi, dataFolders, reindexSettings, DataRepository.PARAM_CMS, dataRepositories);
-        // Copy and delete WebAnnotation files
-        checkCopyAndDeleteDataFolder(pi, dataFolders, reindexSettings, DataRepository.PARAM_ANNOTATIONS, dataRepositories);
-        // Delete image download trigger folder
-        checkCopyAndDeleteDataFolder(pi, dataFolders, reindexSettings, DataRepository.PARAM_DOWNLOAD_IMAGES_TRIGGER, dataRepositories);
-        // Delete MEI folder
-        checkCopyAndDeleteDataFolder(pi, dataFolders, reindexSettings, DataRepository.PARAM_MEI, dataRepositories);
+        Map<String, Integer> ret = new LinkedHashMap<>();
+        for (String param : COPIED_DATA_FOLDER_PARAMS) {
+            int count = checkCopyAndDeleteDataFolder(pi, dataFolders, reindexSettings, param, dataRepositories);
+            if (count > 0) {
+                ret.put(param, count);
+            }
+        }
+
+        return ret;
     }
 
     /**

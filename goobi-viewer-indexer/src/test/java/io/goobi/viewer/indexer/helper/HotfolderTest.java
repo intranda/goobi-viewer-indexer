@@ -26,6 +26,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.attribute.FileTime;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -613,6 +614,33 @@ class HotfolderTest extends AbstractSolrEnabledTest {
     void buildRecordSummary_shouldOmitRemainingFilesIfNotCounted() {
         IndexingResult result = new IndexingResult().setPi("PPN123").setDocStructType("Monograph").setNumPages(1).setNumSourcePages(1);
         assertEquals("Indexed 'PPN123' (Monograph, 1 of 1 pages).", Hotfolder.buildRecordSummary(result, null, 1));
+    }
+
+    /**
+     * @see Hotfolder#buildRecordSummary(IndexingResult,Long,int)
+     * @verifies list copied files per data folder
+     */
+    @Test
+    void buildRecordSummary_shouldListCopiedFilesPerDataFolder() {
+        Map<String, Integer> counts = new LinkedHashMap<>();
+        counts.put(DataRepository.PARAM_MEDIA, 1);
+        counts.put(DataRepository.PARAM_FULLTEXT, 2);
+        counts.put(DataRepository.PARAM_MEI, 1);
+        IndexingResult result = new IndexingResult().setPi("PPN123").setDocStructType("Monograph").setNumPages(1).setNumSourcePages(1)
+                .addCopiedDataFileCounts(counts);
+        assertEquals("Indexed 'PPN123' (Monograph, 1 of 1 pages); copied files: media 1, fulltext 2, mei 1;"
+                + " 0 record files remaining in hotfolder.", Hotfolder.buildRecordSummary(result, 0L, 1));
+    }
+
+    /**
+     * @see Hotfolder#buildRecordSummary(IndexingResult,Long,int)
+     * @verifies omit copied files if none copied
+     */
+    @Test
+    void buildRecordSummary_shouldOmitCopiedFilesIfNoneCopied() {
+        IndexingResult result = new IndexingResult().setPi("PPN123").setDocStructType("Monograph")
+                .addCopiedDataFileCounts(Map.of(DataRepository.PARAM_MEDIA, 0));
+        assertEquals("Indexed 'PPN123' (Monograph).", Hotfolder.buildRecordSummary(result, null, 1));
     }
 
     /**

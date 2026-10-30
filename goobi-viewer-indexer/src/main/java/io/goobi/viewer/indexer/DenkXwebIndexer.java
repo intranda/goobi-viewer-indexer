@@ -174,6 +174,7 @@ public class DenkXwebIndexer extends Indexer {
                 int imageCounter = dataRepository.copyImagesFromMultiRecordMediaFolder(dataFolders.get(DataRepository.PARAM_MEDIA), identifier,
                         denkxwebFile.getFileName().toString(), hotfolder.getDataRepositoryStrategy(), result.getMediaFileNames(),
                         reindexSettings.get(DataRepository.PARAM_MEDIA) != null && reindexSettings.get(DataRepository.PARAM_MEDIA));
+                result.addCopiedDataFileCounts(Collections.singletonMap(DataRepository.PARAM_MEDIA, imageCounter));
                 if (imageCounter > 0) {
                     String msg = Utils.removeRecordImagesFromCache(identifier);
                     if (msg != null) {
