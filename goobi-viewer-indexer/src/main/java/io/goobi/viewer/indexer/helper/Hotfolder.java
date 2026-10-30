@@ -1227,7 +1227,7 @@ public class Hotfolder {
      * @return Short label for log output, e.g. "media" for "mediaFolder"
      */
     private static String getDataFolderLabel(String param) {
-        return StringUtils.removeEnd(param, "Folder");
+        return Strings.CS.removeEnd(param, "Folder");
     }
 
     /**
