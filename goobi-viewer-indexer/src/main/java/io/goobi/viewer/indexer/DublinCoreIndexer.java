@@ -36,6 +36,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.solr.client.solrj.SolrServerException;
+import org.apache.solr.common.SolrException;
 import org.apache.solr.common.SolrInputDocument;
 import org.jdom2.Element;
 import org.jdom2.JDOMException;
@@ -46,6 +47,7 @@ import io.goobi.viewer.indexer.exceptions.IndexerException;
 import io.goobi.viewer.indexer.helper.DateTools;
 import io.goobi.viewer.indexer.helper.FileTools;
 import io.goobi.viewer.indexer.helper.FulltextAugmentor;
+import io.goobi.viewer.indexer.helper.ImageDimensionsHelper;
 import io.goobi.viewer.indexer.helper.Hotfolder;
 import io.goobi.viewer.indexer.helper.ImageSizeReader;
 import io.goobi.viewer.indexer.helper.JDomXP.FileFormat;
@@ -91,6 +93,26 @@ public class DublinCoreIndexer extends Indexer {
     /** {@inheritDoc} */
     @Override
     public List<String> addToIndex(Path dcFile, Map<String, Boolean> reindexSettings) throws IOException, FatalIndexerException {
+        currentRecordFile = dcFile;
+        try {
+            return indexRecordFile(dcFile, reindexSettings);
+        } finally {
+            // Release the record lock acquired in index(), which is held for the post-processing
+            unlockRecord();
+            currentRecordFile = null;
+        }
+    }
+
+    /**
+     * Indexes the given record file and moves its data into the data repository (see {@link #addToIndex(Path, Map)}).
+     *
+     * @param dcFile Record file
+     * @param reindexSettings
+     * @return List of successfully indexed record identifiers
+     * @throws IOException
+     * @throws FatalIndexerException
+     */
+    private List<String> indexRecordFile(Path dcFile, Map<String, Boolean> reindexSettings) throws IOException, FatalIndexerException {
         String fileNameRoot = FilenameUtils.getBaseName(dcFile.getFileName().toString());
 
         // Check data folders in the hotfolder
@@ -100,6 +122,10 @@ public class DublinCoreIndexer extends Indexer {
         checkReindexSettings(dataFolders, reindexSettings);
 
         IndexingResult result = index(dcFile, dataFolders, null, SolrIndexerDaemon.getInstance().getConfiguration().getPageCountStart());
+        if (IndexingResultStatus.SKIPPED.equals(result.getStatus())) {
+            deleteSupersededRecordFile(dcFile, dataFolders, reindexSettings);
+            return Collections.emptyList();
+        }
         if (IndexingResultStatus.OK.equals(result.getStatus())) {
             String newDcFileName = result.getRecordFileName();
             String pi = result.getPi();
@@ -118,20 +144,28 @@ public class DublinCoreIndexer extends Indexer {
             }
 
             // Copy and delete media folder
-            if (dataRepository.checkCopyAndDeleteDataFolder(pi, dataFolders, reindexSettings, DataRepository.PARAM_MEDIA,
-                    hotfolder.getDataRepositoryStrategy().getAllDataRepositories()) > 0) {
+            int copiedMediaFiles = dataRepository.checkCopyAndDeleteDataFolder(pi, dataFolders, reindexSettings,
+                    DataRepository.PARAM_MEDIA, hotfolder.getDataRepositoryStrategy().getAllDataRepositories());
+            result.addCopiedDataFileCounts(Collections.singletonMap(DataRepository.PARAM_MEDIA, copiedMediaFiles));
+            if (copiedMediaFiles > 0) {
                 String msg = Utils.removeRecordImagesFromCache(baseFileName);
                 if (msg != null) {
-                    logger.info(msg);
+                    logger.debug(msg);
                 }
             }
 
+            // If full-text indexing was suppressed, remove previously indexed full-text from storage and prevent any incoming
+            // hotfolder full-text from being promoted into the repository
+            if (result.isFulltextSuppressed()) {
+                deleteFulltextFoldersForRecord(dataRepository, dataFolders, reindexSettings, baseFileName);
+            }
+
             // Copy data folders
-            dataRepository.copyAndDeleteAllDataFolders(pi, dataFolders, reindexSettings,
-                    hotfolder.getDataRepositoryStrategy().getAllDataRepositories());
+            result.addCopiedDataFileCounts(dataRepository.copyAndDeleteAllDataFolders(pi, dataFolders, reindexSettings,
+                    hotfolder.getDataRepositoryStrategy().getAllDataRepositories()));
 
             // Delete unsupported data folders
-            FileTools.deleteUnsupportedDataFolders(hotfolder.getHotfolderPath(), fileNameRoot);
+            hotfolder.deleteUnsupportedDataFolders(fileNameRoot);
 
             try {
                 Files.delete(dcFile);
@@ -148,10 +182,10 @@ public class DublinCoreIndexer extends Indexer {
                 }
             }
             prerenderPagePdfsIfRequired(pi);
-            logger.info("Successfully finished indexing '{}'.", dcFile.getFileName());
+            recordIndexed(result);
 
-            // Remove this file from lower priority hotfolders to avoid overriding changes with older version
-            SolrIndexerDaemon.getInstance().removeRecordFileFromLowerPriorityHotfolders(pi, hotfolder);
+            // Older copies of this record in lower-priority hotfolders must not overwrite this version
+            SolrIndexerDaemon.getInstance().registerIndexedRecord(pi, hotfolder);
 
             return result.isSubmitPiToViewer() ? Collections.singletonList(pi) : Collections.emptyList();
         }
@@ -215,6 +249,19 @@ public class DublinCoreIndexer extends Indexer {
 
             // Set PI
             String pi = validateAndApplyPI(findPI("/record/"), indexObj, false);
+
+            // Serialize with other record files carrying the same PI (other hotfolders, other file names)
+            if (!lockRecord(pi)) {
+                return skipSupersededRecord(ret, pi);
+            }
+
+            // Evaluate the full-text suppression trigger for this record
+            this.suppressFulltext = isFulltextSuppressed();
+            ret.setFulltextSuppressed(this.suppressFulltext);
+            if (this.suppressFulltext) {
+                logger.info("Full-text suppression triggered for record '{}'; full-text will not be indexed and existing full-text will be removed.",
+                        pi);
+            }
 
             // Determine the data repository to use
             selectDataRepository(indexObj, pi, dcFile, dataFolders);
@@ -326,13 +373,15 @@ public class DublinCoreIndexer extends Indexer {
 
             logger.debug("Writing document to index...");
             useWriteStrategy.writeDocs(SolrIndexerDaemon.getInstance().getConfiguration().isAggregateRecords());
-            logger.info("Finished writing data for '{}' to Solr.", pi);
-        } catch (IOException | IndexerException | FatalIndexerException | JDOMException | SolrServerException e) {
+            ret.setDocStructType(indexObj.getType()).setNumPages(recordNumPages).setNumSourcePages(recordNumSourcePages);
+            logger.debug("Finished writing data for '{}' to Solr.", pi);
+        } catch (IOException | IndexerException | FatalIndexerException | JDOMException | SolrServerException | SolrException e) {
             logger.error("Indexing of '{}' could not be finished due to an error.", dcFile.getFileName());
             logger.error(e.getMessage(), e);
             ret.setError(e.getMessage() != null ? e.getMessage() : e.getClass().getName());
             SolrIndexerDaemon.getInstance().getSearchIndex().rollback();
         } finally {
+            unlockRecordAfterIndex();
             if (useWriteStrategy != null) {
                 useWriteStrategy.cleanup();
             }
@@ -521,7 +570,8 @@ public class DublinCoreIndexer extends Indexer {
         // Get all physical elements
         String xpath = "/record/dc:relation";
         List<Element> eleImageList = xp.evaluateToElements(xpath, null);
-        logger.info("Generating {} page documents (count starts at {})...", eleImageList.size(), pageCountStart);
+        recordNumSourcePages = eleImageList.size();
+        logger.debug("Generating {} page documents (count starts at {})...", eleImageList.size(), pageCountStart);
 
         // Generate pages sequentially
         int order = pageCountStart;
@@ -532,6 +582,7 @@ public class DublinCoreIndexer extends Indexer {
                 order++;
             }
         }
+        recordNumPages = writeStrategy.getPageDocsSize();
         logger.info("Generated {} page documents.", writeStrategy.getPageDocsSize());
     }
 
@@ -586,7 +637,11 @@ public class DublinCoreIndexer extends Indexer {
             ret.getDoc().addField(FIELD_IMAGEAVAILABLE, false);
         }
 
-        if (new FulltextAugmentor(dataRepository).addFullTextToPageDoc(ret.getDoc(), dataFolders, pi, order, null)) {
+        // FULLTEXTAVAILABLE defaults to false and is flipped to true by the augmentor only if full-text is actually added
+        ret.getDoc().setField(SolrConstants.FULLTEXTAVAILABLE, false);
+        // Image dimensions are independent of full-text and are always extracted
+        ImageDimensionsHelper.addImageDimensions(ret.getDoc(), dataFolders);
+        if (!suppressFulltext && new FulltextAugmentor(dataRepository).addFullTextToPageDoc(ret.getDoc(), dataFolders, pi, order, null)) {
             this.recordHasFulltext = true;
         }
 

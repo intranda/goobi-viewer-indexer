@@ -27,16 +27,16 @@ class SubfieldConfigTest {
     @Test
     void ingestXpaths_shouldCopyXpathExpressionsCorrectly() {
         SubfieldConfig config1 = new SubfieldConfig("MD_FOO", true, false);
-        config1.getXpaths().add("foo:foo");
+        config1.getXpaths().add(new XPathConfig("foo:foo", null, null, "MD_FOO"));
 
         SubfieldConfig config2 = new SubfieldConfig("MD_FOO", true, false);
-        config2.getXpaths().add("foo:bar");
+        config2.getXpaths().add(new XPathConfig("foo:bar", null, null, "MD_FOO"));
 
         Assertions.assertEquals(1, config1.getXpaths().size());
         config1.ingestXpaths(config2);
         Assertions.assertEquals(2, config1.getXpaths().size());
-        Assertions.assertEquals("foo:foo", config1.getXpaths().get(0));
-        Assertions.assertEquals("foo:bar", config1.getXpaths().get(1));
+        Assertions.assertEquals("foo:foo", config1.getXpaths().get(0).getxPath());
+        Assertions.assertEquals("foo:bar", config1.getXpaths().get(1).getxPath());
     }
 
     /**

@@ -86,10 +86,10 @@ class EadIndexerTest extends AbstractSolrEnabledTest {
     @Test
     void indexAllChildren_shouldAssignContiguousSiblingOrderToAllChildrenInParallel(@TempDir Path tempDir) throws Exception {
         Configuration config = SolrIndexerDaemon.getInstance().getConfiguration();
-        int originalThreads = config.getThreads();
+        int originalThreads = config.getPageThreads();
         // Force the parallel branch in EadIndexer.indexAllChildren (default test config uses a single thread)
         int threads = 4;
-        config.overrideValue("performance.threads", threads);
+        config.overrideValue("performance.pageThreads", threads);
         try {
             Path eadFile = Paths.get("src/test/resources/EAD/Akte_Koch.xml");
             Assertions.assertTrue(Files.isRegularFile(eadFile));
@@ -131,7 +131,7 @@ class EadIndexerTest extends AbstractSolrEnabledTest {
                         "children of parent " + entry.getKey() + " must have contiguous sibling order 0.." + (actual.size() - 1));
             }
         } finally {
-            config.overrideValue("performance.threads", originalThreads);
+            config.overrideValue("performance.pageThreads", originalThreads);
         }
     }
 }

@@ -442,6 +442,42 @@ class IndexObjectTest extends AbstractTest {
     }
 
     /**
+     * @see IndexObject#addToLucene(String,String)
+     * @verifies skip group id fields with invalid values
+     */
+    @Test
+    void addToLucene_shouldSkipGroupIdFieldsWithInvalidValues() {
+        String field = SolrConstants.PREFIX_GROUPID + "SERIES";
+        IndexObject io = new IndexObject("1");
+        Assertions.assertFalse(io.addToLucene(field, "https://feeds.megaphone.fm/GLT6357967095"));
+        assertTrue(io.getGroupIds().isEmpty());
+        Assertions.assertNull(io.getLuceneFieldWithName(field));
+
+        // Valid group id is still added
+        assertTrue(io.addToLucene(field, "GLT6357967095"));
+        assertEquals("GLT6357967095", io.getGroupIds().get(field));
+        assertNotNull(io.getLuceneFieldWithName(field));
+    }
+
+    /**
+     * @see IndexObject#addToLucene(LuceneField,boolean)
+     * @verifies skip group id fields with invalid values
+     */
+    @Test
+    void addToLucene_shouldSkipGroupIdFieldsWithInvalidValuesLuceneField() {
+        String field = SolrConstants.PREFIX_GROUPID + "SERIES";
+        IndexObject io = new IndexObject("1");
+        Assertions.assertFalse(io.addToLucene(new LuceneField(field, "https://feeds.megaphone.fm/GLT6357967095"), false));
+        assertTrue(io.getGroupIds().isEmpty());
+        Assertions.assertNull(io.getLuceneFieldWithName(field));
+
+        // Valid group id is still added
+        assertTrue(io.addToLucene(new LuceneField(field, "GLT6357967095"), false));
+        assertEquals("GLT6357967095", io.getGroupIds().get(field));
+        assertNotNull(io.getLuceneFieldWithName(field));
+    }
+
+    /**
      * @see IndexObject#addToGroupIds(String,String)
      * @verifies collect group id fields correctly
      */

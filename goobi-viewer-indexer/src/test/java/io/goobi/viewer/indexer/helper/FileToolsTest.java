@@ -23,6 +23,8 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Assertions;
@@ -125,6 +127,65 @@ class FileToolsTest extends AbstractTest {
         Assertions.assertFalse(Files.exists(yes2));
         Assertions.assertTrue(Files.exists(no1));
         Assertions.assertTrue(Files.exists(no2));
+    }
+
+    /**
+     * @see FileTools#deleteUnsupportedDataFolders(Path,String,java.util.Collection)
+     * @verifies only check candidate names if given
+     */
+    @Test
+    void deleteUnsupportedDataFolders_shouldOnlyCheckCandidateNamesIfGiven(@TempDir File tempDir) throws Exception {
+        Path candidate = Files.createDirectory(Paths.get(tempDir.getAbsolutePath(), "PPN123_foo"));
+        Path notACandidate = Files.createDirectory(Paths.get(tempDir.getAbsolutePath(), "PPN123_bar"));
+        Path otherRecord = Files.createDirectory(Paths.get(tempDir.getAbsolutePath(), "PPN456_foo"));
+
+        FileTools.deleteUnsupportedDataFolders(tempDir.toPath(), "PPN123", List.of("PPN123_foo", "PPN456_foo", "PPN123_missing"));
+
+        Assertions.assertFalse(Files.exists(candidate));
+        Assertions.assertTrue(Files.exists(notACandidate));
+        Assertions.assertTrue(Files.exists(otherRecord));
+    }
+
+    /**
+     * @see FileTools#moveOrCopyDirectoryContents(Path,Path)
+     * @verifies move files if on same file store
+     */
+    @Test
+    void moveOrCopyDirectoryContents_shouldMoveFilesIfOnSameFileStore(@TempDir File tempDir) throws Exception {
+        Path src = Files.createDirectory(Paths.get(tempDir.getAbsolutePath(), "PPN123_media"));
+        Path srcFile = Files.writeString(src.resolve("00000001.tif"), "image");
+        Path subDir = Files.createDirectory(src.resolve("sub"));
+        Files.writeString(subDir.resolve("00000002.tif"), "image2");
+        Object srcFileKey = Files.readAttributes(srcFile, BasicFileAttributes.class).fileKey();
+        Path target = Paths.get(tempDir.getAbsolutePath(), "media", "PPN123");
+        Files.createDirectory(target.getParent());
+
+        Assertions.assertEquals(2, FileTools.moveOrCopyDirectoryContents(src, target));
+
+        Path movedFile = target.resolve("00000001.tif");
+        Assertions.assertEquals("image", Files.readString(movedFile));
+        Assertions.assertEquals("image2", Files.readString(target.resolve("00000002.tif")));
+        // Renamed rather than copied: same inode, and the source file is gone
+        Assertions.assertEquals(srcFileKey, Files.readAttributes(movedFile, BasicFileAttributes.class).fileKey());
+        Assertions.assertFalse(Files.exists(srcFile));
+    }
+
+    /**
+     * @see FileTools#moveOrCopyDirectoryContents(Path,Path)
+     * @verifies replace existing files
+     */
+    @Test
+    void moveOrCopyDirectoryContents_shouldReplaceExistingFiles(@TempDir File tempDir) throws Exception {
+        Path src = Files.createDirectory(Paths.get(tempDir.getAbsolutePath(), "PPN123_media"));
+        Files.writeString(src.resolve("00000001.tif"), "new");
+        Path target = Files.createDirectory(Paths.get(tempDir.getAbsolutePath(), "PPN123"));
+        Files.writeString(target.resolve("00000001.tif"), "old");
+        Files.writeString(target.resolve("00000002.tif"), "keep");
+
+        Assertions.assertEquals(1, FileTools.moveOrCopyDirectoryContents(src, target));
+
+        Assertions.assertEquals("new", Files.readString(target.resolve("00000001.tif")));
+        Assertions.assertEquals("keep", Files.readString(target.resolve("00000002.tif")));
     }
 
 }

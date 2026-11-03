@@ -16,7 +16,6 @@
 package io.goobi.viewer.indexer.helper;
 
 import java.io.IOException;
-import java.io.StringWriter;
 import java.io.UncheckedIOException;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
@@ -39,6 +38,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
 import org.apache.commons.io.FileUtils;
@@ -46,7 +49,6 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpStatus;
 import org.apache.http.NameValuePair;
-import org.apache.http.client.CookieStore;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -62,6 +64,7 @@ import org.apache.http.entity.ContentType;
 import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
+import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.impl.cookie.BasicClientCookie;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
@@ -96,6 +99,43 @@ public final class Utils {
 
     private static final int HTTP_TIMEOUT = 30000;
 
+    /** Maximum number of viewer task requests (e.g. PDF pre-rendering) waiting to be sent in the background. */
+    static final int VIEWER_TASK_QUEUE_CAPACITY = 10000;
+
+    /** Single background thread that sends task requests to the Goobi viewer (created on first use). */
+    private static ThreadPoolExecutor viewerTaskSender;
+
+    /**
+     * Lazily created HTTP client shared by all requests. It pools and keeps alive connections, so that the per-record calls to the Goobi
+     * viewer (cache invalidation, version/identifier submission) do not each open a new TCP connection. With many small records indexed
+     * in parallel, one new connection per request quickly piles up thousands of client sockets in TIME_WAIT, which slows down or
+     * exhausts the ephemeral ports. Cookies are not shared between requests (each request gets its own context and cookie store).
+     */
+    private static final class SharedHttpClientHolder {
+
+        private static final CloseableHttpClient CLIENT = HttpClients.custom()
+                .setDefaultRequestConfig(RequestConfig.custom()
+                        .setSocketTimeout(HTTP_TIMEOUT)
+                        .setConnectTimeout(HTTP_TIMEOUT)
+                        .setConnectionRequestTimeout(HTTP_TIMEOUT)
+                        .build())
+                .setConnectionManager(createConnectionManager())
+                .evictIdleConnections(30, TimeUnit.SECONDS)
+                .build();
+
+        private SharedHttpClientHolder() {
+        }
+
+        private static PoolingHttpClientConnectionManager createConnectionManager() {
+            PoolingHttpClientConnectionManager cm = new PoolingHttpClientConnectionManager();
+            cm.setMaxTotal(64);
+            cm.setDefaultMaxPerRoute(32);
+            // Re-validate connections that were idle for a while, in case the server has closed them in the meantime
+            cm.setValidateAfterInactivity(2000);
+            return cm;
+        }
+    }
+
     private static final String HTTP_HEADER_CONTENT_TYPE = "Content-Type";
 
     private static final String HTTP_METHOD_DELETE = "DELETE";
@@ -104,7 +144,18 @@ public final class Utils {
     private static final String MAIL_PROPERTY_SMTP_HOST = "mail.smtp.host";
     private static final String MAIL_PROPERTY_SMTP_PORT = "mail.smtp.port";
 
-    private static final char[] PI_ILLEGAL_CHARS = { '!', '?', '/', '\\', ':', ';', '(', ')', '@', '"', '\'' };
+    // Blocklist of characters not permitted in persistent identifiers (kept in sync with viewer-core PIValidator).
+    // Colons are excluded because they are structurally significant in Solr query syntax
+    // (FIELD:value) and must not appear unescaped in PI values used in queries.
+    // Additional characters block java.net.URI path construction failures (space, pipe,
+    // angle/square brackets, newlines, null byte) and double-encoding bypasses (percent).
+    private static final char[] PI_ILLEGAL_CHARS = {
+        '!', '?', '/', '\\', ':', ';', '(', ')', '@', '"', '\'',  // original set
+        '|', '<', '>', '[', ']',                                    // path-safety: invalid in java.net.URI
+        ' ', '%', '\r', '\n', '\0',                                 // encoding bypass / control chars
+        '*',                                                        // Solr wildcard abuse prevention
+        '+'                                                         // Solr syntax: unary plus is a prefix operator
+    };
 
     // Simple image URI pattern (adjust extensions as needed)
     private static final Pattern PATTERN_IMAGE_URI = Pattern.compile("^https?://.+\\.(jpg|jpeg|png|gif|bmp|tiff?)$", Pattern.CASE_INSENSITIVE);
@@ -185,14 +236,77 @@ public final class Utils {
     }
 
     /**
-     * <p>
-     * prerenderPdfs.
-     * </p>
+     * Requests pre-rendering of the page PDFs of the given record from the Goobi viewer in the background, so that the calling record
+     * worker does not wait for the viewer. The requests are sent one at a time by a single thread, which also keeps the viewer from being
+     * flooded with parallel requests while it is busy. If too many requests are pending (e.g. the viewer is unreachable), further requests
+     * are dropped with a warning; the viewer then renders those PDFs on demand.
      *
-     * @param pi a {@link java.lang.String} object
-     * @param forceUpdate a boolean
-     * @throws java.io.IOException
-     * @throws io.goobi.viewer.indexer.exceptions.HTTPException
+     * @param pi Record identifier
+     * @param forceUpdate If true, existing page PDFs are re-rendered
+     */
+    public static void prerenderPdfsInBackground(String pi, boolean forceUpdate) {
+        if (StringUtils.isBlank(pi) || !SolrIndexerDaemon.getInstance().getConfiguration().isPrerenderPdfsEnabled()) {
+            return;
+        }
+        try {
+            getViewerTaskSender().execute(() -> {
+                try {
+                    prerenderPdfs(pi, forceUpdate);
+                } catch (IOException | HTTPException e) {
+                    logger.error("Could not request PDF pre-rendering for '{}' from the Goobi viewer: {}", pi, e.getMessage());
+                }
+            });
+        } catch (RejectedExecutionException e) {
+            logger.warn("Too many pending Goobi viewer requests, PDF pre-rendering for '{}' is not requested.", pi);
+        }
+    }
+
+    /**
+     * 
+     * @return Background sender for viewer task requests (created on first use)
+     */
+    private static synchronized ThreadPoolExecutor getViewerTaskSender() {
+        if (viewerTaskSender == null) {
+            viewerTaskSender = new ThreadPoolExecutor(1, 1, 0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>(VIEWER_TASK_QUEUE_CAPACITY), r -> {
+                Thread t = new Thread(r, "viewer-task-sender");
+                t.setDaemon(true);
+                return t;
+            });
+        }
+        return viewerTaskSender;
+    }
+
+    /**
+     * Waits (at most the given time) for pending background viewer task requests to be sent and stops the background sender. Requests that
+     * could not be sent in time are dropped.
+     *
+     * @param timeoutSeconds Maximum time to wait
+     */
+    public static synchronized void shutdownViewerTaskSender(long timeoutSeconds) {
+        if (viewerTaskSender == null) {
+            return;
+        }
+        viewerTaskSender.shutdown();
+        try {
+            if (!viewerTaskSender.awaitTermination(timeoutSeconds, TimeUnit.SECONDS)) {
+                int dropped = viewerTaskSender.shutdownNow().size();
+                logger.warn("{} pending Goobi viewer request(s) could not be sent before shutdown.", dropped);
+            }
+        } catch (InterruptedException e) {
+            viewerTaskSender.shutdownNow();
+            Thread.currentThread().interrupt();
+        }
+        viewerTaskSender = null;
+    }
+
+    /**
+     * Requests pre-rendering of the page PDFs of the given record from the Goobi viewer and waits for the request to be sent, using the
+     * configured PDF variant, viewer URL and authorization token. Does nothing if <code>pi</code> is blank or PDF pre-rendering is disabled.
+     *
+     * @param pi Record identifier
+     * @param forceUpdate If true, existing page PDFs are re-rendered
+     * @throws IOException
+     * @throws HTTPException
      */
     public static void prerenderPdfs(String pi, boolean forceUpdate) throws IOException, HTTPException {
         if (StringUtils.isNotBlank(pi) && SolrIndexerDaemon.getInstance().getConfiguration().isPrerenderPdfsEnabled()) {
@@ -268,7 +382,7 @@ public final class Utils {
             throw new IllegalArgumentException(StringConstants.ERROR_PI_MAY_NOT_BE_NULL);
         }
 
-        logger.info("Requesting prerender pdf task in viewer...");
+        logger.debug("Requesting prerender pdf task in viewer for '{}'...", pi);
         JSONObject json = new JSONObject();
         json.put("type", "PRERENDER_PDF");
         json.put("pi", pi);
@@ -312,13 +426,22 @@ public final class Utils {
             headerParams.put(HTTP_HEADER_CONTENT_TYPE, ContentType.APPLICATION_JSON.getMimeType());
             headerParams.put("token", SolrIndexerDaemon.getInstance().getConfiguration().getViewerAuthorizationToken());
             getWebContentPUT(url, HashMap.newHashMap(0), null, json.toString(), headerParams);
-            logger.info("Version and file count ({}) submitted to Goobi viewer.", fileCount);
+            logger.debug("Version and file count ({}) submitted to Goobi viewer.", fileCount);
             if (!identifiers.isEmpty()) {
-                logger.info("Record identifier(s) submitted to Goobi viewer.");
+                logger.debug("Record identifier(s) submitted to Goobi viewer.");
             }
         } catch (IOException | HTTPException e) {
             logger.warn("Version could not be submitted to Goobi viewer: {}", e.getMessage());
         }
+    }
+
+    /**
+     * @return New request context with its own (empty) cookie store, so that cookies are not shared between requests of the shared client
+     */
+    private static HttpClientContext newHttpContext() {
+        HttpClientContext context = HttpClientContext.create();
+        context.setCookieStore(new BasicCookieStore());
+        return context;
     }
 
     /**
@@ -332,21 +455,14 @@ public final class Utils {
      * @throws io.goobi.viewer.indexer.exceptions.HTTPException if any.
      */
     public static String getWebContentGET(String urlString) throws IOException, HTTPException {
-        RequestConfig defaultRequestConfig = RequestConfig.custom()
-                .setSocketTimeout(HTTP_TIMEOUT)
-                .setConnectTimeout(HTTP_TIMEOUT)
-                .setConnectionRequestTimeout(HTTP_TIMEOUT)
-                .build();
-        try (CloseableHttpClient httpClient = HttpClients.custom().setDefaultRequestConfig(defaultRequestConfig).build()) {
-            HttpGet get = new HttpGet(encodeIllegalUriChars(urlString));
-            try (CloseableHttpResponse response = httpClient.execute(get); StringWriter writer = new StringWriter()) {
-                int code = response.getStatusLine().getStatusCode();
-                if (code == HttpStatus.SC_OK) {
-                    return EntityUtils.toString(response.getEntity(), TextHelper.DEFAULT_CHARSET);
-                }
-                logger.trace("{}: {}", code, response.getStatusLine().getReasonPhrase());
-                throw new HTTPException(code, response.getStatusLine().getReasonPhrase());
+        HttpGet get = new HttpGet(encodeIllegalUriChars(urlString));
+        try (CloseableHttpResponse response = SharedHttpClientHolder.CLIENT.execute(get, newHttpContext())) {
+            int code = response.getStatusLine().getStatusCode();
+            if (code == HttpStatus.SC_OK) {
+                return EntityUtils.toString(response.getEntity(), TextHelper.DEFAULT_CHARSET);
             }
+            logger.trace("{}: {}", code, response.getStatusLine().getReasonPhrase());
+            throw new HTTPException(code, response.getStatusLine().getReasonPhrase());
         }
     }
 
@@ -441,66 +557,55 @@ public final class Utils {
                 nameValuePairs.add(new BasicNameValuePair(entry.getKey(), entry.getValue()));
             }
         }
-        HttpClientContext context = null;
-        CookieStore cookieStore = new BasicCookieStore();
+        HttpClientContext context = newHttpContext();
         if (cookies != null && !cookies.isEmpty()) {
-            context = HttpClientContext.create();
             for (Entry<String, String> entry : cookies.entrySet()) {
                 BasicClientCookie cookie = new BasicClientCookie(entry.getKey(), entry.getValue());
                 cookie.setPath("/");
                 cookie.setDomain("0.0.0.0");
-                cookieStore.addCookie(cookie);
+                context.getCookieStore().addCookie(cookie);
             }
-            context.setCookieStore(cookieStore);
         }
 
-        RequestConfig defaultRequestConfig = RequestConfig.custom()
-                .setSocketTimeout(HTTP_TIMEOUT)
-                .setConnectTimeout(HTTP_TIMEOUT)
-                .setConnectionRequestTimeout(HTTP_TIMEOUT)
-                .build();
-        try (CloseableHttpClient httpClient = HttpClients.custom().setDefaultRequestConfig(defaultRequestConfig).build()) {
-            HttpRequestBase requestBase;
-            switch (method.toUpperCase()) {
-                case HTTP_METHOD_DELETE:
-                    requestBase = new HttpDelete(url);
-                    break;
-                case "POST":
-                    requestBase = new HttpPost(url);
-                    break;
-                case "PUT":
-                    requestBase = new HttpPut(url);
-                    break;
-                default:
-                    return "";
+        HttpRequestBase requestBase;
+        switch (method.toUpperCase()) {
+            case HTTP_METHOD_DELETE:
+                requestBase = new HttpDelete(url);
+                break;
+            case "POST":
+                requestBase = new HttpPost(url);
+                break;
+            case "PUT":
+                requestBase = new HttpPut(url);
+                break;
+            default:
+                return "";
+        }
+        if (headerParams != null) {
+            for (Entry<String, String> entry : headerParams.entrySet()) {
+                requestBase.setHeader(entry.getKey(), entry.getValue());
             }
-            if (headerParams != null) {
-                for (Entry<String, String> entry : headerParams.entrySet()) {
-                    requestBase.setHeader(entry.getKey(), entry.getValue());
-                }
+        }
+        Charset.forName(TextHelper.DEFAULT_CHARSET);
+        // TODO allow combinations of params + body
+        if (requestBase instanceof HttpPost || requestBase instanceof HttpPut) {
+            if (StringUtils.isNotEmpty(body)) {
+                ((HttpEntityEnclosingRequestBase) requestBase).setEntity(new ByteArrayEntity(body.getBytes(TextHelper.DEFAULT_CHARSET)));
+            } else {
+                ((HttpEntityEnclosingRequestBase) requestBase).setEntity(new UrlEncodedFormEntity(nameValuePairs));
             }
-            Charset.forName(TextHelper.DEFAULT_CHARSET);
-            // TODO allow combinations of params + body
-            if (requestBase instanceof HttpPost || requestBase instanceof HttpPut) {
-                if (StringUtils.isNotEmpty(body)) {
-                    ((HttpEntityEnclosingRequestBase) requestBase).setEntity(new ByteArrayEntity(body.getBytes(TextHelper.DEFAULT_CHARSET)));
-                } else {
-                    ((HttpEntityEnclosingRequestBase) requestBase).setEntity(new UrlEncodedFormEntity(nameValuePairs));
-                }
+        }
+        try (CloseableHttpResponse response = SharedHttpClientHolder.CLIENT.execute(requestBase, context)) {
+            int code = response.getStatusLine().getStatusCode();
+            if (code == HttpStatus.SC_OK) {
+                logger.trace("{}: {}", code, response.getStatusLine().getReasonPhrase());
+                return EntityUtils.toString(response.getEntity(), TextHelper.DEFAULT_CHARSET);
             }
-            try (CloseableHttpResponse response = (context == null ? httpClient.execute(requestBase) : httpClient.execute(requestBase, context));
-                    StringWriter writer = new StringWriter()) {
-                int code = response.getStatusLine().getStatusCode();
-                if (code == HttpStatus.SC_OK) {
-                    logger.trace("{}: {}", code, response.getStatusLine().getReasonPhrase());
-                    return EntityUtils.toString(response.getEntity(), TextHelper.DEFAULT_CHARSET);
-                }
-                if (logger.isErrorEnabled()) {
-                    logger.error("Error calling URL '{}'; {}: {}\n{}", url, code, response.getStatusLine().getReasonPhrase(),
-                            EntityUtils.toString(response.getEntity(), TextHelper.DEFAULT_CHARSET));
-                }
-                throw new HTTPException(code, response.getStatusLine().getReasonPhrase());
+            if (logger.isErrorEnabled()) {
+                logger.error("Error calling URL '{}'; {}: {}\n{}", url, code, response.getStatusLine().getReasonPhrase(),
+                        EntityUtils.toString(response.getEntity(), TextHelper.DEFAULT_CHARSET));
             }
+            throw new HTTPException(code, response.getStatusLine().getReasonPhrase());
         }
     }
 
@@ -668,7 +773,10 @@ public final class Utils {
             }
             throw new IOException("No JSON response");
         } catch (IOException | HTTPException e) {
-            return "Could not clear viewer cache: " + e.getMessage();
+            // Logged here at WARN level since callers only log the returned message at DEBUG level
+            String msg = "Could not clear viewer cache: " + e.getMessage();
+            logger.warn(msg);
+            return msg;
         }
     }
 
@@ -950,10 +1058,29 @@ public final class Utils {
      * @should return true if pi good
      * @should return false if pi empty, blank or null
      * @should return false if pi contains illegal characters
+     * @should return false if pi starts with non alphanumeric character
+     * @should return false if pi contains no alphanumeric character
+     * @should return false if pi contains plus sign
+     * @should return false if pi contains non ascii characters
      * @return a boolean.
      */
     public static boolean validatePi(String pi) {
         if (StringUtils.isBlank(pi)) {
+            return false;
+        }
+
+        // Reject non-printable ASCII control characters (< 0x20 or = 0x7F) and any non-ASCII
+        // characters (>= 0x80). Such characters cause java.net.URI construction failures and Solr query syntax errors.
+        for (int i = 0; i < pi.length(); i++) {
+            char c = pi.charAt(i);
+            if (c < 0x20 || c >= 0x7F) {
+                return false;
+            }
+        }
+
+        // Require the first character to be alphanumeric. This prevents Solr query
+        // injection via leading '-' (negation operator) or '+' (required operator).
+        if (!Character.isLetterOrDigit(pi.charAt(0))) {
             return false;
         }
 

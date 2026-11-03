@@ -27,7 +27,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.locks.ReentrantLock;
 
 import org.apache.commons.configuration2.ex.ConfigurationException;
 import org.apache.commons.lang3.StringUtils;
@@ -43,6 +52,7 @@ import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.client.solrj.response.UpdateResponse;
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
+import org.apache.solr.common.SolrException;
 import org.apache.solr.common.SolrInputDocument;
 import org.jdom2.Document;
 import org.jdom2.JDOMException;
@@ -50,6 +60,7 @@ import org.jdom2.JDOMException;
 import io.goobi.viewer.indexer.SolrIndexerDaemon;
 import io.goobi.viewer.indexer.exceptions.FatalIndexerException;
 import io.goobi.viewer.indexer.exceptions.HTTPException;
+import io.goobi.viewer.indexer.exceptions.SolrUnavailableException;
 import io.goobi.viewer.indexer.model.LuceneField;
 import io.goobi.viewer.indexer.model.SolrConstants;
 import io.goobi.viewer.indexer.model.SolrConstants.DocType;
@@ -67,13 +78,51 @@ public final class SolrSearchIndex {
     /** Constant <code>TIMEOUT_CONNECTION=300000</code> */
     public static final int TIMEOUT_CONNECTION = 300000;
     private static final int RETRY_ATTEMPTS = 20;
-
-    private static final String ERROR_SOLR_CONNECTION = "Solr connection error";
-    private static final String ERROR_UPDATE_STATUS = "Update status: {}";
+    /** Delay before the first retry of a failed Solr request; doubled after each attempt up to {@link #RETRY_MAX_DELAY_MILLIS}. */
+    private static final long RETRY_DELAY_MILLIS = 1000;
+    private static final long RETRY_MAX_DELAY_MILLIS = 10000;
+    /** How long record indexing pauses after Solr was unavailable for an entire retry period. */
+    private static final long UNAVAILABLE_PAUSE_MILLIS = 60000;
 
     private boolean optimize = false;
 
     private SolrClient client;
+
+    /** Records written since the last commit, for the batched-commit policy (see {@link #commitAfterRecord()}). */
+    private final AtomicInteger pendingRecords = new AtomicInteger();
+    /** Epoch millis of the last commit, for the time-based commit trigger. */
+    private volatile long lastCommitMillis = System.currentTimeMillis();
+    /** Serializes commit decision + execution so at most one commit runs at a time. */
+    private final ReentrantLock commitLock = new ReentrantLock();
+    /** Single background thread for batched commits (created on first use), so record workers do not block on hard commits. */
+    private ExecutorService commitExecutor;
+    /** True while a background commit is scheduled or running. */
+    private final AtomicBoolean commitScheduled = new AtomicBoolean();
+    /** Fatal error of a background commit, rethrown to the next caller of {@link #commitAfterRecord()} or {@link #commitPending()}. */
+    private final AtomicReference<FatalIndexerException> backgroundCommitFailure = new AtomicReference<>();
+    /** Number of attempts per Solr request. */
+    private int retryAttempts = RETRY_ATTEMPTS;
+    /** Delay before the first retry. */
+    private long retryDelayMillis = RETRY_DELAY_MILLIS;
+    /** Epoch millis until which Solr is considered unavailable (see {@link #isUnavailable()}). */
+    private volatile long unavailableUntil = 0;
+    /**
+     * Records (PI_TOPSTRUCT) with documents added but possibly not committed yet -> sequence number of their last add (see
+     * {@link #commitIfUncommitted(String)}).
+     */
+    private final Map<String, Long> uncommittedPis = new ConcurrentHashMap<>();
+    /** Sequence for {@link #uncommittedPis}: a commit covers all entries with a sequence number up to the value read before it started. */
+    private final AtomicLong addSequence = new AtomicLong();
+
+    /**
+     * A Solr request that may fail with a connection or Solr error.
+     *
+     * @param <T> Response type
+     */
+    @FunctionalInterface
+    interface SolrOperation<T> {
+        T execute() throws SolrServerException, IOException;
+    }
 
     /**
      * <p>
@@ -129,18 +178,30 @@ public final class SolrSearchIndex {
     }
 
     /**
+     * Returns all documents matching the given query.
      * <p>
-     * search.
-     * </p>
+     * The number of hits is determined first and then exactly that many rows are requested. Solr sizes its result buffer by the requested
+     * number of rows (capped at the number of documents in the index) and fills it in advance, so requesting "all" rows with a huge
+     * <code>rows</code> value made every query allocate a buffer the size of the entire index, even if it only matched a single document.
+     * With large indexes and many parallel queries this exhausted the Solr heap.
      *
      * @param query a {@link java.lang.String} object.
      * @param fields a {@link java.util.List} object.
      * @return a {@link org.apache.solr.common.SolrDocumentList} object.
      * @throws org.apache.solr.client.solrj.SolrServerException if any.
      * @throws java.io.IOException
+     * @should return all hits
+     * @should return empty list if no hits
      */
     public SolrDocumentList search(String query, List<String> fields) throws SolrServerException, IOException {
-        return search(query, fields, MAX_HITS);
+        SolrQuery countQuery = new SolrQuery(query);
+        countQuery.setRows(0);
+        SolrDocumentList countResult = execute("query", () -> client.query(countQuery)).getResults();
+        long numFound = countResult.getNumFound();
+        if (numFound == 0) {
+            return countResult;
+        }
+        return search(query, fields, (int) Math.min(numFound, MAX_HITS));
     }
 
     /**
@@ -164,7 +225,7 @@ public final class SolrSearchIndex {
             }
         }
 
-        return client.query(solrQuery).getResults();
+        return execute("query", () -> client.query(solrQuery)).getResults();
     }
 
     /**
@@ -256,7 +317,7 @@ public final class SolrSearchIndex {
         SolrQuery solrQuery = new SolrQuery(SolrConstants.PI + ":" + pi);
         solrQuery.setRows(1);
         solrQuery.setFields(SolrConstants.DATAREPOSITORY);
-        QueryResponse resp = client.query(solrQuery);
+        QueryResponse resp = execute("query", () -> client.query(solrQuery));
 
         if (!resp.getResults().isEmpty()) {
             if (resp.getResults().get(0).getFieldValue(SolrConstants.DATAREPOSITORY) != null) {
@@ -305,28 +366,8 @@ public final class SolrSearchIndex {
      * @should write doc correctly
      */
     public void writeToIndex(SolrInputDocument doc) throws FatalIndexerException {
-        boolean success = false;
-        int tries = RETRY_ATTEMPTS;
-
-        while (!success && tries > 0) {
-            tries--;
-            try {
-                UpdateResponse ur = client.add(doc);
-                if (ur.getStatus() == 0) {
-                    success = true;
-                } else {
-                    logger.error(ERROR_UPDATE_STATUS, ur.getStatus());
-                }
-            } catch (SolrServerException | IOException e) {
-                logger.error(e.getMessage(), e);
-            }
-        }
-
-        if (!success) {
-            logger.error("Could not write document after {} attempts. Check the Solr server connection. Exiting...", RETRY_ATTEMPTS);
-            rollback();
-            throw new FatalIndexerException(ERROR_SOLR_CONNECTION);
-        }
+        execute("add document", () -> client.add(doc));
+        markUncommitted(Collections.singletonList(doc));
     }
 
     /**
@@ -339,30 +380,65 @@ public final class SolrSearchIndex {
      * @should write all docs correctly
      */
     public void writeToIndex(List<SolrInputDocument> docs) throws FatalIndexerException {
-        boolean success = false;
-        int tries = RETRY_ATTEMPTS;
+        execute("add " + docs.size() + " documents", () -> client.add(docs));
+        markUncommitted(docs);
+    }
 
-        while (!success && tries > 0) {
-            tries--;
-            try {
-                UpdateResponse ur = client.add(docs);
-                if (ur.getStatus() == 0) {
-                    success = true;
-                } else {
-                    logger.error(ERROR_UPDATE_STATUS, ur.getStatus());
-                }
-            } catch (IOException | SolrServerException e) {
-                logger.error(e.getMessage(), e);
-            } catch (RemoteSolrException e) {
-                logger.error(e.getMessage());
+    /**
+     * Registers the records of the given (just added) documents as possibly uncommitted. Called after the add has returned, so that a commit
+     * that removes the entry again (see {@link #removeCommittedPis(long)}) has started after the add and therefore covers it. Entries may
+     * outlive their commit (if the add and the commit overlap), which only causes an unnecessary commit in
+     * {@link #commitIfUncommitted(String)}.
+     *
+     * @param docs Added documents
+     */
+    private void markUncommitted(List<SolrInputDocument> docs) {
+        String lastPi = null;
+        for (SolrInputDocument doc : docs) {
+            Object pi = doc.getFieldValue(SolrConstants.PI_TOPSTRUCT);
+            if (pi != null && !pi.equals(lastPi)) {
+                lastPi = pi.toString();
+                uncommittedPis.put(lastPi, addSequence.incrementAndGet());
             }
         }
+    }
 
-        if (!success) {
-            logger.error("Could not write {} documents after {} attempts. Check the Solr server connection. Exiting...", docs.size(), RETRY_ATTEMPTS);
-            rollback();
-            throw new FatalIndexerException(ERROR_SOLR_CONNECTION);
+    /**
+     * Removes the records whose documents were all added before a commit started.
+     *
+     * @param sequence Value of {@link #addSequence} read before the commit started
+     */
+    private void removeCommittedPis(long sequence) {
+        uncommittedPis.values().removeIf(v -> v <= sequence);
+    }
+
+    /**
+     * Commits if documents of the given record may have been added without having been committed yet. A search does not find uncommitted
+     * documents, so without this commit, re-indexing (or deleting) a record whose previous version is still uncommitted (with
+     * <code>performance.commitBatchSize</code> &gt; 1) would not find and delete that version, leaving two instances of the record in the
+     * index. Callers must hold the record lock for the PI (see {@link RecordLocks}), so no new documents of the record are added meanwhile.
+     *
+     * @param pi Record identifier
+     * @throws FatalIndexerException if this or a previous background commit failed
+     * @should commit if record has uncommitted docs
+     * @should not commit if record has no uncommitted docs
+     */
+    public void commitIfUncommitted(String pi) throws FatalIndexerException {
+        if (pi == null || !uncommittedPis.containsKey(pi)) {
+            return;
         }
+        rethrowBackgroundCommitFailure();
+        logger.debug("Record '{}' has uncommitted documents, committing first.", pi);
+        flushPending(true);
+    }
+
+    /**
+     * 
+     * @param pi Record identifier
+     * @return true if documents of the given record may have been added without having been committed yet; false otherwise
+     */
+    boolean isUncommitted(String pi) {
+        return uncommittedPis.containsKey(pi);
     }
 
     /**
@@ -374,29 +450,7 @@ public final class SolrSearchIndex {
      * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException
      */
     public void deleteDocument(String id) throws FatalIndexerException {
-        boolean success = false;
-        int tries = RETRY_ATTEMPTS;
-
-        while (!success && tries > 0) {
-            tries--;
-            try {
-                UpdateResponse ur = client.deleteById(id);
-                if (ur.getStatus() == 0) {
-                    success = true;
-                } else {
-                    logger.error(ERROR_UPDATE_STATUS, ur.getStatus());
-                }
-            } catch (SolrServerException e) {
-                logger.error(e.getMessage());
-            } catch (IOException e) {
-                logger.error(e.getMessage(), e);
-            }
-        }
-        if (!success) {
-            logger.error("Could not delete '{}' after {} attempts. Check the Solr server connection. Exiting...", id, RETRY_ATTEMPTS);
-            rollback();
-            throw new FatalIndexerException(ERROR_SOLR_CONNECTION);
-        }
+        execute("delete '" + id + "'", () -> client.deleteById(id));
     }
 
     /**
@@ -415,31 +469,9 @@ public final class SolrSearchIndex {
             logger.warn("Nothing to delete.");
             return false;
         }
-        boolean success = false;
-        int tries = RETRY_ATTEMPTS;
+        execute("delete " + ids.size() + " documents", () -> client.deleteById(ids));
 
-        while (!success && tries > 0) {
-            tries--;
-            try {
-                UpdateResponse ur = client.deleteById(ids);
-                if (ur.getStatus() == 0) {
-                    success = true;
-                } else {
-                    logger.error(ERROR_UPDATE_STATUS, ur.getStatus());
-                }
-            } catch (SolrServerException e) {
-                logger.error(e.getMessage());
-            } catch (IOException e) {
-                logger.error(e.getMessage(), e);
-            }
-        }
-        if (!success) {
-            logger.error("Could not delete {} docs after {} attempts. Check the Solr server connection. Exiting...", ids.size(), RETRY_ATTEMPTS);
-            rollback();
-            throw new FatalIndexerException(ERROR_SOLR_CONNECTION);
-        }
-
-        return success;
+        return true;
     }
 
     /**
@@ -452,32 +484,9 @@ public final class SolrSearchIndex {
         if (StringUtils.isEmpty(query)) {
             return false;
         }
+        execute("delete by query", () -> client.deleteByQuery(query));
 
-        boolean success = false;
-        int tries = RETRY_ATTEMPTS;
-
-        while (!success && tries > 0) {
-            tries--;
-            try {
-                UpdateResponse ur = client.deleteByQuery(query);
-                if (ur.getStatus() == 0) {
-                    success = true;
-                } else {
-                    logger.error(ERROR_UPDATE_STATUS, ur.getStatus());
-                }
-            } catch (SolrServerException e) {
-                logger.error(e.getMessage());
-            } catch (IOException e) {
-                logger.error(e.getMessage(), e);
-            }
-        }
-        if (!success) {
-            logger.error("Could not delete docs matching query '{}' after {} attempts. Check the Solr server connection. Exiting...", query,
-                    RETRY_ATTEMPTS);
-            rollback();
-        }
-
-        return success;
+        return true;
     }
 
     /**
@@ -489,31 +498,146 @@ public final class SolrSearchIndex {
      * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException
      */
     public void commit(boolean optimize) throws FatalIndexerException {
-        boolean success = false;
-        int tries = RETRY_ATTEMPTS;
+        long sequence = addSequence.get();
+        doCommit(optimize);
+        removeCommittedPis(sequence);
+        pendingRecords.set(0);
+        lastCommitMillis = System.currentTimeMillis();
+    }
 
-        while (!success && tries > 0) {
-            tries--;
-            try {
-                UpdateResponse ur = client.commit();
-                if (ur.getStatus() == 0) {
-                    success = true;
-                } else {
-                    logger.error(ERROR_UPDATE_STATUS, ur.getStatus());
+    /**
+     * Registers that one record's documents have been written, and commits if the batched-commit policy is due.
+     * <p>
+     * Called once per successfully written record by the write strategies instead of an unconditional per-record commit.
+     * With {@code performance.commitBatchSize=1} (default) this commits synchronously after every record, reproducing the legacy
+     * behavior. With a larger batch size it commits every N records or once {@code performance.commitMaxSeconds} has elapsed; such a
+     * commit runs on a single background thread, so the calling record worker does not wait for the (potentially slow) hard commit. Any
+     * remainder is flushed by {@link #commitPending()} on queue drain / shutdown, so nothing waits indefinitely.
+     *
+     * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException if this or a previous background commit failed
+     */
+    public void commitAfterRecord() throws FatalIndexerException {
+        rethrowBackgroundCommitFailure();
+        if (!isCommitDue(pendingRecords.incrementAndGet())) {
+            return;
+        }
+        if (SolrIndexerDaemon.getInstance().getConfiguration().getCommitBatchSize() <= 1) {
+            flushPending(false);
+        } else {
+            scheduleBackgroundCommit();
+        }
+    }
+
+    /**
+     * 
+     * @param pending Number of records written but not yet committed
+     * @return true if the batched-commit policy requires a commit now; false otherwise
+     */
+    private boolean isCommitDue(int pending) {
+        int batchSize = SolrIndexerDaemon.getInstance().getConfiguration().getCommitBatchSize();
+        int maxSeconds = SolrIndexerDaemon.getInstance().getConfiguration().getCommitMaxSeconds();
+        return pending >= batchSize || (maxSeconds > 0 && System.currentTimeMillis() - lastCommitMillis >= maxSeconds * 1000L);
+    }
+
+    /**
+     * Schedules a commit on the background commit thread, unless one is already scheduled or running (records written in the meantime stay
+     * pending and are committed by the next commit).
+     */
+    private void scheduleBackgroundCommit() {
+        if (!commitScheduled.compareAndSet(false, true)) {
+            return;
+        }
+        try {
+            getCommitExecutor().execute(() -> {
+                try {
+                    flushPending(false);
+                } catch (FatalIndexerException e) {
+                    logger.error("Background commit failed: {}", e.getMessage());
+                    backgroundCommitFailure.set(e);
+                } catch (SolrUnavailableException e) {
+                    // Not fatal: the records stay pending (only subtracted on success) and are committed by the next commit
+                    logger.warn("Background commit failed, will be retried with the next commit: {}", e.getMessage());
+                } finally {
+                    commitScheduled.set(false);
                 }
-            } catch (SolrServerException e) {
-                logger.error(e.getMessage());
-            } catch (IOException e) {
-                logger.error(e.getMessage(), e);
-            }
+            });
+        } catch (RejectedExecutionException e) {
+            commitScheduled.set(false);
+            logger.warn("Could not schedule background commit: {}", e.getMessage());
         }
-        if (!success)
+    }
 
-        {
-            logger.error("Could not commit after {} attempts. Check the Solr server connection. Exiting...", RETRY_ATTEMPTS);
-            rollback();
-            throw new FatalIndexerException(ERROR_SOLR_CONNECTION);
+    /**
+     * 
+     * @return The background commit executor (created on first use)
+     */
+    private synchronized ExecutorService getCommitExecutor() {
+        if (commitExecutor == null) {
+            commitExecutor = Executors.newSingleThreadExecutor(r -> {
+                Thread t = new Thread(r, "solr-commit");
+                t.setDaemon(true);
+                return t;
+            });
         }
+        return commitExecutor;
+    }
+
+    /**
+     * 
+     * @throws FatalIndexerException if a background commit has failed
+     */
+    private void rethrowBackgroundCommitFailure() throws FatalIndexerException {
+        FatalIndexerException e = backgroundCommitFailure.get();
+        if (e != null) {
+            throw e;
+        }
+    }
+
+    /**
+     * Commits any pending (uncommitted) records regardless of the batch thresholds, after any running background commit has finished.
+     * Called when the hotfolder queue drains and on shutdown so a sub-batch remainder is never left uncommitted.
+     *
+     * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException if this or a previous background commit failed
+     */
+    public void commitPending() throws FatalIndexerException {
+        rethrowBackgroundCommitFailure();
+        if (pendingRecords.get() > 0 || !uncommittedPis.isEmpty()) {
+            flushPending(true);
+        }
+    }
+
+    /**
+     * Commits everything buffered in Solr and resets the pending-record counter. Only one commit runs at a time (Solr serializes hard
+     * commits anyway); a doc-level {@code add} always precedes the corresponding {@link #commitAfterRecord()}, so whatever is buffered is
+     * committed here regardless of the exact counter value.
+     *
+     * @param force If true, commit any pending records regardless of the batch thresholds
+     * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException
+     */
+    private void flushPending(boolean force) throws FatalIndexerException {
+        commitLock.lock();
+        try {
+            int flushed = pendingRecords.get();
+            if (force ? flushed == 0 && uncommittedPis.isEmpty() : flushed == 0 || !isCommitDue(flushed)) {
+                // Another thread already flushed while this one was waiting for the lock
+                return;
+            }
+            long sequence = addSequence.get();
+            doCommit(optimize);
+            removeCommittedPis(sequence);
+            // Only subtract what this commit covered: records counted by other workers while the commit was running may not be
+            // included in it and must stay pending (resetting to 0 would lose them, so commitPending() would skip them).
+            pendingRecords.addAndGet(-flushed);
+            lastCommitMillis = System.currentTimeMillis();
+            logger.info("Committed {} record(s) to Solr (commitBatchSize={}).", flushed,
+                    SolrIndexerDaemon.getInstance().getConfiguration().getCommitBatchSize());
+        } finally {
+            commitLock.unlock();
+        }
+    }
+
+    private void doCommit(boolean optimize) throws FatalIndexerException {
+        execute("commit", () -> client.commit());
 
         if (optimize) {
             logger.debug("Optimizing index...");
@@ -528,6 +652,83 @@ public final class SolrSearchIndex {
                 logger.error("Index optimization failed.", e);
             }
         }
+    }
+
+    /**
+     * Executes the given Solr request. Connection errors and transient Solr errors (see {@link #isTransient(SolrException)}) are retried with
+     * an increasing delay (about three minutes in total); permanent Solr errors (e.g. a rejected document) are thrown right away.
+     * <p>
+     * If all attempts fail, Solr is considered unavailable for a while (see {@link #isUnavailable()}) and a {@link SolrUnavailableException}
+     * is thrown. There is deliberately no rollback in that case: in a standalone Solr, it would discard the uncommitted documents of other
+     * records that have already been removed from the hotfolder (and in SolrCloud, rollback is not supported).
+     *
+     * @param <T> Response type
+     * @param description Short description of the request for the log
+     * @param operation The request
+     * @return Response of the request
+     * @throws SolrException if Solr answers with a permanent error
+     * @throws SolrUnavailableException if the request failed in all attempts
+     * @should return result after transient failure
+     * @should throw permanent solr error immediately
+     * @should throw SolrUnavailableException after all attempts failed
+     */
+    <T> T execute(String description, SolrOperation<T> operation) {
+        long delay = retryDelayMillis;
+        String lastError = null;
+        for (int attempt = 1; attempt <= retryAttempts; attempt++) {
+            try {
+                T ret = operation.execute();
+                if (ret instanceof UpdateResponse ur && ur.getStatus() != 0) {
+                    lastError = "Update status: " + ur.getStatus();
+                } else {
+                    return ret;
+                }
+            } catch (SolrServerException | IOException e) {
+                lastError = e.getMessage();
+            } catch (SolrException e) {
+                if (!isTransient(e)) {
+                    throw e;
+                }
+                lastError = e.getMessage();
+            }
+            if (attempt < retryAttempts) {
+                logger.warn("Solr request '{}' failed (attempt {}/{}), retrying in {} ms: {}", description, attempt, retryAttempts, delay,
+                        lastError);
+                try {
+                    Thread.sleep(delay);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    break;
+                }
+                delay = Math.min(delay * 2, RETRY_MAX_DELAY_MILLIS);
+            }
+        }
+
+        unavailableUntil = System.currentTimeMillis() + UNAVAILABLE_PAUSE_MILLIS;
+        logger.error("Solr request '{}' failed, Solr seems to be unavailable: {}", description, lastError);
+        throw new SolrUnavailableException("Solr request '" + description + "' failed: " + lastError);
+    }
+
+    /**
+     * Solr errors that may go away by themselves (server errors, Solr or the collection temporarily unavailable, timeouts, rate limiting) are
+     * transient; other client errors (e.g. 400 for a rejected document) are permanent.
+     *
+     * @param e Solr error
+     * @return true if the request may succeed if retried; false otherwise
+     * @should return true for server errors and unavailable collection
+     * @should return false for rejected requests
+     */
+    static boolean isTransient(SolrException e) {
+        int code = e.code();
+        return code <= 0 || code >= 500 || code == 404 || code == 408 || code == 429;
+    }
+
+    /**
+     * @return true if a Solr request recently failed in all attempts, in which case new records should not be indexed for a while; false
+     *         otherwise
+     */
+    public boolean isUnavailable() {
+        return System.currentTimeMillis() < unavailableUntil;
     }
 
     /**
@@ -622,7 +823,7 @@ public final class SolrSearchIndex {
      */
     public SolrInputDocument checkAndCreateGroupDoc(String groupIdField, String groupId, Map<String, String> metadata, String iddoc) {
         try {
-            SolrDocumentList docs = search(SolrConstants.PI + ":" + groupId, null);
+            SolrDocumentList docs = search(SolrConstants.PI + ":\"" + groupId + '"', null);
             SolrInputDocument doc = new SolrInputDocument();
             long now = System.currentTimeMillis();
             if (docs.isEmpty()) {
@@ -913,5 +1114,16 @@ public final class SolrSearchIndex {
      */
     public void setOptimize(boolean optimize) {
         this.optimize = optimize;
+    }
+
+    /**
+     * Overrides the retry behavior of {@link #execute(String, SolrOperation)} (for tests).
+     *
+     * @param retryAttempts Number of attempts per Solr request
+     * @param retryDelayMillis Delay before the first retry
+     */
+    void setRetryPolicy(int retryAttempts, long retryDelayMillis) {
+        this.retryAttempts = retryAttempts;
+        this.retryDelayMillis = retryDelayMillis;
     }
 }

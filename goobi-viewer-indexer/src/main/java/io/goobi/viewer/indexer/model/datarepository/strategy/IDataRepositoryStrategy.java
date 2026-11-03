@@ -55,4 +55,14 @@ public interface IDataRepositoryStrategy {
     public DataRepository[] selectDataRepository(String pi, final Path recordFile, final Map<String, Path> dataFolders,
             final SolrSearchIndex searchIndex, final SolrSearchIndex oldSearchIndex)
             throws FatalIndexerException;
+
+    /**
+     * Releases the data-repository reservation (if any) made by the current thread's most recent
+     * {@link #selectDataRepository(String, Path, Map, SolrSearchIndex, SolrSearchIndex)} call. Must be called once the
+     * record's files have been written (or on failure), so that concurrent selections stop counting this record as
+     * in-flight against the chosen repository's free space / record count. No-op for strategies that do not reserve.
+     */
+    default void releaseReservation() {
+        // no-op by default
+    }
 }

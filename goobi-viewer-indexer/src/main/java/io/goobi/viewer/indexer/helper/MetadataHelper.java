@@ -271,7 +271,14 @@ public final class MetadataHelper {
                                 // Grouped metadata
                                 Element eleMods = (Element) xpathAnswerObject;
                                 GroupedMetadata gmd = getGroupedMetadata(eleMods, configurationItem.getGroupEntity(), configurationItem,
-                                        configurationItem.getFieldname(), sbDefaultMetadataValues, ret, xp);
+                                        configurationItem.getFieldname(), sbDefaultMetadataValues, ret, xp, indexObj.getSourceDocFormat());
+
+                                // Flag the record for reindexing if authority data retrieval failed for this group (e.g. service unreachable).
+                                // Emitted once per docstruct doc; the viewer groups flagged docs by PI_TOPSTRUCT.
+                                if (gmd.isAuthorityDataIncomplete() && !indexObj.isAuthorityDataIncomplete()) {
+                                    indexObj.setAuthorityDataIncomplete(true);
+                                    indexObj.addToLucene(new LuceneField(SolrConstants.BOOL_AUTHORITY_DATA_INCOMPLETE, "true"), true);
+                                }
 
                                 // Add the relevant value as a non-grouped metadata value (for term browsing, etc.)
                                 if (StringUtils.isNotEmpty(gmd.getMainValue())) {
@@ -470,7 +477,37 @@ public final class MetadataHelper {
     }
 
     /**
-     * 
+     * Retrieves an authority data record (see {@link NormDataImporter#getSingleRecord(String, String, int)}).
+     */
+    @FunctionalInterface
+    interface AuthorityRecordRetriever {
+        Record retrieve(String url, String proxyUrl, int proxyPort);
+    }
+
+    /**
+     * Retrieves the authority data record for the given URL. A {@link NullPointerException} thrown during retrieval is treated like a failed
+     * retrieval (null): normdataimporter up to 2.1.5 threw it instead of returning null if the authority service answered with an error
+     * status (e.g. the DNB SRU interface under load), which would otherwise fail the entire record. Fixed in 2.1.6; kept as a safety net.
+     *
+     * @param url Authority data URL
+     * @param proxyUrl Optional proxy URL
+     * @param proxyPort Proxy port
+     * @param retriever Retrieval function
+     * @return Retrieved record; null if retrieval failed
+     * @should return null if retrieval throws NullPointerException
+     * @should return retrieved record
+     */
+    static Record fetchAuthorityRecord(String url, String proxyUrl, int proxyPort, AuthorityRecordRetriever retriever) {
+        try {
+            return retriever.retrieve(url, proxyUrl, proxyPort);
+        } catch (NullPointerException e) { //NOSONAR java:S1696 Defect in third-party code (null response passed to Normalizer.normalize)
+            logger.warn("Authority dataset could not be retrieved (service error response?): {} ({})", url, e.getMessage());
+            return null;
+        }
+    }
+
+    /**
+     *
      * @param authorityUrl URL to query
      * @param sbDefaultMetadataValues StringBuilder for collecting
      * @param sbNormDataTerms
@@ -535,7 +572,7 @@ public final class MetadataHelper {
             }
 
             try {
-                rec = NormDataImporter.getSingleRecord(url, proxyUrl, proxyPort);
+                rec = fetchAuthorityRecord(url, proxyUrl, proxyPort, NormDataImporter::getSingleRecord);
             } catch (IllegalArgumentException e) {
                 // Catch invalid URLs (e.g. containing illegal characters) that slip through sanitization
                 logger.error("Invalid authority URL '{}': {}", url, e.getMessage());
@@ -543,7 +580,11 @@ public final class MetadataHelper {
             }
             if (rec == null) {
                 logger.warn("Authority dataset could not be retrieved: {}", url);
-                return Collections.emptyList();
+                // Signal the failure to the caller via a marker field so the record can be flagged for reindexing.
+                // This is the "service unreachable / not resolvable" case, as opposed to a resolvable record with no fields (below).
+                List<LuceneField> incompleteMarker = new ArrayList<>(1);
+                incompleteMarker.add(new LuceneField(SolrConstants.BOOL_AUTHORITY_DATA_INCOMPLETE, "true"));
+                return incompleteMarker;
             }
             if (rec.getNormDataList().isEmpty()) {
                 logger.warn("No authority data fields found.");
@@ -1214,6 +1255,7 @@ public final class MetadataHelper {
     }
 
     /**
+     * Convenience overload that disables source-format filtering of subfield expressions (all expressions are evaluated regardless of format).
      *
      * @param ele Relative JDOM2 root element
      * @param groupEntity {@link GroupEntity} configuration from which to create the {@link GroupedMetadata}
@@ -1221,13 +1263,36 @@ public final class MetadataHelper {
      * @param groupLabel Main field name
      * @param sbDefaultMetadataValues StringBuilder that collects default values
      * @param luceneFields
+     * @param jdomXP {@link io.goobi.viewer.indexer.helper.JDomXP} of the document that owns <code>ele</code>
+     * @return Generated {@link GroupedMetadata}
+     * @throws FatalIndexerException
+     */
+    static GroupedMetadata getGroupedMetadata(Element ele, GroupEntity groupEntity, FieldConfig configurationItem, String groupLabel,
+            StringBuilder sbDefaultMetadataValues, List<LuceneField> luceneFields, JDomXP jdomXP) throws FatalIndexerException {
+        return getGroupedMetadata(ele, groupEntity, configurationItem, groupLabel, sbDefaultMetadataValues, luceneFields, jdomXP, null);
+    }
+
+    /**
+     *
+     * @param ele Relative JDOM2 root element
+     * @param groupEntity {@link GroupEntity} configuration from which to create the {@link GroupedMetadata}
+     * @param configurationItem Master field configuration
+     * @param groupLabel Main field name
+     * @param sbDefaultMetadataValues StringBuilder that collects default values
+     * @param luceneFields
+     * @param jdomXP {@link io.goobi.viewer.indexer.helper.JDomXP} of the document that owns <code>ele</code>
+     * @param sourceDocFormat {@link io.goobi.viewer.indexer.helper.JDomXP.FileFormat} of the indexed document; used to skip subfield expressions
+     *            that belong to a different format. May be null to disable format filtering.
      * @return Generated {@link GroupedMetadata}
      * @throws FatalIndexerException
      * @should group correctly
      * @should not lowercase certain fields
+     * @should flag group as authority data incomplete if retrieval fails
+     * @should not leak authority data incomplete marker into fields
      */
     static GroupedMetadata getGroupedMetadata(Element ele, GroupEntity groupEntity, FieldConfig configurationItem, String groupLabel,
-            StringBuilder sbDefaultMetadataValues, List<LuceneField> luceneFields, JDomXP jdomXP) throws FatalIndexerException {
+            StringBuilder sbDefaultMetadataValues, List<LuceneField> luceneFields, JDomXP jdomXP, FileFormat sourceDocFormat)
+            throws FatalIndexerException {
         logger.trace("getGroupedMetadata: {}", groupLabel);
         GroupedMetadata ret = new GroupedMetadata();
         ret.setLabel(groupLabel);
@@ -1242,7 +1307,8 @@ public final class MetadataHelper {
         StringBuilder sbAuthorityDataTerms = new StringBuilder();
 
         Map<String, List<String>> collectedValues = new HashMap<>();
-        ret.collectGroupMetadataValues(collectedValues, groupEntity.getSubfields(), ele, authorityDataEnabled, null, configurationItem, jdomXP);
+        ret.collectGroupMetadataValues(collectedValues, groupEntity.getSubfields(), ele, authorityDataEnabled, null, configurationItem, jdomXP,
+                sourceDocFormat);
 
         if (!groupEntity.getSubfields().containsKey(SolrConstants.MD_VALUE)) {
             logger.warn("'{}' not configured for grouped metadata field '{}'.", SolrConstants.MD_VALUE, groupLabel);
@@ -1271,7 +1337,7 @@ public final class MetadataHelper {
         if (!additionalFieldsFromParent.isEmpty()) {
             logger.debug("Collecting source metadata for {}", configurationItem.getFieldname());
             ret.collectGroupMetadataValues(collectedValues, groupEntity.getSubfields(), ele.getParentElement(), authorityDataEnabled,
-                    additionalFieldsFromParent, configurationItem, jdomXP);
+                    additionalFieldsFromParent, configurationItem, jdomXP, sourceDocFormat);
         }
         // if no MD_VALUE field exists, construct one
         if (mdValue == null) {
@@ -1338,11 +1404,16 @@ public final class MetadataHelper {
             }
         }
 
-        // Retrieve authority data  
+        // Retrieve authority data
         if (authorityDataEnabled && ret.getAuthorityURI() != null) {
-            authorityData.addAll(retrieveAuthorityData(ret.getAuthorityURI(), sbDefaultMetadataValues,
+            List<LuceneField> retrievedAuthorityData = new ArrayList<>(retrieveAuthorityData(ret.getAuthorityURI(), sbDefaultMetadataValues,
                     sbAuthorityDataTerms, addAuthorityDataFieldsToDefault, configurationItem.getReplaceRules(),
                     configurationItem.getFieldname()));
+            // Detect and strip the "authority data incomplete" marker (retrieval failed, e.g. service unreachable)
+            if (retrievedAuthorityData.removeIf(field -> SolrConstants.BOOL_AUTHORITY_DATA_INCOMPLETE.equals(field.getField()))) {
+                ret.setAuthorityDataIncomplete(true);
+            }
+            authorityData.addAll(retrievedAuthorityData);
             // Add default authority data name to the docstruct doc so that it can be searched
             for (LuceneField authorityField : authorityData) {
                 switch (authorityField.getField()) {
@@ -1379,7 +1450,8 @@ public final class MetadataHelper {
         // Resolve fields configured as "authorityData:NORM_XXX" (instead of an XPath expression) against the retrieved authority data
         if (!authorityData.isEmpty()) {
             for (SubfieldConfig subfield : groupEntity.getSubfields().values()) {
-                for (String xp : subfield.getXpaths()) {
+                for (XPathConfig xpc : subfield.getXpaths()) {
+                    String xp = xpc.getxPath();
                     if (!xp.startsWith(GroupedMetadata.AUTHORITY_DATA_FIELD_PREFIX)) {
                         continue;
                     }

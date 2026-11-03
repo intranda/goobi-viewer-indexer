@@ -42,6 +42,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.solr.client.solrj.SolrServerException;
+import org.apache.solr.common.SolrException;
 import org.apache.solr.common.SolrInputDocument;
 import org.jdom2.Element;
 import org.jdom2.JDOMException;
@@ -52,6 +53,7 @@ import io.goobi.viewer.indexer.exceptions.IndexerException;
 import io.goobi.viewer.indexer.helper.DateTools;
 import io.goobi.viewer.indexer.helper.FileTools;
 import io.goobi.viewer.indexer.helper.FulltextAugmentor;
+import io.goobi.viewer.indexer.helper.ImageDimensionsHelper;
 import io.goobi.viewer.indexer.helper.Hotfolder;
 import io.goobi.viewer.indexer.helper.JDomXP.FileFormat;
 import io.goobi.viewer.indexer.helper.MetadataHelper;
@@ -100,6 +102,26 @@ public class WorldViewsIndexer extends Indexer {
     /** {@inheritDoc} */
     @Override
     public List<String> addToIndex(Path mainFile, Map<String, Boolean> reindexSettings) throws IOException, FatalIndexerException {
+        currentRecordFile = mainFile;
+        try {
+            return indexRecordFile(mainFile, reindexSettings);
+        } finally {
+            // Release the record lock acquired in index(), which is held for the post-processing
+            unlockRecord();
+            currentRecordFile = null;
+        }
+    }
+
+    /**
+     * Indexes the given record file and moves its data into the data repository (see {@link #addToIndex(Path, Map)}).
+     *
+     * @param mainFile Record file
+     * @param reindexSettings
+     * @return List of successfully indexed record identifiers
+     * @throws IOException
+     * @throws FatalIndexerException
+     */
+    private List<String> indexRecordFile(Path mainFile, Map<String, Boolean> reindexSettings) throws IOException, FatalIndexerException {
         logger.debug("Indexing WorldViews file '{}'...", mainFile.getFileName());
         String fileNameRoot = FilenameUtils.getBaseName(mainFile.getFileName().toString());
 
@@ -110,6 +132,10 @@ public class WorldViewsIndexer extends Indexer {
         checkReindexSettings(dataFolders, reindexSettings);
 
         IndexingResult result = index(mainFile, dataFolders, null, SolrIndexerDaemon.getInstance().getConfiguration().getPageCountStart());
+        if (IndexingResultStatus.SKIPPED.equals(result.getStatus())) {
+            deleteSupersededRecordFile(mainFile, dataFolders, reindexSettings);
+            return Collections.emptyList();
+        }
 
         if (IndexingResultStatus.OK.equals(result.getStatus())) {
             String newMetsFileName = result.getRecordFileName();
@@ -136,20 +162,28 @@ public class WorldViewsIndexer extends Indexer {
             }
 
             // Copy and delete media folder
-            if (dataRepository.checkCopyAndDeleteDataFolder(pi, dataFolders, reindexSettings, DataRepository.PARAM_MEDIA,
-                    hotfolder.getDataRepositoryStrategy().getAllDataRepositories()) > 0) {
+            int copiedMediaFiles = dataRepository.checkCopyAndDeleteDataFolder(pi, dataFolders, reindexSettings,
+                    DataRepository.PARAM_MEDIA, hotfolder.getDataRepositoryStrategy().getAllDataRepositories());
+            result.addCopiedDataFileCounts(Collections.singletonMap(DataRepository.PARAM_MEDIA, copiedMediaFiles));
+            if (copiedMediaFiles > 0) {
                 String msg = Utils.removeRecordImagesFromCache(baseFileName);
                 if (msg != null) {
-                    logger.info(msg);
+                    logger.debug(msg);
                 }
             }
 
+            // If full-text indexing was suppressed, remove previously indexed full-text from storage and prevent any incoming
+            // hotfolder full-text from being promoted into the repository
+            if (result.isFulltextSuppressed()) {
+                deleteFulltextFoldersForRecord(dataRepository, dataFolders, reindexSettings, baseFileName);
+            }
+
             // Copy other data folders
-            dataRepository.copyAndDeleteAllDataFolders(pi, dataFolders, reindexSettings,
-                    hotfolder.getDataRepositoryStrategy().getAllDataRepositories());
+            result.addCopiedDataFileCounts(dataRepository.copyAndDeleteAllDataFolders(pi, dataFolders, reindexSettings,
+                    hotfolder.getDataRepositoryStrategy().getAllDataRepositories()));
 
             // Delete unsupported data folders
-            FileTools.deleteUnsupportedDataFolders(hotfolder.getHotfolderPath(), fileNameRoot);
+            hotfolder.deleteUnsupportedDataFolders(fileNameRoot);
 
             // Create success file for Goobi workflow
             Path successFile = Paths.get(hotfolder.getSuccessFolder().toAbsolutePath().toString(), mainFile.getFileName().toString());
@@ -177,10 +211,10 @@ public class WorldViewsIndexer extends Indexer {
                 }
             }
             prerenderPagePdfsIfRequired(pi);
-            logger.info("Successfully finished indexing '{}'.", mainFile.getFileName());
+            recordIndexed(result);
 
-            // Remove this file from lower priority hotfolders to avoid overriding changes with older version
-            SolrIndexerDaemon.getInstance().removeRecordFileFromLowerPriorityHotfolders(pi, hotfolder);
+            // Older copies of this record in lower-priority hotfolders must not overwrite this version
+            SolrIndexerDaemon.getInstance().registerIndexedRecord(pi, hotfolder);
 
             return result.isSubmitPiToViewer() ? Collections.singletonList(pi) : Collections.emptyList();
         }
@@ -236,7 +270,20 @@ public class WorldViewsIndexer extends Indexer {
             // Set PI
             String pi = validateAndApplyPI(findPI("worldviews//identifier/text()"), indexObj, false);
 
+            // Serialize with other record files carrying the same PI (other hotfolders, other file names)
+            if (!lockRecord(pi)) {
+                return skipSupersededRecord(ret, pi);
+            }
+
             indexObj.setSourceDocFormat(FileFormat.WORLDVIEWS);
+
+            // Evaluate the full-text suppression trigger for this record
+            this.suppressFulltext = isFulltextSuppressed();
+            ret.setFulltextSuppressed(this.suppressFulltext);
+            if (this.suppressFulltext) {
+                logger.info("Full-text suppression triggered for record '{}'; full-text will not be indexed and existing full-text will be removed.",
+                        pi);
+            }
 
             // Determine the data repository to use
             selectDataRepository(indexObj, pi, mainFile, dataFolders);
@@ -390,23 +437,25 @@ public class WorldViewsIndexer extends Indexer {
 
             logger.debug("Writing document to index...");
             useWriteStrategy.writeDocs(SolrIndexerDaemon.getInstance().getConfiguration().isAggregateRecords());
+            ret.setDocStructType(indexObj.getType()).setNumPages(recordNumPages).setNumSourcePages(recordNumSourcePages);
             // New volume: flag its anchor for deferred, coalesced reconciliation of NUMVOLUMES + METS.
             if (indexObj.isVolume() && !indexObj.isUpdate() && indexObj.getParent() != null) {
                 hotfolder.flagAnchorForReconciliation(indexObj.getParent().getPi());
             }
-            logger.info("Finished writing data for '{}' to Solr.", pi);
+            logger.debug("Finished writing data for '{}' to Solr.", pi);
         } catch (InterruptedException e) {
             logger.error("Indexing of '{}' could not be finished due to an error.", mainFile.getFileName());
             logger.error(e.getMessage(), e);
             ret.setError(e.getMessage() != null ? e.getMessage() : e.getClass().getName());
             SolrIndexerDaemon.getInstance().getSearchIndex().rollback();
             Thread.currentThread().interrupt();
-        } catch (FatalIndexerException | IndexerException | IOException | JDOMException | SolrServerException e) {
+        } catch (FatalIndexerException | IndexerException | IOException | JDOMException | SolrServerException | SolrException e) {
             logger.error("Indexing of '{}' could not be finished due to an error.", mainFile.getFileName());
             logger.error(e.getMessage(), e);
             ret.setError(e.getMessage() != null ? e.getMessage() : e.getClass().getName());
             SolrIndexerDaemon.getInstance().getSearchIndex().rollback();
         } finally {
+            unlockRecordAfterIndex();
             if (useWriteStrategy != null) {
                 useWriteStrategy.cleanup();
             }
@@ -699,14 +748,15 @@ public class WorldViewsIndexer extends Indexer {
             int pageCountStart) throws InterruptedException {
         // Get all physical elements
         List<Element> eleListImages = xp.evaluateToElements("worldviews/resource/images/image", null);
-        logger.info("Generating {} page documents (count starts at {})...", eleListImages.size(), pageCountStart);
+        recordNumSourcePages = eleListImages.size();
+        logger.debug("Generating {} page documents (count starts at {})...", eleListImages.size(), pageCountStart);
 
-        if (SolrIndexerDaemon.getInstance().getConfiguration().getThreads() > 1) {
+        if (SolrIndexerDaemon.getInstance().getConfiguration().getPageThreads() > 1) {
             // Generate each page document in its own thread
 
             ConcurrentHashMap<String, Boolean> map = new ConcurrentHashMap<>();
             ForkJoinTask<?> task = null;
-            try (ForkJoinPool pool = new ForkJoinPool(SolrIndexerDaemon.getInstance().getConfiguration().getThreads())) {
+            try (ForkJoinPool pool = new ForkJoinPool(SolrIndexerDaemon.getInstance().getConfiguration().getPageThreads())) {
                 task = pool.submit(() -> eleListImages.parallelStream().forEach(eleImage -> {
                     String iddoc = getNextIddoc();
                     if (map.containsKey(iddoc)) {
@@ -738,6 +788,7 @@ public class WorldViewsIndexer extends Indexer {
                 }
             }
         }
+        recordNumPages = writeStrategy.getPageDocsSize();
         logger.info("Generated {} page documents.", writeStrategy.getPageDocsSize());
     }
 
@@ -808,7 +859,11 @@ public class WorldViewsIndexer extends Indexer {
             ret.getDoc().addField(SolrConstants.DOCSTRCT, "OtherDocStrct"); // TODO
         }
 
-        if (new FulltextAugmentor(dataRepository).addFullTextToPageDoc(ret.getDoc(), dataFolders, pi, useOrder, null)) {
+        // FULLTEXTAVAILABLE defaults to false and is flipped to true by the augmentor only if full-text is actually added
+        ret.getDoc().setField(SolrConstants.FULLTEXTAVAILABLE, false);
+        // Image dimensions are independent of full-text and are always extracted
+        ImageDimensionsHelper.addImageDimensions(ret.getDoc(), dataFolders);
+        if (!suppressFulltext && new FulltextAugmentor(dataRepository).addFullTextToPageDoc(ret.getDoc(), dataFolders, pi, useOrder, null)) {
             this.recordHasFulltext = true;
         }
 

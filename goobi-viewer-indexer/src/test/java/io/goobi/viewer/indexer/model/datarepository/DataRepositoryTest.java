@@ -21,6 +21,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -481,6 +482,71 @@ class DataRepositoryTest extends AbstractTest {
         Assertions.assertTrue(dataFolder.exists());
         useRepository.deleteDataFoldersForRecord(BASE_FILE_NAME);
         Assertions.assertFalse(dataFolder.exists());
+    }
+
+    /**
+     * @see DataRepository#copyAndDeleteAllDataFolders(String,Map,Map,List)
+     * @verifies return number of copied files per data folder
+     */
+    @Test
+    void copyAndDeleteAllDataFolders_shouldReturnNumberOfCopiedFilesPerDataFolder() throws Exception {
+        DataRepository useRepository = new DataRepository("target/viewer/data/", true);
+        Path sourceRoot = Files.createDirectories(Paths.get("target/indexer/hotfolder_counts"));
+        Path fulltextFolder = Files.createDirectory(sourceRoot.resolve(BASE_FILE_NAME + "_txt"));
+        Path meiFolder = Files.createDirectory(sourceRoot.resolve(BASE_FILE_NAME + "_mei"));
+        Path emptyAltoFolder = Files.createDirectory(sourceRoot.resolve(BASE_FILE_NAME + "_alto"));
+        Files.writeString(fulltextFolder.resolve("00000001.txt"), "text");
+        Files.writeString(fulltextFolder.resolve("00000002.txt"), "text");
+        Files.writeString(meiFolder.resolve("score.mei"), "<mei/>");
+
+        Map<String, Path> dataFolders = new HashMap<>();
+        dataFolders.put(DataRepository.PARAM_FULLTEXT, fulltextFolder);
+        dataFolders.put(DataRepository.PARAM_MEI, meiFolder);
+        dataFolders.put(DataRepository.PARAM_ALTO, emptyAltoFolder);
+        Map<String, Integer> counts =
+                useRepository.copyAndDeleteAllDataFolders(BASE_FILE_NAME, dataFolders, new HashMap<>(), List.of(useRepository));
+
+        Assertions.assertEquals(2, counts.size());
+        Assertions.assertEquals(2, counts.get(DataRepository.PARAM_FULLTEXT));
+        Assertions.assertEquals(1, counts.get(DataRepository.PARAM_MEI));
+        Assertions.assertFalse(counts.containsKey(DataRepository.PARAM_ALTO));
+    }
+
+    /**
+     * @see DataRepository#deleteFulltextFoldersForRecord(String)
+     * @verifies delete only fulltext folders
+     */
+    @Test
+    void deleteFulltextFoldersForRecord_shouldDeleteOnlyFulltextFolders() throws Exception {
+        DataRepository useRepository = new DataRepository("target/viewer/data/", true);
+
+        // Full-text folders that should be deleted
+        File altoFolder = new File(useRepository.getDir(DataRepository.PARAM_ALTO).toAbsolutePath().toString(), BASE_FILE_NAME);
+        File altoCrowdFolder = new File(useRepository.getDir(DataRepository.PARAM_ALTOCROWD).toAbsolutePath().toString(), BASE_FILE_NAME);
+        File fulltextFolder = new File(useRepository.getDir(DataRepository.PARAM_FULLTEXT).toAbsolutePath().toString(), BASE_FILE_NAME);
+        File fulltextCrowdFolder = new File(useRepository.getDir(DataRepository.PARAM_FULLTEXTCROWD).toAbsolutePath().toString(), BASE_FILE_NAME);
+        File abbyyFolder = new File(useRepository.getDir(DataRepository.PARAM_ABBYY).toAbsolutePath().toString(), BASE_FILE_NAME);
+        File wcFolder = new File(useRepository.getDir(DataRepository.PARAM_TEIWC).toAbsolutePath().toString(), BASE_FILE_NAME);
+        for (File folder : Arrays.asList(altoFolder, altoCrowdFolder, fulltextFolder, fulltextCrowdFolder, abbyyFolder, wcFolder)) {
+            Assertions.assertTrue(folder.mkdirs());
+            Assertions.assertTrue(folder.exists());
+        }
+
+        // Non-full-text folders that must remain intact
+        File mediaFolder = new File(useRepository.getDir(DataRepository.PARAM_MEDIA).toAbsolutePath().toString(), BASE_FILE_NAME);
+        File sourceFolder = new File(useRepository.getDir(DataRepository.PARAM_SOURCE).toAbsolutePath().toString(), BASE_FILE_NAME);
+        for (File folder : Arrays.asList(mediaFolder, sourceFolder)) {
+            Assertions.assertTrue(folder.mkdirs());
+            Assertions.assertTrue(folder.exists());
+        }
+
+        useRepository.deleteFulltextFoldersForRecord(BASE_FILE_NAME);
+
+        for (File folder : Arrays.asList(altoFolder, altoCrowdFolder, fulltextFolder, fulltextCrowdFolder, abbyyFolder, wcFolder)) {
+            Assertions.assertFalse(folder.exists(), folder.getAbsolutePath() + " should have been deleted");
+        }
+        Assertions.assertTrue(mediaFolder.exists(), "media folder must not be deleted");
+        Assertions.assertTrue(sourceFolder.exists(), "source folder must not be deleted");
     }
 
     /**

@@ -17,9 +17,11 @@ package io.goobi.viewer.indexer;
 
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.ForkJoinPool;
 
 import org.apache.commons.configuration2.ex.ConfigurationException;
 import org.apache.commons.lang3.StringUtils;
@@ -31,10 +33,15 @@ import org.jdom2.Element;
 import org.jdom2.JDOMException;
 
 import io.goobi.viewer.indexer.exceptions.FatalIndexerException;
+import io.goobi.viewer.indexer.exceptions.SolrUnavailableException;
 import io.goobi.viewer.indexer.helper.Configuration;
 import io.goobi.viewer.indexer.helper.Hotfolder;
+import io.goobi.viewer.indexer.helper.IndexedRecordRegistry;
+import io.goobi.viewer.indexer.helper.RecordLocks;
 import io.goobi.viewer.indexer.helper.SolrSearchIndex;
 import io.goobi.viewer.indexer.helper.Utils;
+import io.goobi.viewer.indexer.model.datarepository.strategy.AbstractDataRepositoryStrategy;
+import io.goobi.viewer.indexer.model.datarepository.strategy.IDataRepositoryStrategy;
 
 /**
  * Entry Point into Application.
@@ -57,8 +64,16 @@ public final class SolrIndexerDaemon {
 
     private SolrSearchIndex searchIndex;
     private SolrSearchIndex oldSearchIndex;
+    /** Data repository strategy shared by all hotfolders (created once so repositories are loaded and logged only once). */
+    private IDataRepositoryStrategy dataRepositoryStrategy;
+    /** Shared work-stealing pool for record + nested page work when performance.sharedWorkerPool is enabled; null otherwise. */
+    private ForkJoinPool workerPool;
 
     private List<Hotfolder> hotfolders = new ArrayList<>();
+    /** Locks records by PI across all hotfolders (see {@link RecordLocks}). */
+    private final RecordLocks recordLocks = new RecordLocks();
+    /** Records indexed from hotfolders other than the lowest-priority one (see {@link #isSupersededByHigherPriorityHotfolder}). */
+    private final IndexedRecordRegistry indexedRecordRegistry = new IndexedRecordRegistry(IndexedRecordRegistry.MAX_ENTRIES);
 
     /**
      * Initialization-on-demand holder: the JVM guarantees the class is loaded (and INSTANCE constructed) lazily and thread-safely on
@@ -131,8 +146,15 @@ public final class SolrIndexerDaemon {
             // oldSolrUrl is optional
         }
 
+        // Log the global hotfolder settings once, rather than once per hotfolder
+        Hotfolder.logGlobalSettings(getConfiguration());
+
         // create hotfolder(s)
-        for (String hotfolderPath : getConfiguration().getHotfolderPaths()) {
+        List<String> hotfolderPaths = getConfiguration().getHotfolderPaths();
+        for (int i = 0; i < hotfolderPaths.size(); i++) {
+            String hotfolderPath = hotfolderPaths.get(i);
+            // Announce each configured hotfolder and its priority (first = highest; scanned before the others).
+            logger.info("Monitoring hotfolder {} of {}: {}", i + 1, hotfolderPaths.size(), hotfolderPath);
             Hotfolder hotfolder = new Hotfolder(hotfolderPath);
             hotfolders.add(hotfolder);
             if (hotfolder.getSuccessFolder() == null || !Files.isDirectory(hotfolder.getSuccessFolder())) {
@@ -152,25 +174,67 @@ public final class SolrIndexerDaemon {
     }
 
     /**
-     * Removes files that matches the given pi from hotfolders that are prioritized lower than (i.e. listed after) usedHotfolder.
-     * 
-     * @param pi
-     * @param usedHotfolder
+     * Registers that the record with the given PI has been indexed successfully from the given hotfolder, so that older copies of the record in
+     * lower-priority hotfolders are skipped (see {@link #isSupersededByHigherPriorityHotfolder(String, Hotfolder, Path)}). Nothing is
+     * registered for the lowest-priority hotfolder, which cannot supersede anything.
+     *
+     * @param pi Record identifier
+     * @param hotfolder Hotfolder the record file was taken from
      */
-    public void removeRecordFileFromLowerPriorityHotfolders(String pi, Hotfolder usedHotfolder) {
-        logger.debug("removeRecordFileFromLowerPriorityHotfolders: {}/{}", usedHotfolder.getHotfolderPath().getFileName(), pi);
-        int index = hotfolders.indexOf(usedHotfolder);
-        if (index == -1) {
+    public void registerIndexedRecord(String pi, Hotfolder hotfolder) {
+        int priority = getHotfolderPriority(hotfolder);
+        if (priority < 0 || priority >= hotfolders.size() - 1) {
             return;
         }
-        for (int i = index + 1; i < hotfolders.size(); ++i) {
-            Hotfolder hotfolder = hotfolders.get(i);
-            try {
-                hotfolder.removeSourceFileFromQueue(pi);
-            } catch (IOException e) {
-                logger.error(e.getMessage());
+        indexedRecordRegistry.register(pi, priority, System.currentTimeMillis());
+    }
+
+    /**
+     * Checks whether the given record file is an older copy of a record that has been indexed from a higher-priority hotfolder after the file
+     * was last modified (see {@link IndexedRecordRegistry#isSuperseded(String, int, long)}, also for the caveat regarding copies that preserve
+     * modification times, e.g. <code>rsync -a</code>). Only applies to files placed directly in the hotfolder, not to internal files (anchor
+     * <code>.UPDATED</code> files, indexed record files from the data repository).
+     *
+     * @param pi Record identifier
+     * @param hotfolder Hotfolder the record file was taken from
+     * @param recordFile Record file
+     * @return true if the record file is superseded and must not be indexed; false otherwise
+     * @should return true if indexed from higher priority hotfolder after file modification
+     * @should return false if indexed from higher priority hotfolder before file modification
+     * @should return false for highest priority hotfolder
+     * @should return false for files outside the hotfolder
+     */
+    public boolean isSupersededByHigherPriorityHotfolder(String pi, Hotfolder hotfolder, Path recordFile) {
+        int priority = getHotfolderPriority(hotfolder);
+        if (priority <= 0 || recordFile == null || recordFile.getParent() == null
+                || recordFile.getFileName().toString().endsWith(MetsIndexer.ANCHOR_UPDATE_EXTENSION)
+                || !recordFile.getParent().toAbsolutePath().normalize().equals(hotfolder.getHotfolderPath().toAbsolutePath().normalize())) {
+            return false;
+        }
+        try {
+            return indexedRecordRegistry.isSuperseded(pi, priority, Files.getLastModifiedTime(recordFile).toMillis());
+        } catch (IOException e) {
+            logger.warn("Could not read the modification time of '{}': {}", recordFile.getFileName(), e.getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * 
+     * @param hotfolder
+     * @return Priority of the given hotfolder (0 = highest, i.e. listed first); -1 if not a configured hotfolder
+     */
+    int getHotfolderPriority(Hotfolder hotfolder) {
+        if (hotfolder == null || hotfolder.getHotfolderPath() == null) {
+            return -1;
+        }
+        Path path = hotfolder.getHotfolderPath().toAbsolutePath().normalize();
+        for (int i = 0; i < hotfolders.size(); i++) {
+            if (path.equals(hotfolders.get(i).getHotfolderPath().toAbsolutePath().normalize())) {
+                return i;
             }
         }
+        return -1;
     }
 
     /**
@@ -249,17 +313,49 @@ public final class SolrIndexerDaemon {
             logger.warn("<sleep> must contain an numerical value, using default interval of {} ms instead.", DEFAULT_SLEEP_INTERVAL);
         }
 
-        logger.info("Using {} CPU thread(s).", configuration.getThreads());
+        if (configuration.isSharedWorkerPool()) {
+            logger.info("Thread configuration: shared work-stealing pool of {} thread(s) (performance.sharedWorkerPool=true, "
+                    + "performance.threads); record and page/child-node work auto-balance within it "
+                    + "(performance.pageThreads is ignored).",
+                    configuration.getThreads());
+        } else {
+            logger.info("Thread configuration: up to {} record(s) indexed in parallel (performance.threads), "
+                    + "each using up to {} thread(s) for page/child-node generation (performance.pageThreads).",
+                    configuration.getThreads(), configuration.getPageThreads());
+            if (configuration.isLegacyThreadsConfiguration()) {
+                logger.warn("performance.threads is {} but performance.pageThreads is not configured. The meaning of <threads> has changed: "
+                        + "it used to be the number of threads for page generation within one record and is now the number of records indexed "
+                        + "in parallel, with pages generated serially. Indexing {} records at the same time needs more memory and puts more load "
+                        + "on Solr. Please check config_indexer.xml: set <pageThreads> (e.g. to the former value of <threads>) and choose "
+                        + "<threads> for the number of records indexed in parallel (1 = one record at a time).",
+                        configuration.getThreads(), configuration.getThreads());
+            }
+        }
 
         Utils.submitDataToViewer(Collections.emptyList(), hotfolders.get(0).countRecordFiles());
 
         // main loop
         logger.info("Program started, monitoring hotfolder(s)...");
         while (running) {
+            boolean madeProgress = false;
             for (Hotfolder hotfolder : hotfolders) {
-                if (hotfolder.scan()) {
+                boolean pending;
+                try {
+                    pending = hotfolder.scan();
+                } catch (SolrUnavailableException e) {
+                    // E.g. the commit or anchor reconciliation after a queue drain; pending records stay pending and are committed later
+                    logger.warn("Solr is unavailable, pausing: {}", e.getMessage());
                     break;
                 }
+                madeProgress |= hotfolder.isMadeProgress();
+                if (pending) {
+                    break;
+                }
+            }
+            // Only pause while idle (or while waiting for records that are still being exported); with work pending, scan
+            // again right away so the worker pool is refilled as soon as a slot frees up.
+            if (madeProgress) {
+                continue;
             }
             try {
                 Thread.sleep(sleepInterval);
@@ -267,6 +363,17 @@ public final class SolrIndexerDaemon {
                 logger.error(e.getMessage(), e);
                 Thread.currentThread().interrupt();
             }
+        }
+
+        // Finish any records still indexing in parallel and release the record-level executors.
+        for (Hotfolder hotfolder : hotfolders) {
+            hotfolder.shutdownRecordExecutor();
+        }
+        // Give pending background requests to the Goobi viewer (e.g. PDF pre-rendering) a chance to be sent
+        Utils.shutdownViewerTaskSender(10);
+        // Shut down the shared work-stealing pool (if the shared-pool mode was used).
+        if (workerPool != null) {
+            workerPool.shutdown();
         }
     }
 
@@ -385,6 +492,51 @@ public final class SolrIndexerDaemon {
      */
     public SolrSearchIndex getSearchIndex() {
         return this.searchIndex;
+    }
+
+    /**
+     * @return Record locks shared by all hotfolders
+     */
+    public RecordLocks getRecordLocks() {
+        return recordLocks;
+    }
+
+    /**
+     * 
+     * @return Configured hotfolders, in order of priority (live list; for tests)
+     */
+    List<Hotfolder> getHotfolders() {
+        return hotfolders;
+    }
+
+    /**
+     * Returns the shared data repository strategy, creating it on first use. Shared across all hotfolders so the
+     * configured repositories are loaded (and logged) only once, and so their in-flight reservation accounting is
+     * consistent across hotfolders.
+     *
+     * @return the shared {@link IDataRepositoryStrategy}
+     * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException
+     */
+    public synchronized IDataRepositoryStrategy getDataRepositoryStrategy() throws FatalIndexerException {
+        if (dataRepositoryStrategy == null) {
+            dataRepositoryStrategy = AbstractDataRepositoryStrategy.create(getConfiguration());
+        }
+        return dataRepositoryStrategy;
+    }
+
+    /**
+     * Returns the shared work-stealing pool (created on first use) when {@code performance.sharedWorkerPool} is enabled,
+     * else null. Shared across all hotfolders so record and nested page/child tasks draw from one auto-balanced budget.
+     *
+     * @return the shared {@link ForkJoinPool}, or null if the shared-pool mode is disabled
+     */
+    public synchronized ForkJoinPool getWorkerPool() {
+        if (workerPool == null && getConfiguration().isSharedWorkerPool()) {
+            int parallelism = getConfiguration().getThreads();
+            workerPool = new ForkJoinPool(parallelism);
+            logger.debug("Shared work-stealing pool created with parallelism {}.", parallelism);
+        }
+        return workerPool;
     }
 
     /**

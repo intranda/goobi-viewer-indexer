@@ -35,6 +35,7 @@ import io.goobi.viewer.indexer.SolrIndexerDaemon;
 import io.goobi.viewer.indexer.helper.JDomXP.FileFormat;
 import io.goobi.viewer.indexer.model.SolrConstants.MetadataGroupType;
 import io.goobi.viewer.indexer.model.config.FieldConfig;
+import io.goobi.viewer.indexer.model.config.FulltextSuppressionCondition;
 import io.goobi.viewer.indexer.model.config.GroupEntity;
 import io.goobi.viewer.indexer.model.config.NonSortConfiguration;
 import io.goobi.viewer.indexer.model.config.SubfieldConfig;
@@ -107,8 +108,8 @@ class ConfigurationTest extends AbstractTest {
             SubfieldConfig fieldSubconfig = groupEntity.getSubfields().get("field1");
             Assertions.assertNotNull(fieldSubconfig);
             assertEquals(2, fieldSubconfig.getXpaths().size());
-            assertEquals("xpath1", fieldSubconfig.getXpaths().get(0));
-            assertEquals("xpath2", fieldSubconfig.getXpaths().get(1));
+            assertEquals("xpath1", fieldSubconfig.getXpaths().get(0).getxPath());
+            assertEquals("xpath2", fieldSubconfig.getXpaths().get(1).getxPath());
             assertTrue(fieldSubconfig.isMultivalued());
             assertTrue(fieldSubconfig.isAddSortField());
             assertEquals("def", fieldSubconfig.getDefaultValues().get("xpath2"));
@@ -117,7 +118,7 @@ class ConfigurationTest extends AbstractTest {
             SubfieldConfig fieldSubconfig = groupEntity.getSubfields().get("field2");
             Assertions.assertNotNull(fieldSubconfig);
             assertEquals(1, fieldSubconfig.getXpaths().size());
-            assertEquals("xpath3", fieldSubconfig.getXpaths().get(0));
+            assertEquals("xpath3", fieldSubconfig.getXpaths().get(0).getxPath());
             assertFalse(fieldSubconfig.isMultivalued());
         }
 
@@ -268,12 +269,76 @@ class ConfigurationTest extends AbstractTest {
     }
 
     /**
+     * @see Configuration#isLegacyThreadsConfiguration()
+     * @verifies return true if threads above one and page threads missing
+     */
+    @Test
+    void isLegacyThreadsConfiguration_shouldReturnTrueIfThreadsAboveOneAndPageThreadsMissing() {
+        Configuration config = new Configuration(TEST_CONFIG_PATH);
+        config.overrideValue("performance.threads", 4);
+        assertTrue(config.isLegacyThreadsConfiguration());
+    }
+
+    /**
+     * @see Configuration#isLegacyThreadsConfiguration()
+     * @verifies return false if page threads configured
+     */
+    @Test
+    void isLegacyThreadsConfiguration_shouldReturnFalseIfPageThreadsConfigured() {
+        Configuration config = new Configuration(TEST_CONFIG_PATH);
+        config.overrideValue("performance.threads", 4);
+        config.overrideValue("performance.pageThreads", 1);
+        assertFalse(config.isLegacyThreadsConfiguration());
+    }
+
+    /**
+     * @see Configuration#isLegacyThreadsConfiguration()
+     * @verifies return false if threads is one
+     */
+    @Test
+    void isLegacyThreadsConfiguration_shouldReturnFalseIfThreadsIsOne() {
+        Configuration config = new Configuration(TEST_CONFIG_PATH);
+        assertEquals(1, config.getThreads());
+        assertFalse(config.isLegacyThreadsConfiguration());
+    }
+
+    /**
+     * @see Configuration#isLegacyThreadsConfiguration()
+     * @verifies return false if shared worker pool enabled
+     */
+    @Test
+    void isLegacyThreadsConfiguration_shouldReturnFalseIfSharedWorkerPoolEnabled() {
+        Configuration config = new Configuration(TEST_CONFIG_PATH);
+        config.overrideValue("performance.threads", 4);
+        config.overrideValue("performance.sharedWorkerPool", true);
+        assertFalse(config.isLegacyThreadsConfiguration());
+    }
+
+    /**
+     * @see Configuration#isConsoleLoggingEnabled()
+     * @verifies return correct value
+     */
+    @Test
+    void isConsoleLoggingEnabled_shouldReturnCorrectValue() {
+        assertTrue(SolrIndexerDaemon.getInstance().getConfiguration().isConsoleLoggingEnabled());
+    }
+
+    /**
      * @see Configuration#isPrioritizeLargeImageFolders()
      * @verifies return correct value
      */
     @Test
     void isPrioritizeLargeImageFolders_shouldReturnCorrectValue() {
         assertFalse(SolrIndexerDaemon.getInstance().getConfiguration().isPrioritizeLargeImageFolders());
+    }
+
+    /**
+     * @see Configuration#isStreamingWriteStrategy()
+     * @verifies return correct value
+     */
+    @Test
+    void isStreamingWriteStrategy_shouldReturnCorrectValue() {
+        assertFalse(SolrIndexerDaemon.getInstance().getConfiguration().isStreamingWriteStrategy());
     }
 
     /**
@@ -452,5 +517,29 @@ class ConfigurationTest extends AbstractTest {
         List<String> excludeLabels = SolrIndexerDaemon.getInstance().getConfiguration().getLayoutTagFacetExcludeLabels();
         assertEquals(1, excludeLabels.size());
         assertEquals("gr_printed", excludeLabels.get(0));
+    }
+
+    /**
+     * @see Configuration#isFulltextSuppressionEnabled()
+     * @verifies return correct value
+     */
+    @Test
+    void isFulltextSuppressionEnabled_shouldReturnCorrectValue() {
+        assertTrue(SolrIndexerDaemon.getInstance().getConfiguration().isFulltextSuppressionEnabled());
+    }
+
+    /**
+     * @see Configuration#getFulltextSuppressionConditions()
+     * @verifies load all configured conditions
+     */
+    @Test
+    void getFulltextSuppressionConditions_shouldLoadAllConfiguredConditions() {
+        List<FulltextSuppressionCondition> conditions = SolrIndexerDaemon.getInstance().getConfiguration().getFulltextSuppressionConditions();
+        Assertions.assertNotNull(conditions);
+        assertEquals(1, conditions.size());
+        FulltextSuppressionCondition condition = conditions.get(0);
+        assertEquals("/mets:mets/mets:dmdSec//mods:recordIdentifier/text()", condition.getXpath());
+        assertEquals(FulltextSuppressionCondition.MatchMode.EQUALS, condition.getMode());
+        assertEquals("DOES-NOT-EXIST-MARKER", condition.getValue());
     }
 }

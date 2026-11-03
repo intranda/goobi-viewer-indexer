@@ -57,7 +57,7 @@ public class MaxRecordNumberStrategy extends AbstractDataRepositoryStrategy {
 
     /** {@inheritDoc} */
     @Override
-    public DataRepository[] selectDataRepository(final String pi, final Path recordFile, final Map<String, Path> dataFolders,
+    public synchronized DataRepository[] selectDataRepository(final String pi, final Path recordFile, final Map<String, Path> dataFolders,
             final SolrSearchIndex searchIndex,
             final SolrSearchIndex oldSearchIndex)
             throws FatalIndexerException {
@@ -102,9 +102,11 @@ public class MaxRecordNumberStrategy extends AbstractDataRepositoryStrategy {
         // Record not yet indexed; find available repository
         try {
             for (DataRepository repository : dataRepositories) {
-                int records = repository.getNumRecords();
+                // Count in-flight reservations so a concurrent selection cannot also fill the last free slot.
+                int records = repository.getNumRecords() + (int) getPendingReservation(repository);
                 if (records < dataRepositoriesMaxRecords) {
                     logger.info("Repository selected for '{}': {} (currently contains {} records)", usePi, repository.getPath(), records);
+                    reserve(repository, 1);
                     ret[0] = repository;
                     return ret;
                 } else if (records > dataRepositoriesMaxRecords) {

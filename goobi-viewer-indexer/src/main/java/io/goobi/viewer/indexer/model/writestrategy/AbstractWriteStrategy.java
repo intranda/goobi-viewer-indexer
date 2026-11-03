@@ -78,6 +78,25 @@ public abstract class AbstractWriteStrategy implements ISolrWriteStrategy {
      * @throws IOException
      */
     public static ISolrWriteStrategy create(Path sourceFile, Map<String, Path> dataFolders, Hotfolder hotfolder) throws IOException {
+        return create(sourceFile, dataFolders, hotfolder, false);
+    }
+
+    /**
+     *
+     * @param sourceFile File containing the record(s)
+     * @param dataFolders Data folder map
+     * @param hotfolder active Hotfolder instance
+     * @param streamingAllowed If true, the record's structure documents are final once added (no later updates or page cross-references), so
+     *            {@link StreamingSolrWriteStrategy} may be used instead of {@link SerializingSolrWriteStrategy} for large records (if enabled in the
+     *            configuration)
+     * @return An appropriate write strategy instance
+     * @throws IOException
+     * @should return streaming strategy for large file if allowed and enabled
+     * @should return serializing strategy for large file if streaming not allowed
+     * @should return lazy strategy for small file
+     */
+    public static ISolrWriteStrategy create(Path sourceFile, Map<String, Path> dataFolders, Hotfolder hotfolder, boolean streamingAllowed)
+            throws IOException {
         boolean useSerializingStrategy = false;
         long size = sourceFile != null ? Files.size(sourceFile) : 0;
         if (size >= hotfolder.getMetsFileSizeThreshold() && sourceFile != null) {
@@ -112,6 +131,10 @@ public abstract class AbstractWriteStrategy implements ISolrWriteStrategy {
         }
 
         if (useSerializingStrategy) {
+            if (streamingAllowed && SolrIndexerDaemon.getInstance().getConfiguration().isStreamingWriteStrategy()) {
+                logger.info("Using the streaming Solr write strategy (documents are sent to Solr in batches while indexing).");
+                return new StreamingSolrWriteStrategy(SolrIndexerDaemon.getInstance().getSearchIndex());
+            }
             return new SerializingSolrWriteStrategy(SolrIndexerDaemon.getInstance().getSearchIndex(), hotfolder.getTempFolder());
         }
 

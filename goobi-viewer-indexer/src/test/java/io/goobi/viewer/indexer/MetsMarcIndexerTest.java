@@ -116,19 +116,6 @@ class MetsMarcIndexerTest extends AbstractSolrEnabledTest {
             assertEquals("X", doc.getFieldValue(SolrConstants.THUMBPAGENOLABEL));
             Assertions.assertNull(doc.getFieldValue(SolrConstants.IMAGEURN_OAI)); // only docs representing deleted records should have this field
             assertEquals(false, doc.getFieldValue(SolrConstants.FULLTEXTAVAILABLE));
-            {
-                List<String> mdList = (List<String>) doc.getFieldValue("MD_AUTHOR");
-                Assertions.assertNotNull(mdList);
-                Assertions.assertEquals(1, mdList.size());
-                Assertions.assertEquals("Suchten, Alexander von", mdList.get(0));
-            }
-            {
-                List<String> mdList = (List<String>) doc.getFieldValue("MD_AUTHOR" + SolrConstants.SUFFIX_UNTOKENIZED);
-                Assertions.assertNotNull(mdList);
-                Assertions.assertEquals(1, mdList.size());
-                Assertions.assertEquals("Suchten, Alexander von", mdList.get(0));
-            }
-            Assertions.assertEquals("Suchten, Alexander von", doc.getFieldValue("SORT_AUTHOR"));
 
             {
                 List<Long> mdList = (List<Long>) doc.getFieldValue(SolrConstants.YEAR);

@@ -16,6 +16,7 @@
 package io.goobi.viewer.indexer.model.config;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -25,6 +26,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.NoSuchElementException;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.commons.configuration2.BaseHierarchicalConfiguration;
 import org.apache.commons.configuration2.HierarchicalConfiguration;
@@ -56,6 +58,8 @@ public final class MetadataConfigurationManager {
     private static final String XML_PATH_LIST_ITEM = ".list.item(";
 
     private Map<String, List<FieldConfig>> fieldConfigurations = new HashMap<>();
+    /** Cache of the field names supported per {@link FileFormat}. The underlying configuration is immutable after load. */
+    private final Map<FileFormat, List<String>> fieldNamesByFormatCache = new ConcurrentHashMap<>();
     private Set<String> fieldsToAddToParents = new HashSet<>();
     private Set<String> fieldsToAddToChildren = new HashSet<>();
     private Set<String> fieldsToAddToPages = new HashSet<>();
@@ -343,6 +347,7 @@ public final class MetadataConfigurationManager {
      * @param sub
      * @return {@link SubfieldConfig}
      * @should read subfield config correctly
+     * @should read concatenation settings correctly
      */
     static SubfieldConfig readSubfield(HierarchicalConfiguration<ImmutableNode> sub) {
         if (sub == null) {
@@ -362,7 +367,9 @@ public final class MetadataConfigurationManager {
         }
 
         SubfieldConfig ret = new SubfieldConfig(fieldName, multivalued, addSortField);
-        ret.getXpaths().add(xpathExp);
+        ret.setConcatenate(sub.getBoolean("[@concatenate]", false));
+        ret.setSeparator(sub.getString("[@separator]", SubfieldConfig.DEFAULT_SEPARATOR));
+        ret.getXpaths().add(new XPathConfig(xpathExp, null, null, fieldName));
         ret.getDefaultValues().put(xpathExp, defaultValue);
         logger.debug("Loaded group entity field: {} - {}", fieldName, xpathExp);
 
@@ -387,6 +394,20 @@ public final class MetadataConfigurationManager {
      * @return a {@link java.util.List} object.
      */
     public List<String> getListWithAllFieldNames(FileFormat format) {
+        if (format == null) {
+            return Collections.emptyList();
+        }
+        return fieldNamesByFormatCache.computeIfAbsent(format, this::computeListWithAllFieldNames);
+    }
+
+    /**
+     * Builds the (immutable) list of field names supported for the given format. Called at most once per format via
+     * {@link #fieldNamesByFormatCache}, since {@link #fieldConfigurations} does not change after construction.
+     *
+     * @param format {@link FileFormat}
+     * @return unmodifiable list of field names
+     */
+    private List<String> computeListWithAllFieldNames(FileFormat format) {
         List<String> retArray = new ArrayList<>();
         for (Entry<String, List<FieldConfig>> entry : fieldConfigurations.entrySet()) {
             for (FieldConfig config : entry.getValue()) {
@@ -397,7 +418,7 @@ public final class MetadataConfigurationManager {
             }
         }
 
-        return retArray;
+        return Collections.unmodifiableList(retArray);
     }
 
     /**

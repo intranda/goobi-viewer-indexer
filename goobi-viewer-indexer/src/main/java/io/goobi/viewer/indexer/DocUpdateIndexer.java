@@ -77,6 +77,31 @@ public class DocUpdateIndexer extends Indexer {
     @Override
     public List<String> addToIndex(Path dataFile, Map<String, Boolean> reindexSettings) throws IOException, FatalIndexerException {
         String fileNameRoot = FilenameUtils.getBaseName(dataFile.getFileName().toString());
+        // Serialize with the indexing of other files of the same record (file name: PI#page)
+        currentRecordFile = dataFile;
+        try {
+            if (!lockRecord(fileNameRoot.split("#")[0])) {
+                logger.info("Skipping '{}': the record has been indexed from a higher-priority hotfolder meanwhile.", dataFile.getFileName());
+                deleteSupersededRecordFile(dataFile, checkDataFolders(hotfolder.getHotfolderPath(), fileNameRoot), new HashMap<>());
+                return Collections.emptyList();
+            }
+            return updateDocs(dataFile, fileNameRoot);
+        } finally {
+            unlockRecord();
+            currentRecordFile = null;
+        }
+    }
+
+    /**
+     * Applies the updates in the given data file and moves its data folders into the data repository (see {@link #addToIndex(Path, Map)}).
+     *
+     * @param dataFile Data file
+     * @param fileNameRoot Base name of the data file
+     * @return List of successfully updated record identifiers
+     * @throws IOException
+     * @throws FatalIndexerException
+     */
+    private List<String> updateDocs(Path dataFile, String fileNameRoot) throws IOException, FatalIndexerException {
 
         // Check data folders in the hotfolder
         Map<String, Path> dataFolders = checkDataFolders(hotfolder.getHotfolderPath(), fileNameRoot);
@@ -98,7 +123,7 @@ public class DocUpdateIndexer extends Indexer {
                     hotfolder.getDataRepositoryStrategy().getAllDataRepositories());
 
             // Delete unsupported data folders
-            FileTools.deleteUnsupportedDataFolders(hotfolder.getHotfolderPath(), fileNameRoot);
+            hotfolder.deleteUnsupportedDataFolders(fileNameRoot);
 
             try {
                 Files.delete(dataFile);
@@ -122,7 +147,7 @@ public class DocUpdateIndexer extends Indexer {
                 }
             });) {
                 for (Path path : stream) {
-                    logger.info(LOG_FOUND_DATA_FOLDER, path.getFileName());
+                    logger.debug(LOG_FOUND_DATA_FOLDER, path.getFileName());
                     Utils.deleteDirectory(path);
                 }
             }

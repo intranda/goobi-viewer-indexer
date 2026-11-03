@@ -78,7 +78,7 @@ public class RemainingSpaceStrategy extends AbstractDataRepositoryStrategy {
 
     /** {@inheritDoc} */
     @Override
-    public DataRepository[] selectDataRepository(final String pi, final Path recordFile, final Map<String, Path> dataFolders,
+    public synchronized DataRepository[] selectDataRepository(final String pi, final Path recordFile, final Map<String, Path> dataFolders,
             final SolrSearchIndex searchIndex, final SolrSearchIndex oldSearchIndex) throws FatalIndexerException {
         DataRepository[] ret = new DataRepository[] { null, null };
 
@@ -103,7 +103,7 @@ public class RemainingSpaceStrategy extends AbstractDataRepositoryStrategy {
             logger.warn("dataFile is null, skipping record size calculation.");
         }
 
-        SortedMap<Long, DataRepository> repositorySpaceMap = generateRepositorySpaceMap(dataRepositories);
+        SortedMap<Long, DataRepository> repositorySpaceMap = generateAvailableSpaceMap();
 
         String previousRepository = null;
         try {
@@ -141,6 +141,9 @@ public class RemainingSpaceStrategy extends AbstractDataRepositoryStrategy {
         DataRepository repository = selectRepository(repositorySpaceMap, recordSize);
         if (repository != null) {
             logger.info("Repository selected for '{}': {} ({} Bytes available).", usePi, repository.getPath(), repository.getUsableSpace());
+            // Reserve this record's size so a concurrent selection cannot also claim the same free space before this
+            // record's files are on disk. Released via releaseReservation() once the record is done.
+            reserve(repository, recordSize);
             ret[0] = repository;
             return ret;
         }
@@ -158,6 +161,25 @@ public class RemainingSpaceStrategy extends AbstractDataRepositoryStrategy {
         SortedMap<Long, DataRepository> ret = new TreeMap<>();
         for (DataRepository repository : dataRepositories) {
             long size = repository.getUsableSpace() - repository.getBuffer();
+            if (size > 0) {
+                ret.put(size, repository);
+            }
+        }
+
+        return ret;
+    }
+
+    /**
+     * Like {@link #generateRepositorySpaceMap(List)} but also subtracts each repository's in-flight reservations (see
+     * {@link AbstractDataRepositoryStrategy#getPendingReservation(DataRepository)}), so concurrent record selections see
+     * each other's not-yet-written data and do not over-commit a repository.
+     *
+     * @return available space per repository, netting out buffer and pending reservations
+     */
+    private SortedMap<Long, DataRepository> generateAvailableSpaceMap() {
+        SortedMap<Long, DataRepository> ret = new TreeMap<>();
+        for (DataRepository repository : dataRepositories) {
+            long size = repository.getUsableSpace() - repository.getBuffer() - getPendingReservation(repository);
             if (size > 0) {
                 ret.put(size, repository);
             }

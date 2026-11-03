@@ -16,6 +16,7 @@
 package io.goobi.viewer.indexer;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -24,6 +25,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.nio.file.attribute.FileTime;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -31,6 +33,11 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import org.apache.commons.collections4.CollectionUtils;
@@ -606,6 +613,94 @@ class MetsIndexerTest extends AbstractSolrEnabledTest {
     }
 
     /**
+     * @see MetsIndexer#index(Path,Map,ISolrWriteStrategy,int,boolean)
+     * @verifies flag anchor for reconciliation even if anchor not yet visible in index
+     */
+    @Test
+    void index_shouldFlagAnchorForReconciliationEvenIfAnchorNotYetVisibleInIndex() throws Exception {
+        String piAnchor = "PPN559838239";
+        Map<String, Path> dataFolders = new HashMap<>();
+        MetsIndexer indexer = new MetsIndexer(hotfolder);
+
+        // Batched commits: the anchor is not committed (i.e. not visible in Solr) when its volume is indexed
+        int originalCommitBatchSize = SolrIndexerDaemon.getInstance().getConfiguration().getCommitBatchSize();
+        SolrIndexerDaemon.getInstance().getConfiguration().overrideValue("performance.commitBatchSize", 100);
+        try {
+            Assertions.assertNull(indexer.index(metsFileAnchor1, dataFolders, null, 1, false).getError());
+            Assertions.assertNull(indexer.index(metsFileVol1, dataFolders, null, 1, false).getError());
+            placeIndexedAnchorFile(piAnchor);
+            SolrIndexerDaemon.getInstance().getSearchIndex().commitPending();
+
+            hotfolder.getHighPriorityQueue().clear();
+            hotfolder.reconcilePendingAnchors();
+            assertEquals(1, hotfolder.getHighPriorityQueue().size(), "the new volume must have flagged its not yet visible anchor");
+            assertEquals(piAnchor + ".xml", hotfolder.getHighPriorityQueue().poll().getFileName().toString());
+        } finally {
+            SolrIndexerDaemon.getInstance().getConfiguration().overrideValue("performance.commitBatchSize", originalCommitBatchSize);
+        }
+    }
+
+    /**
+     * @see MetsIndexer#index(Path,Map,ISolrWriteStrategy,int,boolean)
+     * @verifies flag anchor for reconciliation even if anchor not yet visible in index
+     */
+    @Test
+    void index_shouldFlagAnchorForReconciliationIfVolumeIsIndexedBeforeAnchor() throws Exception {
+        String piAnchor = "PPN559838239";
+        Map<String, Path> dataFolders = new HashMap<>();
+        MetsIndexer indexer = new MetsIndexer(hotfolder);
+
+        // Batched commits, volume first: the anchor's own indexing doesn't see the uncommitted volume, so it stores a stale count
+        int originalCommitBatchSize = SolrIndexerDaemon.getInstance().getConfiguration().getCommitBatchSize();
+        SolrIndexerDaemon.getInstance().getConfiguration().overrideValue("performance.commitBatchSize", 100);
+        try {
+            Assertions.assertNull(indexer.index(metsFileVol1, dataFolders, null, 1, false).getError());
+            Assertions.assertNull(indexer.index(metsFileAnchor1, dataFolders, null, 1, false).getError());
+            placeIndexedAnchorFile(piAnchor);
+            SolrIndexerDaemon.getInstance().getSearchIndex().commitPending();
+
+            hotfolder.getHighPriorityQueue().clear();
+            hotfolder.reconcilePendingAnchors();
+            assertEquals(1, hotfolder.getHighPriorityQueue().size(), "the anchor's stale volume count must be reconciled");
+            assertEquals(piAnchor + ".xml", hotfolder.getHighPriorityQueue().poll().getFileName().toString());
+        } finally {
+            SolrIndexerDaemon.getInstance().getConfiguration().overrideValue("performance.commitBatchSize", originalCommitBatchSize);
+        }
+    }
+
+    /**
+     * @see Hotfolder#scan()
+     * @verifies commit pending records before reconciling anchors
+     */
+    @Test
+    void scan_shouldCommitPendingRecordsBeforeReconcilingAnchors() throws Exception {
+        String piAnchor = "PPN559838239";
+        Map<String, Path> dataFolders = new HashMap<>();
+        MetsIndexer indexer = new MetsIndexer(hotfolder);
+
+        // Batched commits: none of the records below is committed by indexing itself
+        int originalCommitBatchSize = SolrIndexerDaemon.getInstance().getConfiguration().getCommitBatchSize();
+        SolrIndexerDaemon.getInstance().getConfiguration().overrideValue("performance.commitBatchSize", 100);
+        try {
+            // Anchor first (stores NUMVOLUMES=0), then two new volumes, which flag the anchor for reconciliation
+            Assertions.assertNull(indexer.index(metsFileAnchor1, dataFolders, null, 1, false).getError());
+            Assertions.assertNull(indexer.index(metsFileVol1, dataFolders, null, 1, false).getError());
+            Assertions.assertNull(indexer.index(metsFileVol2, dataFolders, null, 1, false).getError());
+            placeIndexedAnchorFile(piAnchor);
+
+            // With both queues empty, scan() drains: it must commit the pending records first, so that the reconciliation finds the
+            // anchor and counts both volumes. Otherwise the uncommitted anchor is skipped as "not yet indexed" and never re-checked.
+            hotfolder.getHighPriorityQueue().clear();
+            hotfolder.scan();
+
+            assertEquals(1, hotfolder.getHighPriorityQueue().size(), "the anchor must be scheduled for re-indexing after the commit");
+            assertEquals(piAnchor + ".xml", hotfolder.getHighPriorityQueue().poll().getFileName().toString());
+        } finally {
+            SolrIndexerDaemon.getInstance().getConfiguration().overrideValue("performance.commitBatchSize", originalCommitBatchSize);
+        }
+    }
+
+    /**
      * @see MetsIndexer#index(File,ISolrWriteStrategy,boolean,Map)
      * @verifies not flag anchor for a pure volume metadata update
      */
@@ -847,6 +942,27 @@ class MetsIndexerTest extends AbstractSolrEnabledTest {
                             null);
             assertEquals(1, docList.size());
         }
+    }
+
+    /**
+     * @see MetsIndexer#index(Path,Map,ISolrWriteStrategy,int,boolean)
+     * @verifies set summary data on result
+     */
+    @Test
+    void index_shouldSetSummaryDataOnResult() throws Exception {
+        Map<String, Path> dataFolders = new HashMap<>();
+        IndexingResult result = new MetsIndexer(hotfolder).index(metsFile, dataFolders, null, 1, false);
+        Assertions.assertNull(result.getError());
+        assertEquals("Monograph", result.getDocStructType());
+        assertEquals(16, result.getNumSourcePages());
+        assertEquals(16, result.getNumPages());
+
+        // Shapes are added as pages to the write strategy, but must not be counted as pages
+        Path file = Paths.get("src/test/resources/METS/74241.xml");
+        result = new MetsIndexer(hotfolder).index(file, dataFolders, null, 1, false);
+        Assertions.assertNull(result.getError());
+        assertEquals(52, result.getNumSourcePages());
+        assertEquals(52, result.getNumPages());
     }
 
     /**
@@ -1599,4 +1715,214 @@ class MetsIndexerTest extends AbstractSolrEnabledTest {
 
     }
 
+    /**
+     * @see MetsIndexer#index(Path,Map,ISolrWriteStrategy,int,boolean)
+     * @verifies suppress fulltext when trigger matches
+     */
+    @Test
+    void index_shouldSuppressFulltextWhenTriggerMatches() throws Exception {
+        io.goobi.viewer.indexer.helper.Configuration original = SolrIndexerDaemon.getInstance().getConfiguration();
+        Path tempConfig = Files.createTempFile("config_indexer_suppress", ".xml");
+        try {
+            // Build a config whose suppression condition matches the kleiuniv record identifier
+            String content = Files.readString(Paths.get(AbstractTest.TEST_CONFIG_PATH));
+            content = content.replace("DOES-NOT-EXIST-MARKER", PI);
+            Files.writeString(tempConfig, content);
+            SolrIndexerDaemon.getInstance().injectConfiguration(new io.goobi.viewer.indexer.helper.Configuration(tempConfig.toString()));
+
+            Map<String, Path> dataFolders = new HashMap<>();
+            dataFolders.put(DataRepository.PARAM_FULLTEXT, Paths.get("src/test/resources/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005_txt"));
+            dataFolders.put(DataRepository.PARAM_TEIWC, Paths.get("src/test/resources/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005_wc"));
+            IndexingResult result = new MetsIndexer(hotfolder).index(metsFile, dataFolders, null, 1, false);
+            Assertions.assertNull(result.getError());
+            assertTrue(result.isFulltextSuppressed());
+
+            // Record-level flag must be false
+            SolrDocumentList topDocs = SolrIndexerDaemon.getInstance().getSearchIndex().search(SolrConstants.PI + ":" + PI, null);
+            assertEquals(1, topDocs.size());
+            assertEquals(false, topDocs.get(0).getFieldValue(SolrConstants.FULLTEXTAVAILABLE));
+
+            // No page may carry full-text
+            SolrDocumentList pageDocs = SolrIndexerDaemon.getInstance()
+                    .getSearchIndex()
+                    .search(SolrConstants.PI_TOPSTRUCT + ":" + PI + " AND " + SolrConstants.DOCTYPE + ":" + DocType.PAGE.name(), null);
+            Assertions.assertFalse(pageDocs.isEmpty());
+            for (SolrDocument pageDoc : pageDocs) {
+                assertEquals(false, pageDoc.getFieldValue(SolrConstants.FULLTEXTAVAILABLE));
+                Assertions.assertNull(pageDoc.getFieldValue(SolrConstants.FULLTEXT));
+                Assertions.assertNull(pageDoc.getFieldValue(SolrConstants.ALTO));
+            }
+        } finally {
+            SolrIndexerDaemon.getInstance().injectConfiguration(original);
+            Files.deleteIfExists(tempConfig);
+        }
+    }
+
+
+    /**
+     * 
+     * @param pi
+     * @return Number of top documents with the given PI in the index
+     * @throws Exception
+     */
+    private static long countRecordInstances(String pi) throws Exception {
+        return SolrIndexerDaemon.getInstance().getSearchIndex().search(SolrConstants.PI + ":\"" + pi + '"', null).getNumFound();
+    }
+
+    /**
+     * @see MetsIndexer#index(Path,Map,ISolrWriteStrategy,int,boolean)
+     * @verifies not create duplicate instances if same record indexed concurrently
+     */
+    @Test
+    void index_shouldNotCreateDuplicateInstancesIfSameRecordIndexedConcurrently() throws Exception {
+        // Index once, so that both concurrent runs replace an existing instance
+        Assertions.assertNull(new MetsIndexer(hotfolder).index(metsFile, new HashMap<>(), null, 1, false).getError());
+        assertEquals(1, countRecordInstances(PI));
+
+        ExecutorService executor = Executors.newFixedThreadPool(2);
+        try {
+            CountDownLatch start = new CountDownLatch(1);
+            List<Future<IndexingResult>> futures = new ArrayList<>();
+            for (int i = 0; i < 2; i++) {
+                futures.add(executor.submit(() -> {
+                    start.await();
+                    return new MetsIndexer(hotfolder).index(metsFile, new HashMap<>(), null, 1, false);
+                }));
+            }
+            start.countDown();
+            for (Future<IndexingResult> future : futures) {
+                Assertions.assertNull(future.get(5, TimeUnit.MINUTES).getError());
+            }
+        } finally {
+            executor.shutdownNow();
+        }
+        assertEquals(1, countRecordInstances(PI), "the same record indexed concurrently must not leave two instances");
+    }
+
+    /**
+     * @see MetsIndexer#index(Path,Map,ISolrWriteStrategy,int,boolean)
+     * @verifies replace uncommitted previous version with batched commits
+     */
+    @Test
+    void index_shouldReplaceUncommittedPreviousVersionWithBatchedCommits() throws Exception {
+        int originalCommitBatchSize = SolrIndexerDaemon.getInstance().getConfiguration().getCommitBatchSize();
+        SolrIndexerDaemon.getInstance().getConfiguration().overrideValue("performance.commitBatchSize", 100);
+        try {
+            // The first version is not committed when the second one is indexed
+            Assertions.assertNull(new MetsIndexer(hotfolder).index(metsFile, new HashMap<>(), null, 1, false).getError());
+            Assertions.assertNull(new MetsIndexer(hotfolder).index(metsFile, new HashMap<>(), null, 1, false).getError());
+            SolrIndexerDaemon.getInstance().getSearchIndex().commitPending();
+            assertEquals(1, countRecordInstances(PI), "the uncommitted first version must have been replaced");
+
+            // Deleting a record whose new version is not committed yet must delete that version, too
+            Assertions.assertNull(new MetsIndexer(hotfolder).index(metsFile, new HashMap<>(), null, 1, false).getError());
+            assertTrue(Indexer.delete(PI, false, SolrIndexerDaemon.getInstance().getSearchIndex()));
+            SolrIndexerDaemon.getInstance().getSearchIndex().commitPending();
+            assertEquals(0, countRecordInstances(PI));
+        } finally {
+            SolrIndexerDaemon.getInstance().getConfiguration().overrideValue("performance.commitBatchSize", originalCommitBatchSize);
+        }
+    }
+
+    /**
+     * @see MetsIndexer#addToIndex(Path,Map)
+     * @verifies skip record file superseded by higher priority hotfolder
+     */
+    @Test
+    void addToIndex_shouldSkipRecordFileSupersededByHigherPriorityHotfolder() throws Exception {
+        List<String> hotfolderPaths = SolrIndexerDaemon.getInstance().getConfiguration().getHotfolderPaths();
+        Assertions.assertTrue(hotfolderPaths.size() >= 2, "test configuration must define two hotfolders");
+        Hotfolder hotfolder2 = new Hotfolder(hotfolderPaths.get(1));
+        List<Hotfolder> hotfolders = SolrIndexerDaemon.getInstance().getHotfolders();
+        hotfolders.add(hotfolder);
+        hotfolders.add(hotfolder2);
+        try {
+            // Older copy of the record in hotfolder2, named after a process title rather than the PI, with a data folder
+            Path recordFile = Files.copy(metsFile, hotfolder2.getHotfolderPath().resolve("process_title.xml"), StandardCopyOption.REPLACE_EXISTING);
+            Path mediaFolder = Files.createDirectories(hotfolder2.getHotfolderPath().resolve("process_title_media"));
+            Files.writeString(mediaFolder.resolve("00000001.tif"), "");
+            Files.setLastModifiedTime(recordFile, FileTime.fromMillis(System.currentTimeMillis() - 60000));
+
+            // The record has been indexed from hotfolder1 since
+            SolrIndexerDaemon.getInstance().registerIndexedRecord(PI, hotfolder);
+
+            MetsIndexer indexer = new MetsIndexer(hotfolder2);
+            assertTrue(indexer.addToIndex(recordFile, new HashMap<>()).isEmpty());
+            assertTrue(indexer.getIndexedRecords().isEmpty());
+            assertFalse(Files.exists(recordFile), "superseded record file must be deleted");
+            assertFalse(Files.exists(mediaFolder), "data folders of the superseded record file must be deleted");
+            assertFalse(Files.exists(hotfolder2.getErrorMets().resolve("process_title.xml")), "a superseded record is not an error");
+            assertEquals(0, countRecordInstances(PI));
+            assertFalse(SolrIndexerDaemon.getInstance().getRecordLocks().isHeldByCurrentThread(PI));
+        } finally {
+            hotfolders.clear();
+        }
+    }
+
+    /**
+     * @see MetsIndexer#addShapeAccessConditionsToParentPages(ISolrWriteStrategy)
+     * @verifies add restricted shape access conditions to parent page and remove open access
+     */
+    @Test
+    void addShapeAccessConditionsToParentPages_shouldAddRestrictedShapeAccessConditionsToParentPageAndRemoveOpenAccess() throws Exception {
+        ISolrWriteStrategy writeStrategy = AbstractWriteStrategy.create(null, new HashMap<>(), hotfolder);
+        PhysicalElement page = createPage(writeStrategy, 7, "PHYS_0007", SolrConstants.OPEN_ACCESS_VALUE);
+        createShape(writeStrategy, 7, 1, "PHYS_0008", "PHYS_0007", "restricted_access_metadata_only");
+
+        MetsIndexer.addShapeAccessConditionsToParentPages(writeStrategy);
+        assertEquals(List.of("restricted_access_metadata_only"), new ArrayList<>(page.getDoc().getFieldValues(SolrConstants.ACCESSCONDITION)));
+    }
+
+    /**
+     * @see MetsIndexer#addShapeAccessConditionsToParentPages(ISolrWriteStrategy)
+     * @verifies not change parent page if shape is open access
+     */
+    @Test
+    void addShapeAccessConditionsToParentPages_shouldNotChangeParentPageIfShapeIsOpenAccess() throws Exception {
+        ISolrWriteStrategy writeStrategy = AbstractWriteStrategy.create(null, new HashMap<>(), hotfolder);
+        PhysicalElement page = createPage(writeStrategy, 7, "PHYS_0007", "restricted");
+        createShape(writeStrategy, 7, 1, "PHYS_0008", "PHYS_0007", SolrConstants.OPEN_ACCESS_VALUE);
+
+        MetsIndexer.addShapeAccessConditionsToParentPages(writeStrategy);
+        assertEquals(List.of("restricted"), new ArrayList<>(page.getDoc().getFieldValues(SolrConstants.ACCESSCONDITION)));
+    }
+
+    /**
+     * @see MetsIndexer#addShapeAccessConditionsToParentPages(ISolrWriteStrategy)
+     * @verifies add access conditions from multiple shapes without duplicates
+     */
+    @Test
+    void addShapeAccessConditionsToParentPages_shouldAddAccessConditionsFromMultipleShapesWithoutDuplicates() throws Exception {
+        ISolrWriteStrategy writeStrategy = AbstractWriteStrategy.create(null, new HashMap<>(), hotfolder);
+        PhysicalElement page = createPage(writeStrategy, 7, "PHYS_0007", "restricted1");
+        PhysicalElement otherPage = createPage(writeStrategy, 8, "PHYS_0010", SolrConstants.OPEN_ACCESS_VALUE);
+        createShape(writeStrategy, 7, 1, "PHYS_0008", "PHYS_0007", "restricted1");
+        createShape(writeStrategy, 7, 2, "PHYS_0009", "PHYS_0007", "restricted2");
+
+        MetsIndexer.addShapeAccessConditionsToParentPages(writeStrategy);
+        assertEquals(List.of("restricted1", "restricted2"), new ArrayList<>(page.getDoc().getFieldValues(SolrConstants.ACCESSCONDITION)));
+        assertEquals(List.of(SolrConstants.OPEN_ACCESS_VALUE), new ArrayList<>(otherPage.getDoc().getFieldValues(SolrConstants.ACCESSCONDITION)));
+    }
+
+    private static PhysicalElement createPage(ISolrWriteStrategy writeStrategy, int order, String physId, String accessCondition) {
+        PhysicalElement page = new PhysicalElement(order);
+        page.getDoc().addField(SolrConstants.DOCTYPE, DocType.PAGE.name());
+        page.getDoc().addField(SolrConstants.ORDER, order);
+        page.getDoc().addField(SolrConstants.PHYSID, physId);
+        page.getDoc().addField(SolrConstants.ACCESSCONDITION, accessCondition);
+        writeStrategy.addPage(page);
+        return page;
+    }
+
+    private static PhysicalElement createShape(ISolrWriteStrategy writeStrategy, int parentOrder, int count, String physId, String parentPhysId,
+            String accessCondition) {
+        PhysicalElement shape = new PhysicalElement(Utils.generateLongOrderNumber(parentOrder, count));
+        shape.getDoc().addField(SolrConstants.DOCTYPE, DocType.SHAPE.name());
+        shape.getDoc().addField(SolrConstants.ORDER, shape.getOrder());
+        shape.getDoc().addField(SolrConstants.PHYSID, physId);
+        shape.getDoc().addField(Indexer.FIELD_PHYSID_PARENT, parentPhysId);
+        shape.getDoc().addField(SolrConstants.ACCESSCONDITION, accessCondition);
+        writeStrategy.addPage(shape);
+        return shape;
+    }
 }

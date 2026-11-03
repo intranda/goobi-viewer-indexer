@@ -33,6 +33,7 @@ import io.goobi.viewer.indexer.SolrIndexerDaemon;
 import io.goobi.viewer.indexer.helper.JDomXP.FileFormat;
 import io.goobi.viewer.indexer.helper.MetadataHelper;
 import io.goobi.viewer.indexer.helper.SolrSearchIndex;
+import io.goobi.viewer.indexer.helper.Utils;
 import io.goobi.viewer.indexer.model.SolrConstants.DocType;
 import io.goobi.viewer.indexer.model.config.FieldConfig;
 
@@ -65,6 +66,8 @@ public class IndexObject {
     private Element rootStructNode;
     private boolean anchor = false;
     private boolean volume;
+    /** If true, authority data (e.g. GND) could not be retrieved for this object, so the record should be reindexed later. */
+    private boolean authorityDataIncomplete = false;
     private String defaultValue = "";
     private String parentPI = "";
     private String topstructPI = "";
@@ -317,8 +320,12 @@ public class IndexObject {
      * @param value {@link java.lang.String}
      * @return {@link java.lang.Boolean} true if successful
      * @should add field to list correctly
+     * @should skip group id fields with invalid values
      */
     public boolean addToLucene(String field, String value) {
+        if (isInvalidGroupId(field, value)) {
+            return false;
+        }
         addToGroupIds(field, value);
         removeNonMultivaluedFields(field);
 
@@ -333,10 +340,14 @@ public class IndexObject {
      * @return true if field was added; false otherwise
      * @should add fields correctly
      * @should skip duplicates correctly
+     * @should skip group id fields with invalid values
      */
     public boolean addToLucene(LuceneField luceneField, boolean skipDuplicates) {
         if (luceneField == null) {
             throw new IllegalArgumentException("luceneField may not be null");
+        }
+        if (isInvalidGroupId(luceneField.getField(), luceneField.getValue())) {
+            return false;
         }
 
         if (skipDuplicates && this.luceneFields.contains(luceneField)) {
@@ -396,6 +407,22 @@ public class IndexObject {
                 luceneFields.removeAll(existing);
             }
         }
+    }
+
+    /**
+     * Checks whether the given field is a <code>GROUPID_</code> field with a value that is not a valid identifier. Group identifiers become the PI
+     * of the group document, so they must satisfy the same rules as record identifiers.
+     *
+     * @param field Field name
+     * @param value Field value
+     * @return true if field is a group id field and value is invalid; false otherwise
+     */
+    private static boolean isInvalidGroupId(String field, String value) {
+        if (field == null || !field.startsWith(SolrConstants.PREFIX_GROUPID) || Utils.validatePi(value)) {
+            return false;
+        }
+        logger.warn("Group identifier for field '{}' contains illegal characters, skipping: {}", field, value);
+        return true;
     }
 
     /**
@@ -550,7 +577,7 @@ public class IndexObject {
         // Set DATECREATED, if new record
         if (dateCreated == -1) {
             setDateCreated(millis);
-            logger.info("Using creation timestamp from METS: {}", getDateCreated());
+            logger.debug("Using creation timestamp from METS: {}", getDateCreated());
         }
 
         // Add new DATEUPDATED value
@@ -658,6 +685,20 @@ public class IndexObject {
      */
     public IndexObject getParent() {
         return parent;
+    }
+
+    /**
+     * @return the authorityDataIncomplete
+     */
+    public boolean isAuthorityDataIncomplete() {
+        return authorityDataIncomplete;
+    }
+
+    /**
+     * @param authorityDataIncomplete the authorityDataIncomplete to set
+     */
+    public void setAuthorityDataIncomplete(boolean authorityDataIncomplete) {
+        this.authorityDataIncomplete = authorityDataIncomplete;
     }
 
     /**

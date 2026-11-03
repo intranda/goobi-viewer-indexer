@@ -7,6 +7,10 @@
 		<!-- Minimum required free space to index (MB) -->
 		<minStorageSpace>2048</minStorageSpace>
 
+		<logging>
+			<console>true</console>
+		</logging>
+
 		<solrUrl>https://viewer-testing-index.goobi.io/solr/indexer-testing</solrUrl>
         <viewerUrl>http://localhost:8080/viewer</viewerUrl>
 
@@ -148,6 +152,12 @@
 		
         <!-- viewerAuthorizationToken: Goobi viewer REST API authorization token -->
         <viewerAuthorizationToken>test</viewerAuthorizationToken>
+
+        <!-- fulltextSuppression: deliberately non-matching condition so that loading is exercised by ConfigurationTest
+             without suppressing full-text for any of the test records. -->
+        <fulltextSuppression enabled="true">
+            <condition xpath="/mets:mets/mets:dmdSec//mods:recordIdentifier/text()" matchMode="EQUALS" value="DOES-NOT-EXIST-MARKER"/>
+        </fulltextSuppression>
 	</init>
     
     <!-- proxy/@enabled: If false, the proxy configuration will be ignored; default is false. -->
@@ -173,7 +183,10 @@
         <!-- If true, an optimize query will be sent to Solr after every indexed 
             object. -->
         <autoOptimize>false</autoOptimize>
-        
+
+        <!-- Large EAD files are streamed to Solr instead of serialized to temp files. Default is true. -->
+        <streamingWriteStrategy>false</streamingWriteStrategy>
+
         <!-- If more than 1, page documents will be generated in parallel threads. Default is 1. -->
         <threads>1</threads>
         
@@ -675,7 +688,6 @@
 					<nonSortCharacters prefix="&lt;&lt;" suffix="&gt;&gt;" />
 					<nonSortCharacters suffix="\u00AC" />
                     <replace regex="^, "/>
-                    <replace regex=", ?$"/>
                     <replace regex="^,$"/>
 				</item>
 			</list>

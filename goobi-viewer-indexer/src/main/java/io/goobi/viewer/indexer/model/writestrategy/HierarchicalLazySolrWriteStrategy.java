@@ -82,7 +82,7 @@ public class HierarchicalLazySolrWriteStrategy extends LazySolrWriteStrategy {
         }
 
         searchIndex.writeToIndex(rootDoc);
-        searchIndex.commit(searchIndex.isOptimize());
+        searchIndex.commitAfterRecord();
         logger.debug("{} new doc(s) added.", docsToAdd.size());
     }
 }

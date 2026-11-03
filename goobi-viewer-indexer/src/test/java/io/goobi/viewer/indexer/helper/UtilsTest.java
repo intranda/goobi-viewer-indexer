@@ -347,4 +347,96 @@ class UtilsTest extends AbstractTest {
         String url = "https://example.com/path?verb=GetRecord&metadataPrefix=marc21&identifier=oai:alma:123";
         assertEquals(url, Utils.encodeIllegalUriChars(url));
     }
+
+    /**
+     * @see Utils#validatePi(String)
+     * @verifies return true if pi good
+     */
+    @Test
+    void validatePi_shouldReturnTrueIfPiGood() {
+        assertTrue(Utils.validatePi("PPN123456789"));
+        assertTrue(Utils.validatePi("PPN123-456"));
+        assertTrue(Utils.validatePi("record_001"));
+        assertTrue(Utils.validatePi("GLT6357967095"));
+    }
+
+    /**
+     * @see Utils#validatePi(String)
+     * @verifies return false if pi empty, blank or null
+     */
+    @Test
+    void validatePi_shouldReturnFalseIfPiEmptyBlankOrNull() {
+        assertFalse(Utils.validatePi(null));
+        assertFalse(Utils.validatePi(""));
+        assertFalse(Utils.validatePi("    "));
+    }
+
+    /**
+     * @see Utils#validatePi(String)
+     * @verifies return false if pi contains illegal characters
+     */
+    @Test
+    void validatePi_shouldReturnFalseIfPiContainsIllegalCharacters() {
+        assertFalse(Utils.validatePi("PPN!"));
+        assertFalse(Utils.validatePi("PPN?"));
+        assertFalse(Utils.validatePi("PPN/"));
+        assertFalse(Utils.validatePi("PPN\\"));
+        assertFalse(Utils.validatePi("PPN:"));
+        assertFalse(Utils.validatePi("PPN|"));
+        assertFalse(Utils.validatePi("PPN<"));
+        assertFalse(Utils.validatePi("PPN>"));
+        assertFalse(Utils.validatePi("PPN["));
+        assertFalse(Utils.validatePi("PPN]"));
+        assertFalse(Utils.validatePi("PPN*"));
+        assertFalse(Utils.validatePi("foo bar"));
+        assertFalse(Utils.validatePi("PPN%00"));
+        assertFalse(Utils.validatePi("PPN\r"));
+        assertFalse(Utils.validatePi("PPN\n"));
+        assertFalse(Utils.validatePi("PPN\0"));
+        assertFalse(Utils.validatePi("https://feeds.megaphone.fm/GLT6357967095"));
+    }
+
+    /**
+     * @see Utils#validatePi(String)
+     * @verifies return false if pi starts with non alphanumeric character
+     */
+    @Test
+    void validatePi_shouldReturnFalseIfPiStartsWithNonAlphanumericCharacter() {
+        // Leading '-' would create a Solr negation operator
+        assertFalse(Utils.validatePi("-267"));
+        assertFalse(Utils.validatePi("-abc"));
+        assertFalse(Utils.validatePi(".abc"));
+        assertFalse(Utils.validatePi("_abc"));
+    }
+
+    /**
+     * @see Utils#validatePi(String)
+     * @verifies return false if pi contains no alphanumeric character
+     */
+    @Test
+    void validatePi_shouldReturnFalseIfPiContainsNoAlphanumericCharacter() {
+        assertFalse(Utils.validatePi("-"));
+        assertFalse(Utils.validatePi("---"));
+        assertFalse(Utils.validatePi("_"));
+    }
+
+    /**
+     * @see Utils#validatePi(String)
+     * @verifies return false if pi contains plus sign
+     */
+    @Test
+    void validatePi_shouldReturnFalseIfPiContainsPlusSign() {
+        assertFalse(Utils.validatePi("PPN+123"));
+        assertFalse(Utils.validatePi("foo+bar"));
+    }
+
+    /**
+     * @see Utils#validatePi(String)
+     * @verifies return false if pi contains non ascii characters
+     */
+    @Test
+    void validatePi_shouldReturnFalseIfPiContainsNonAsciiCharacters() {
+        assertFalse(Utils.validatePi("PPNé"));
+        assertFalse(Utils.validatePi("PPN中"));
+    }
 }

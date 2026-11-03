@@ -35,8 +35,10 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
 import java.util.SortedMap;
@@ -52,6 +54,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
+import org.apache.solr.common.SolrException;
 import org.apache.solr.common.SolrInputDocument;
 import org.jdom2.Attribute;
 import org.jdom2.Element;
@@ -163,8 +166,32 @@ public class MetsIndexer extends Indexer {
         this.availablePreferredImageFileGroups = availablePreferredImageFileGroups;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     * 
+     * @should skip record file superseded by higher priority hotfolder
+     */
+    @Override
     public List<String> addToIndex(Path metsFile, Map<String, Boolean> reindexSettings) throws IOException {
+        currentRecordFile = metsFile;
+        try {
+            return indexRecordFile(metsFile, reindexSettings);
+        } finally {
+            // Release the record lock acquired in index(), which is held for the post-processing
+            unlockRecord();
+            currentRecordFile = null;
+        }
+    }
+
+    /**
+     * Indexes the given record file and moves its data into the data repository (see {@link #addToIndex(Path, Map)}).
+     *
+     * @param metsFile Record file
+     * @param reindexSettings
+     * @return List of successfully indexed record identifiers
+     * @throws IOException
+     */
+    private List<String> indexRecordFile(Path metsFile, Map<String, Boolean> reindexSettings) throws IOException {
         String fileNameRoot = FilenameUtils.getBaseName(metsFile.getFileName().toString());
 
         // Check data folders in the hotfolder
@@ -176,6 +203,10 @@ public class MetsIndexer extends Indexer {
         IndexingResult result = index(metsFile, dataFolders, null,
                 SolrIndexerDaemon.getInstance().getConfiguration().getPageCountStart(),
                 dataFolders.containsKey(DataRepository.PARAM_DOWNLOAD_IMAGES_TRIGGER));
+        if (IndexingResultStatus.SKIPPED.equals(result.getStatus())) {
+            deleteSupersededRecordFile(metsFile, dataFolders, reindexSettings);
+            return Collections.emptyList();
+        }
 
         if (IndexingResultStatus.OK.equals(result.getStatus())) {
             String newMetsFileName = result.getRecordFileName();
@@ -202,20 +233,28 @@ public class MetsIndexer extends Indexer {
             }
 
             // Copy and delete media folder
-            if (dataRepository.checkCopyAndDeleteDataFolder(result.getPi(), dataFolders, reindexSettings, DataRepository.PARAM_MEDIA,
-                    hotfolder.getDataRepositoryStrategy().getAllDataRepositories()) > 0) {
+            int copiedMediaFiles = dataRepository.checkCopyAndDeleteDataFolder(result.getPi(), dataFolders, reindexSettings,
+                    DataRepository.PARAM_MEDIA, hotfolder.getDataRepositoryStrategy().getAllDataRepositories());
+            result.addCopiedDataFileCounts(Collections.singletonMap(DataRepository.PARAM_MEDIA, copiedMediaFiles));
+            if (copiedMediaFiles > 0) {
                 String msg = Utils.removeRecordImagesFromCache(FilenameUtils.getBaseName(newMetsFileName));
                 if (msg != null) {
-                    logger.info(msg);
+                    logger.debug(msg);
                 }
             }
 
+            // If full-text indexing was suppressed, remove previously indexed full-text from storage and prevent any incoming
+            // hotfolder full-text from being promoted into the repository
+            if (result.isFulltextSuppressed()) {
+                deleteFulltextFoldersForRecord(dataRepository, dataFolders, reindexSettings, FilenameUtils.getBaseName(newMetsFileName));
+            }
+
             // Copy data folders
-            dataRepository.copyAndDeleteAllDataFolders(result.getPi(), dataFolders, reindexSettings,
-                    hotfolder.getDataRepositoryStrategy().getAllDataRepositories());
+            result.addCopiedDataFileCounts(dataRepository.copyAndDeleteAllDataFolders(result.getPi(), dataFolders, reindexSettings,
+                    hotfolder.getDataRepositoryStrategy().getAllDataRepositories()));
 
             // Delete unsupported data folders
-            FileTools.deleteUnsupportedDataFolders(hotfolder.getHotfolderPath(), fileNameRoot);
+            hotfolder.deleteUnsupportedDataFolders(fileNameRoot);
 
             // success for goobi
             Path successFile = Paths.get(hotfolder.getSuccessFolder().toAbsolutePath().toString(), metsFile.getFileName().toString());
@@ -243,10 +282,10 @@ public class MetsIndexer extends Indexer {
                 }
             }
             prerenderPagePdfsIfRequired(result.getPi());
-            logger.info("Successfully finished indexing '{}'.", metsFile.getFileName());
+            recordIndexed(result);
 
-            // Remove this file from lower priority hotfolders to avoid overriding changes with older version
-            SolrIndexerDaemon.getInstance().removeRecordFileFromLowerPriorityHotfolders(result.getPi(), hotfolder);
+            // Older copies of this record in lower-priority hotfolders must not overwrite this version
+            SolrIndexerDaemon.getInstance().registerIndexedRecord(result.getPi(), hotfolder);
 
             return result.isSubmitPiToViewer() ? Collections.singletonList(result.getPi()) : Collections.emptyList();
         }
@@ -286,7 +325,11 @@ public class MetsIndexer extends Indexer {
      * @should read datecreated from mets with correct time zone
      * @should not add dateupdated if value already exists
      * @should index page metadata correctly
-     * 
+     * @should flag anchor for reconciliation even if anchor not yet visible in index
+     * @should set summary data on result
+     * @should not create duplicate instances if same record indexed concurrently
+     * @should replace uncommitted previous version with batched commits
+     *
      */
     public IndexingResult index(Path metsFile, Map<String, Path> dataFolders, final ISolrWriteStrategy inWriteStrategy,
             int pageCountStart, boolean downloadExternalImages) {
@@ -305,7 +348,7 @@ public class MetsIndexer extends Indexer {
             IndexObject indexObj = new IndexObject(getNextIddoc());
             logger.debug("IDDOC: {}", indexObj.getIddoc());
             indexObj.setVolume(isVolume());
-            logger.info("Document is volume: {}", indexObj.isVolume());
+            logger.debug("Document is volume: {}", indexObj.isVolume());
             indexObj.setAnchor(isAnchor());
             Element structNode = findStructNode(indexObj);
             if (structNode == null) {
@@ -320,6 +363,19 @@ public class MetsIndexer extends Indexer {
 
             // Set PI
             String pi = validateAndApplyPI(findPI(getPiRootPath(indexObj.getDmdid())), indexObj, false);
+
+            // Serialize with other record files carrying the same PI (other hotfolders, other file names)
+            if (!lockRecord(pi)) {
+                return skipSupersededRecord(ret, pi);
+            }
+
+            // Evaluate the full-text suppression trigger for this record
+            this.suppressFulltext = isFulltextSuppressed();
+            ret.setFulltextSuppressed(this.suppressFulltext);
+            if (this.suppressFulltext) {
+                logger.info("Full-text suppression triggered for record '{}'; full-text will not be indexed and existing full-text will be removed.",
+                        pi);
+            }
 
             // Determine the data repository to use
             selectDataRepository(indexObj, pi, metsFile, dataFolders);
@@ -417,7 +473,7 @@ public class MetsIndexer extends Indexer {
                 indexObj.setAnchorPI(indexObj.getAnchorPI());
                 SolrDocumentList hits = SolrIndexerDaemon.getInstance()
                         .getSearchIndex()
-                        .search(SolrConstants.PI + ":" + indexObj.getAnchorPI(), Collections.singletonList(SolrConstants.ACCESSCONDITION));
+                        .search(SolrConstants.PI + ":\"" + indexObj.getAnchorPI() + '"', Collections.singletonList(SolrConstants.ACCESSCONDITION));
                 if (hits != null && !hits.isEmpty()) {
                     Collection<Object> fields = hits.get(0).getFieldValues(SolrConstants.ACCESSCONDITION);
                     if (fields != null) {
@@ -550,13 +606,16 @@ public class MetsIndexer extends Indexer {
             // and a bulk import of many volumes re-indexes the anchor once per batch instead of once per volume.
             // When volume collections are copied up into anchors, volume metadata updates must flag the anchor too, since a
             // changed collection does not change the volume count but still requires the anchor to be re-merged.
-            if (indexObj.isVolume() && indexObj.getParent() != null
+            // Flag by the anchor PI from this volume's METS rather than the parent object: the parent is only created if the anchor
+            // doc is already visible in Solr, which it may not be yet (not committed, or indexed concurrently with this volume).
+            if (indexObj.isVolume() && StringUtils.isNotEmpty(indexObj.getParentPI())
                     && (!indexObj.isUpdate() || hotfolder.isAddVolumeCollectionsToAnchor())) {
-                logger.info("Volume of anchor '{}' - flagging anchor for reconciliation.", indexObj.getParent().getPi());
-                hotfolder.flagAnchorForReconciliation(indexObj.getParent().getPi());
+                logger.info("Volume of anchor '{}' - flagging anchor for reconciliation.", indexObj.getParentPI());
+                hotfolder.flagAnchorForReconciliation(indexObj.getParentPI());
             }
 
             if (indexObj.isAnchor()) {
+                // Concurrent writes to the same anchor (its Solr doc + METS file) are serialized by the record lock acquired above
                 // Rebuild the anchor METS file so its logical structure lists all currently indexed volumes (priority queue).
                 // Volume<->anchor association is via the stable PI_PARENT, so no IDDOC_PARENT repair of the volumes is needed.
                 logger.debug("'{}' is an anchor file.", metsFile.getFileName());
@@ -565,6 +624,9 @@ public class MetsIndexer extends Indexer {
                 // Index all child elements recursively
                 List<IndexObject> childObjectList = indexAllChildren(indexObj, hierarchyLevel + 1, writeStrategy);
                 indexObj.addChildMetadata(childObjectList);
+
+                // Access conditions of docstructs mapped to shapes (mets:area) must also restrict the page containing them
+                addShapeAccessConditionsToParentPages(writeStrategy);
 
                 if (indexObj.getNumPages() > 0) {
                     // Write number of pages
@@ -602,19 +664,21 @@ public class MetsIndexer extends Indexer {
             writeStrategy.setRootDoc(rootDoc);
 
             writeStrategy.writeDocs(SolrIndexerDaemon.getInstance().getConfiguration().isAggregateRecords());
-            logger.info("Finished writing data for '{}' to Solr.", pi);
+            logger.debug("Finished writing data for '{}' to Solr.", pi);
+            ret.setDocStructType(indexObj.getType()).setNumPages(recordNumPages).setNumSourcePages(recordNumSourcePages);
         } catch (InterruptedException e) {
             logger.error("Indexing of '{}' could not be finished due to an error.", metsFile.getFileName());
             logger.error(e.getMessage(), e);
             ret.setError(e.getMessage() != null ? e.getMessage() : e.getClass().getName());
             SolrIndexerDaemon.getInstance().getSearchIndex().rollback();
             Thread.currentThread().interrupt();
-        } catch (FatalIndexerException | IndexerException | IOException | JDOMException | SolrServerException e) {
+        } catch (FatalIndexerException | IndexerException | IOException | JDOMException | SolrServerException | SolrException e) {
             logger.error("Indexing of '{}' could not be finished due to an error.", metsFile.getFileName());
             logger.error(e.getMessage(), e);
             ret.setError(e.getMessage() != null ? e.getMessage() : e.getClass().getName());
             SolrIndexerDaemon.getInstance().getSearchIndex().rollback();
         } finally {
+            unlockRecordAfterIndex();
             if (writeStrategy != null) {
                 writeStrategy.cleanup();
             }
@@ -651,11 +715,13 @@ public class MetsIndexer extends Indexer {
         if (StringUtils.isNotBlank(this.useFileGroupGlobal)) {
             PhysicalDocumentBuilder pageBuilder =
                     new PhysicalDocumentBuilder(fileGroupList, eleListAllFileGroups, fileIdToFileGrpMap, xp, httpConnector, dataRepository,
-                            DocType.PAGE);
+                            DocType.PAGE, suppressFulltext);
             Collection<PhysicalElement> pages = pageBuilder.generatePageDocuments(dataFolders, pi, pageCountStart, downloadExternalImages);
             pages.forEach(writeStrategy::addPage);
             this.recordHasImages = pageBuilder.isHasImages();
             this.recordHasFulltext = pageBuilder.isHasFulltext();
+            this.recordNumPages = pageBuilder.getNumPages();
+            this.recordNumSourcePages = pageBuilder.getNumSourcePages();
             // Add Solr docs for grouped page metadata
             for (PhysicalElement page : pages) {
                 int docsAdded = addGroupedMetadataDocsForPage(page, pi, writeStrategy);
@@ -670,10 +736,10 @@ public class MetsIndexer extends Indexer {
     }
 
     public void collectFileGroupInfo() {
-        logger.info("Buidling fileId->fileGrp map...");
+        logger.debug("Buidling fileId->fileGrp map...");
         String xpathFileGrpList = "/mets:mets/mets:fileSec/mets:fileGrp"; //NOSONAR XPath expression, not parameter
         eleListAllFileGroups = xp.evaluateToElements(xpathFileGrpList, null);
-        logger.info("Found {} file groups in document.", eleListAllFileGroups.size());
+        logger.debug("Found {} file groups in document.", eleListAllFileGroups.size());
         fileIdToFileGrpMap.clear();
         for (Element eleFileGroup : eleListAllFileGroups) {
             String fileGrp = eleFileGroup.getAttributeValue("USE");
@@ -1024,6 +1090,64 @@ public class MetsIndexer extends Indexer {
         }
 
         return ret;
+    }
+
+    /**
+     * Adds the non-open access conditions of all SHAPE docs (docstructs mapped to a mets:area) to the page containing the shape. Since SHAPE
+     * docs are not written to the index, restrictions mapped to an area would otherwise not apply to the page at all. A single restricted
+     * shape restricts the entire page and replaces any OPENACCESS value of that page. Must be called after all docstructs have been mapped
+     * to pages.
+     *
+     * @param writeStrategy
+     * @throws FatalIndexerException
+     * @should add restricted shape access conditions to parent page and remove open access
+     * @should not change parent page if shape is open access
+     * @should add access conditions from multiple shapes without duplicates
+     */
+    protected static void addShapeAccessConditionsToParentPages(ISolrWriteStrategy writeStrategy) throws FatalIndexerException {
+        // Collect restrictive access conditions of all shapes, grouped by the PHYSID of their parent page
+        Map<String, Set<String>> parentPhysIdAccessConditions = new LinkedHashMap<>();
+        for (int order : writeStrategy.getPageOrderNumbers()) {
+            SolrInputDocument doc = writeStrategy.getPageDocForOrder(order);
+            if (doc == null || !DocType.SHAPE.name().equals(doc.getFieldValue(SolrConstants.DOCTYPE))
+                    || doc.getFieldValues(SolrConstants.ACCESSCONDITION) == null) {
+                continue;
+            }
+            String parentPhysId = (String) doc.getFieldValue(FIELD_PHYSID_PARENT);
+            if (StringUtils.isEmpty(parentPhysId)) {
+                logger.warn("Shape document {} has no parent PHYSID, cannot add its access conditions to the page.",
+                        doc.getFieldValue(SolrConstants.PHYSID));
+                continue;
+            }
+            for (Object obj : doc.getFieldValues(SolrConstants.ACCESSCONDITION)) {
+                if (!SolrConstants.OPEN_ACCESS_VALUE.equals(obj)) {
+                    parentPhysIdAccessConditions.computeIfAbsent(parentPhysId, k -> new LinkedHashSet<>()).add((String) obj);
+                }
+            }
+        }
+
+        for (Entry<String, Set<String>> entry : parentPhysIdAccessConditions.entrySet()) {
+            for (PhysicalElement page : writeStrategy.getPagesForPhysIdList(Collections.singletonList(entry.getKey()))) {
+                Set<String> accessConditions = new LinkedHashSet<>();
+                if (page.getDoc().getFieldValues(SolrConstants.ACCESSCONDITION) != null) {
+                    for (Object obj : page.getDoc().getFieldValues(SolrConstants.ACCESSCONDITION)) {
+                        accessConditions.add((String) obj);
+                    }
+                }
+                if (accessConditions.containsAll(entry.getValue()) && !accessConditions.contains(SolrConstants.OPEN_ACCESS_VALUE)) {
+                    continue;
+                }
+                // Replace all page access conditions with the existing ones (minus OPENACCESS) plus those of the shapes
+                accessConditions.remove(SolrConstants.OPEN_ACCESS_VALUE);
+                accessConditions.addAll(entry.getValue());
+                page.getDoc().removeField(SolrConstants.ACCESSCONDITION);
+                for (String s : accessConditions) {
+                    page.getDoc().addField(SolrConstants.ACCESSCONDITION, s);
+                }
+                writeStrategy.updatePage(page);
+                logger.debug("Added shape access conditions {} to page {}", entry.getValue(), entry.getKey());
+            }
+        }
     }
 
     protected void addAccessConditionToPage(IndexObject indexObj, PhysicalElement page, boolean overrideOpenAccess) {
