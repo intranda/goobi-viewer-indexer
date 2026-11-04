@@ -1347,6 +1347,7 @@ public abstract class Indexer {
      * @param writeStrategy
      * @should add group id as anchor pi to certain docstructs
      * @should not add group doc if group id equals anchor pi
+     * @should mark existing group docs with different iddoc for deletion
      */
     protected void addGroupDocs(IndexObject indexObj, ISolrWriteStrategy writeStrategy) {
         logger.trace("addGroupDocs");
@@ -1381,9 +1382,10 @@ public abstract class Indexer {
             if ("newspaper".equals(docstructType)) {
                 indexObj.setAnchorPI(entry.getValue());
             }
+            // Group docs from older versions (random IDDOCs, possibly duplicates) are deleted together with the previous instance of this record
             SolrInputDocument doc = SolrIndexerDaemon.getInstance()
                     .getSearchIndex()
-                    .checkAndCreateGroupDoc(groupIdField, indexObj.getGroupIds().get(groupIdField), moreMetadata, getNextIddoc());
+                    .checkAndCreateGroupDoc(groupIdField, indexObj.getGroupIds().get(groupIdField), moreMetadata, iddocsToDelete);
             if (doc != null) {
                 writeStrategy.addDoc(doc);
                 if (logger.isDebugEnabled()) {

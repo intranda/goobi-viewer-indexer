@@ -1102,6 +1102,36 @@ class IndexerTest extends AbstractSolrEnabledTest {
     }
 
     /**
+     * @see Indexer#addGroupDocs(IndexObject,ISolrWriteStrategy)
+     * @verifies mark existing group docs with different iddoc for deletion
+     */
+    @Test
+    void addGroupDocs_shouldMarkExistingGroupDocsWithDifferentIddocForDeletion() throws Exception {
+        // Group doc with a random IDDOC, as created by older versions
+        String oldIddoc = UUID.randomUUID().toString();
+        SolrInputDocument oldDoc = new SolrInputDocument();
+        oldDoc.setField(SolrConstants.IDDOC, oldIddoc);
+        oldDoc.setField(SolrConstants.DOCTYPE, SolrConstants.DocType.GROUP.name());
+        oldDoc.setField(SolrConstants.PI, "ID123");
+        oldDoc.setField(SolrConstants.PI_TOPSTRUCT, "ID123");
+        oldDoc.setField(SolrConstants.DATECREATED, 1000L);
+        SolrSearchIndex searchIndex = SolrIndexerDaemon.getInstance().getSearchIndex();
+        searchIndex.writeToIndex(oldDoc);
+        searchIndex.commit(false);
+
+        Indexer indexer = new MetsIndexer(hotfolder);
+        IndexObject indexObj = new IndexObject(UUID.randomUUID().toString());
+        indexObj.getGroupIds().put(SolrConstants.PREFIX_GROUPID + "SERIES", "ID123");
+        ISolrWriteStrategy strategy = AbstractWriteStrategy.create(null, new HashMap<>(), hotfolder);
+        indexer.addGroupDocs(indexObj, strategy);
+
+        List<SolrInputDocument> docsToAdd = ((LazySolrWriteStrategy) strategy).getDocsToAdd();
+        assertEquals(1, docsToAdd.size());
+        assertEquals(SolrSearchIndex.getGroupDocIddoc("ID123"), docsToAdd.get(0).getFieldValue(SolrConstants.IDDOC));
+        assertEquals(Collections.singleton(oldIddoc), indexer.iddocsToDelete);
+    }
+
+    /**
      * @see Indexer#isPrerenderPagePdfsRequired(String)
      * @verifies return true if record media folder not empty
      */

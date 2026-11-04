@@ -17,6 +17,7 @@ package io.goobi.viewer.indexer.helper;
 
 import java.io.IOException;
 import java.io.StringReader;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -27,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -809,39 +811,63 @@ public final class SolrSearchIndex {
     }
 
     /**
-     * Creates a Solr document representing a record group (series/convolute/etc.).
+     * Returns the IDDOC of the group document for the given group identifier. The IDDOC is derived from the group identifier (which becomes the
+     * group document's PI), so every record of a group writes the same Solr document (IDDOC is the unique key). With records indexed in parallel
+     * or committed in batches, a random IDDOC would create a second group document whenever two records of a new group are indexed before
+     * either group document is visible in the index.
+     *
+     * @param groupId Group identifier
+     * @return Name-based UUID for the given group identifier
+     * @should return same value for same group id
+     * @should return different values for different group ids
+     */
+    public static String getGroupDocIddoc(String groupId) {
+        return UUID.nameUUIDFromBytes(("GROUP:" + groupId).getBytes(StandardCharsets.UTF_8)).toString();
+    }
+
+    /**
+     * Creates a Solr document representing a record group (series/convolute/etc.). The document always has the IDDOC returned by
+     * {@link #getGroupDocIddoc(String)}. Existing group documents with the same PI but a different IDDOC (created by older versions, which used
+     * random IDDOCs, possibly several for the same group) are not changed here; their IDDOCs are added to <code>obsoleteIddocs</code> so that
+     * the caller can delete them together with writing the new document.
      *
      * @param groupIdField Field name of the group identifier.
      * @param groupId Field value of the group identifier.
      * @param metadata Map with additional metadata fields to add to the group document.
-     * @param iddoc IDDOC for the new document.
+     * @param obsoleteIddocs Collection to which the IDDOCs of existing group documents to replace are added; may be null
      * @return Group SolrInputDocument, if created.
      * @should create new document with all values if none exists
      * @should create updated document with all values if one already exists
      * @should add default field
      * @should add access conditions
+     * @should use same iddoc for same group id if previous doc not yet committed
+     * @should collect iddocs of existing group docs with different iddoc
+     * @should keep earliest creation date of existing group docs
+     * @should ignore non group docs with same pi
      */
-    public SolrInputDocument checkAndCreateGroupDoc(String groupIdField, String groupId, Map<String, String> metadata, String iddoc) {
+    public SolrInputDocument checkAndCreateGroupDoc(String groupIdField, String groupId, Map<String, String> metadata,
+            Collection<String> obsoleteIddocs) {
         try {
-            SolrDocumentList docs = search(SolrConstants.PI + ":\"" + groupId + '"', null);
-            SolrInputDocument doc = new SolrInputDocument();
+            String iddoc = getGroupDocIddoc(groupId);
+            SolrDocumentList docs = search("+" + SolrConstants.PI + ":\"" + groupId + "\" +" + SolrConstants.DOCTYPE + ":" + DocType.GROUP.name(),
+                    Arrays.asList(SolrConstants.IDDOC, SolrConstants.DATECREATED));
             long now = System.currentTimeMillis();
-            if (docs.isEmpty()) {
-                // Document does not exist yet
-                doc.setField(SolrConstants.IDDOC, String.valueOf(iddoc));
-                doc.setField(SolrConstants.GROUPFIELD, String.valueOf(iddoc));
-                doc.setField(SolrConstants.DOCTYPE, DocType.GROUP.name());
-                doc.setField(SolrConstants.DATECREATED, now);
-            } else {
-                // A document already exists for this groupId
-                SolrDocument oldDoc = docs.get(0);
-                doc.setField(SolrConstants.IDDOC, oldDoc.getFieldValue(SolrConstants.IDDOC));
-                if (doc.getField(SolrConstants.GROUPFIELD) == null) {
-                    doc.setField(SolrConstants.GROUPFIELD, oldDoc.getFieldValue(SolrConstants.IDDOC));
+            long dateCreated = now;
+            for (SolrDocument oldDoc : docs) {
+                Object oldDateCreated = oldDoc.getFieldValue(SolrConstants.DATECREATED);
+                if (oldDateCreated != null) {
+                    dateCreated = Math.min(dateCreated, Long.parseLong(String.valueOf(oldDateCreated)));
                 }
-                doc.setField(SolrConstants.DOCTYPE, DocType.GROUP.name());
-                doc.setField(SolrConstants.DATECREATED, Long.parseLong(String.valueOf(oldDoc.getFieldValue(SolrConstants.DATECREATED))));
+                String oldIddoc = (String) oldDoc.getFieldValue(SolrConstants.IDDOC);
+                if (obsoleteIddocs != null && oldIddoc != null && !oldIddoc.equals(iddoc)) {
+                    obsoleteIddocs.add(oldIddoc);
+                }
             }
+            SolrInputDocument doc = new SolrInputDocument();
+            doc.setField(SolrConstants.IDDOC, iddoc);
+            doc.setField(SolrConstants.GROUPFIELD, iddoc);
+            doc.setField(SolrConstants.DOCTYPE, DocType.GROUP.name());
+            doc.setField(SolrConstants.DATECREATED, dateCreated);
             doc.setField(SolrConstants.DATEUPDATED, Long.valueOf(now));
             doc.setField(SolrConstants.PI, groupId);
             doc.setField(SolrConstants.PI_TOPSTRUCT, groupId);

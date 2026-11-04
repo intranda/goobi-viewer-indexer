@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -125,7 +126,7 @@ class SolrSearchIndexTest extends AbstractSolrEnabledTest {
     }
 
     /**
-     * @see SolrSearchIndex#checkAndCreateGroupDoc(String,String,long)
+     * @see SolrSearchIndex#checkAndCreateGroupDoc(String,String,Map,Collection)
      * @verifies create new document with all values if none exists
      */
     @Test
@@ -133,10 +134,9 @@ class SolrSearchIndexTest extends AbstractSolrEnabledTest {
         Map<String, String> moreMetadata = new HashMap<>();
         moreMetadata.put("MD_SHELFMARK", "shelfmark");
         moreMetadata.put("MD_TITLE", "title");
-        String iddoc = UUID.randomUUID().toString();
-        SolrInputDocument doc = searchIndex.checkAndCreateGroupDoc(SolrConstants.PREFIX_GROUPID + "TEST", "id10T", moreMetadata, iddoc);
+        SolrInputDocument doc = searchIndex.checkAndCreateGroupDoc(SolrConstants.PREFIX_GROUPID + "TEST", "id10T", moreMetadata, null);
         Assertions.assertNotNull(doc);
-        Assertions.assertEquals(iddoc, doc.getFieldValue(SolrConstants.IDDOC));
+        Assertions.assertEquals(SolrSearchIndex.getGroupDocIddoc("id10T"), doc.getFieldValue(SolrConstants.IDDOC));
         Long timestamp = (Long) doc.getFieldValue(SolrConstants.DATECREATED);
         Assertions.assertNotNull(timestamp);
         Assertions.assertEquals(timestamp, doc.getFieldValue(SolrConstants.DATEUPDATED));
@@ -148,7 +148,7 @@ class SolrSearchIndexTest extends AbstractSolrEnabledTest {
     }
 
     /**
-     * @see SolrSearchIndex#checkAndCreateGroupDoc(String,String,long)
+     * @see SolrSearchIndex#checkAndCreateGroupDoc(String,String,Map,Collection)
      * @verifies create updated document with all values if one already exists
      */
     @Test
@@ -156,8 +156,7 @@ class SolrSearchIndexTest extends AbstractSolrEnabledTest {
         Map<String, String> moreMetadata = new HashMap<>();
         moreMetadata.put("MD_SHELFMARK", "old_shelfmark");
         moreMetadata.put("MD_TITLE", "old_title");
-        String iddoc = UUID.randomUUID().toString();
-        SolrInputDocument doc = searchIndex.checkAndCreateGroupDoc(SolrConstants.PREFIX_GROUPID + "TEST", "id10T", moreMetadata, iddoc);
+        SolrInputDocument doc = searchIndex.checkAndCreateGroupDoc(SolrConstants.PREFIX_GROUPID + "TEST", "id10T", moreMetadata, null);
         Assertions.assertNotNull(doc);
         searchIndex.writeToIndex(doc);
         searchIndex.commit(false);
@@ -165,7 +164,7 @@ class SolrSearchIndexTest extends AbstractSolrEnabledTest {
         moreMetadata = new HashMap<>();
         moreMetadata.put("MD_SHELFMARK", "new_shelfmark");
         moreMetadata.put("MD_TITLE", "new_title");
-        SolrInputDocument doc2 = searchIndex.checkAndCreateGroupDoc(SolrConstants.PREFIX_GROUPID + "TEST", "id10T", moreMetadata, iddoc);
+        SolrInputDocument doc2 = searchIndex.checkAndCreateGroupDoc(SolrConstants.PREFIX_GROUPID + "TEST", "id10T", moreMetadata, null);
         Assertions.assertNotNull(doc2);
         Assertions.assertEquals(doc.getFieldValue(SolrConstants.IDDOC), doc2.getFieldValue(SolrConstants.IDDOC));
         Assertions.assertEquals(doc.getFieldValue(SolrConstants.DATECREATED), doc2.getFieldValue(SolrConstants.DATECREATED));
@@ -178,7 +177,7 @@ class SolrSearchIndexTest extends AbstractSolrEnabledTest {
     }
 
     /**
-     * @see SolrSearchIndex#checkAndCreateGroupDoc(String,String,Map,long)
+     * @see SolrSearchIndex#checkAndCreateGroupDoc(String,String,Map,Collection)
      * @verifies add default field
      */
     @Test
@@ -187,7 +186,7 @@ class SolrSearchIndexTest extends AbstractSolrEnabledTest {
         moreMetadata.put("MD_SHELFMARK", "shelfmark");
         moreMetadata.put("MD_TITLE", "title");
         SolrInputDocument doc =
-                searchIndex.checkAndCreateGroupDoc(SolrConstants.PREFIX_GROUPID + "TEST", "id10T", moreMetadata, UUID.randomUUID().toString());
+                searchIndex.checkAndCreateGroupDoc(SolrConstants.PREFIX_GROUPID + "TEST", "id10T", moreMetadata, null);
         Assertions.assertNotNull(doc);
         Assertions.assertEquals(DocType.GROUP.name(), doc.getFieldValue(SolrConstants.DOCTYPE));
         String defaultValue = (String) doc.getFieldValue(SolrConstants.DEFAULT);
@@ -198,13 +197,126 @@ class SolrSearchIndexTest extends AbstractSolrEnabledTest {
     }
 
     /**
-     * @see SolrSearchIndex#checkAndCreateGroupDoc(String,String,Map,long)
+     * @see SolrSearchIndex#getGroupDocIddoc(String)
+     * @verifies return same value for same group id
+     */
+    @Test
+    void getGroupDocIddoc_shouldReturnSameValueForSameGroupId() {
+        Assertions.assertEquals(SolrSearchIndex.getGroupDocIddoc("id10T"), SolrSearchIndex.getGroupDocIddoc("id10T"));
+    }
+
+    /**
+     * @see SolrSearchIndex#getGroupDocIddoc(String)
+     * @verifies return different values for different group ids
+     */
+    @Test
+    void getGroupDocIddoc_shouldReturnDifferentValuesForDifferentGroupIds() {
+        Assertions.assertNotEquals(SolrSearchIndex.getGroupDocIddoc("id10T"), SolrSearchIndex.getGroupDocIddoc("id11T"));
+    }
+
+    /**
+     * @see SolrSearchIndex#checkAndCreateGroupDoc(String,String,Map,Collection)
+     * @verifies use same iddoc for same group id if previous doc not yet committed
+     */
+    @Test
+    void checkAndCreateGroupDoc_shouldUseSameIddocForSameGroupIdIfPreviousDocNotYetCommitted() throws Exception {
+        // Two records of a new group indexed concurrently (or within one commit batch): neither sees the other's group doc
+        SolrInputDocument doc1 = searchIndex.checkAndCreateGroupDoc(SolrConstants.PREFIX_GROUPID + "TEST", "id10T", null, null);
+        SolrInputDocument doc2 = searchIndex.checkAndCreateGroupDoc(SolrConstants.PREFIX_GROUPID + "TEST", "id10T", null, null);
+        Assertions.assertEquals(doc1.getFieldValue(SolrConstants.IDDOC), doc2.getFieldValue(SolrConstants.IDDOC));
+        searchIndex.writeToIndex(doc1);
+        searchIndex.writeToIndex(doc2);
+        searchIndex.commit(false);
+        Assertions.assertEquals(1, searchIndex.getNumHits("+" + SolrConstants.PI + ":id10T +" + SolrConstants.DOCTYPE + ":" + DocType.GROUP.name()));
+    }
+
+    /**
+     * @see SolrSearchIndex#checkAndCreateGroupDoc(String,String,Map,Collection)
+     * @verifies collect iddocs of existing group docs with different iddoc
+     */
+    @Test
+    void checkAndCreateGroupDoc_shouldCollectIddocsOfExistingGroupDocsWithDifferentIddoc() throws Exception {
+        // Duplicate group docs with random IDDOCs, as created by older versions
+        List<String> oldIddocs = Arrays.asList(UUID.randomUUID().toString(), UUID.randomUUID().toString());
+        for (String oldIddoc : oldIddocs) {
+            searchIndex.writeToIndex(createOldGroupDoc(oldIddoc, "id10T", 1000L));
+        }
+        searchIndex.commit(false);
+
+        Set<String> obsoleteIddocs = new HashSet<>();
+        SolrInputDocument doc = searchIndex.checkAndCreateGroupDoc(SolrConstants.PREFIX_GROUPID + "TEST", "id10T", null, obsoleteIddocs);
+        Assertions.assertEquals(SolrSearchIndex.getGroupDocIddoc("id10T"), doc.getFieldValue(SolrConstants.IDDOC));
+        Assertions.assertEquals(new HashSet<>(oldIddocs), obsoleteIddocs);
+
+        // Once written, the doc with the derived IDDOC is not obsolete itself
+        searchIndex.deleteDocuments(new ArrayList<>(obsoleteIddocs));
+        searchIndex.writeToIndex(doc);
+        searchIndex.commit(false);
+        obsoleteIddocs.clear();
+        searchIndex.checkAndCreateGroupDoc(SolrConstants.PREFIX_GROUPID + "TEST", "id10T", null, obsoleteIddocs);
+        Assertions.assertTrue(obsoleteIddocs.isEmpty());
+        Assertions.assertEquals(1, searchIndex.getNumHits("+" + SolrConstants.PI + ":id10T +" + SolrConstants.DOCTYPE + ":" + DocType.GROUP.name()));
+    }
+
+    /**
+     * @see SolrSearchIndex#checkAndCreateGroupDoc(String,String,Map,Collection)
+     * @verifies keep earliest creation date of existing group docs
+     */
+    @Test
+    void checkAndCreateGroupDoc_shouldKeepEarliestCreationDateOfExistingGroupDocs() throws Exception {
+        searchIndex.writeToIndex(createOldGroupDoc(UUID.randomUUID().toString(), "id10T", 2000L));
+        searchIndex.writeToIndex(createOldGroupDoc(UUID.randomUUID().toString(), "id10T", 1000L));
+        searchIndex.commit(false);
+
+        SolrInputDocument doc = searchIndex.checkAndCreateGroupDoc(SolrConstants.PREFIX_GROUPID + "TEST", "id10T", null, null);
+        Assertions.assertEquals(1000L, doc.getFieldValue(SolrConstants.DATECREATED));
+    }
+
+    /**
+     * @see SolrSearchIndex#checkAndCreateGroupDoc(String,String,Map,Collection)
+     * @verifies ignore non group docs with same pi
+     */
+    @Test
+    void checkAndCreateGroupDoc_shouldIgnoreNonGroupDocsWithSamePi() throws Exception {
+        SolrInputDocument recordDoc = new SolrInputDocument();
+        recordDoc.setField(SolrConstants.IDDOC, UUID.randomUUID().toString());
+        recordDoc.setField(SolrConstants.PI, "id10T");
+        recordDoc.setField(SolrConstants.PI_TOPSTRUCT, "id10T");
+        recordDoc.setField(SolrConstants.DOCTYPE, DocType.DOCSTRCT.name());
+        searchIndex.writeToIndex(recordDoc);
+        searchIndex.commit(false);
+
+        Set<String> obsoleteIddocs = new HashSet<>();
+        SolrInputDocument doc = searchIndex.checkAndCreateGroupDoc(SolrConstants.PREFIX_GROUPID + "TEST", "id10T", null, obsoleteIddocs);
+        Assertions.assertEquals(SolrSearchIndex.getGroupDocIddoc("id10T"), doc.getFieldValue(SolrConstants.IDDOC));
+        Assertions.assertTrue(obsoleteIddocs.isEmpty());
+    }
+
+    /**
+     * @param iddoc
+     * @param pi
+     * @param dateCreated
+     * @return Group document as written by older versions
+     */
+    private static SolrInputDocument createOldGroupDoc(String iddoc, String pi, long dateCreated) {
+        SolrInputDocument doc = new SolrInputDocument();
+        doc.setField(SolrConstants.IDDOC, iddoc);
+        doc.setField(SolrConstants.GROUPFIELD, iddoc);
+        doc.setField(SolrConstants.DOCTYPE, DocType.GROUP.name());
+        doc.setField(SolrConstants.PI, pi);
+        doc.setField(SolrConstants.PI_TOPSTRUCT, pi);
+        doc.setField(SolrConstants.DATECREATED, dateCreated);
+        return doc;
+    }
+
+    /**
+     * @see SolrSearchIndex#checkAndCreateGroupDoc(String,String,Map,Collection)
      * @verifies add access conditions
      */
     @Test
     void checkAndCreateGroupDoc_shouldAddAccessConditions() {
         SolrInputDocument doc =
-                searchIndex.checkAndCreateGroupDoc(SolrConstants.PREFIX_GROUPID + "TEST", "id10T", null, UUID.randomUUID().toString());
+                searchIndex.checkAndCreateGroupDoc(SolrConstants.PREFIX_GROUPID + "TEST", "id10T", null, null);
         Assertions.assertNotNull(doc);
         Assertions.assertEquals(SolrConstants.OPEN_ACCESS_VALUE, doc.getFieldValue(SolrConstants.ACCESSCONDITION));
     }
