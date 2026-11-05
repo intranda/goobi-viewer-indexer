@@ -1717,6 +1717,63 @@ class MetsIndexerTest extends AbstractSolrEnabledTest {
 
     /**
      * @see MetsIndexer#index(Path,Map,ISolrWriteStrategy,int,boolean)
+     * @verifies treat top element as mapped to all pages if no pages mapped to it
+     * @verifies not apply all pages fallback to non top elements
+     */
+    @Test
+    void index_shouldTreatTopElementAsMappedToAllPagesIfNoPagesMappedToIt() throws Exception {
+        Map<String, Path> dataFolders = new HashMap<>();
+        Path metsPath = Paths.get("src/test/resources/METS/34192383_pdfpages_unmappedtop.xml").toAbsolutePath();
+        MetsIndexer indexer = new MetsIndexer(hotfolder, List.of("OGG", "MP3", "PRESENTATION"));
+        IndexingResult result = indexer.index(metsPath, dataFolders, null, 1, false);
+        Assertions.assertNull(result.getError());
+
+        // Top element has no smLink, but must be indexed as if all pages were mapped to it
+        SolrDocument mainDoc = SolrIndexerDaemon.getInstance()
+                .getSearchIndex()
+                .search("+%s:%s +%s:%s".formatted(SolrConstants.PI, "34192383_3", SolrConstants.ISWORK, "true"), null)
+                .get(0);
+        assertEquals("application/pdf", mainDoc.getFieldValue(SolrConstants.MIMETYPE));
+        assertEquals(Boolean.TRUE, mainDoc.getFieldValue("BOOL_IMAGEAVAILABLE"));
+        assertEquals("00000001.pdf", mainDoc.getFieldValue(SolrConstants.THUMBNAIL));
+        assertEquals(1, mainDoc.getFieldValue(SolrConstants.THUMBPAGENO));
+        assertEquals(37, mainDoc.getFieldValue(SolrConstants.NUMPAGES));
+
+        // The child element mapped to the pages remains the page owner
+        SolrDocumentList childDocs = SolrIndexerDaemon.getInstance()
+                .getSearchIndex()
+                .search("+%s:%s +%s:%s".formatted(SolrConstants.PI_TOPSTRUCT, "34192383_3", SolrConstants.LOGID, "LOG_0001")
+                        + " +" + SolrConstants.DOCTYPE + ":DOCSTRCT", null);
+        assertEquals(1, childDocs.size());
+        String childIddoc = String.valueOf(childDocs.get(0).getFieldValue(SolrConstants.IDDOC));
+        assertEquals(37, childDocs.get(0).getFieldValue(SolrConstants.NUMPAGES));
+
+        SolrDocumentList pageDocs = SolrIndexerDaemon.getInstance()
+                .getSearchIndex()
+                .search("+%s:%s +%s:%s".formatted(SolrConstants.PI_TOPSTRUCT, "34192383_3", SolrConstants.DOCTYPE, "PAGE"), null);
+        assertEquals(37, pageDocs.size());
+        for (SolrDocument pageDoc : pageDocs) {
+            assertEquals(childIddoc, String.valueOf(pageDoc.getFieldValue(SolrConstants.IDDOC_OWNER)));
+            assertEquals("LOG_0001", pageDoc.getFieldValue(SolrConstants.LOGID));
+        }
+    }
+
+    /**
+     * @see MetsIndexer#getAllPagePhysIds()
+     * @verifies return all page ids
+     */
+    @Test
+    void getAllPagePhysIds_shouldReturnAllPageIds() throws Exception {
+        MetsIndexer indexer = new MetsIndexer(hotfolder);
+        indexer.initJDomXP(Paths.get("src/test/resources/METS/34192383_pdfpages_unmappedtop.xml"));
+        List<String> result = indexer.getAllPagePhysIds();
+        assertEquals(37, result.size());
+        assertEquals("PHYS_0001", result.get(0));
+        assertEquals("PHYS_0037", result.get(36));
+    }
+
+    /**
+     * @see MetsIndexer#index(Path,Map,ISolrWriteStrategy,int,boolean)
      * @verifies suppress fulltext when trigger matches
      */
     @Test

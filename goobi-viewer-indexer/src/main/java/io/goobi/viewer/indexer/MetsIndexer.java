@@ -822,6 +822,21 @@ public class MetsIndexer extends Indexer {
     }
 
     /**
+     * Returns the IDs of all physical page elements in the physical structMap (no shapes), in document order.
+     *
+     * @return List of distinct page PHYSIDs; empty list if none found
+     * @should return all page ids
+     */
+    List<String> getAllPagePhysIds() {
+        List<String> ret = xp.evaluateToStringList(PhysicalDocumentBuilder.buildPagesXpathExpresson() + "/@ID", null);
+        if (ret == null) {
+            return Collections.emptyList();
+        }
+
+        return new ArrayList<>(new LinkedHashSet<>(ret));
+    }
+
+    /**
      * Generates thumbnail info fields for the given docstruct. Also generates page docs mapped to this docstruct. <code>IndexObj.topstructPi</code>
      * must be set before calling this method.
      * 
@@ -834,6 +849,8 @@ public class MetsIndexer extends Indexer {
      * @return {@link LuceneField}
      * @throws IndexerException -
      * @throws FatalIndexerException
+     * @should treat top element as mapped to all pages if no pages mapped to it
+     * @should not apply all pages fallback to non top elements
      */
     private List<LuceneField> mapPagesToDocstruct(IndexObject indexObj, final IndexObject parentIndexObject, boolean isWork,
             ISolrWriteStrategy writeStrategy, int depth, String useFileGroup) throws IndexerException, FatalIndexerException {
@@ -844,12 +861,22 @@ public class MetsIndexer extends Indexer {
         // Determine all PHYSID mapped to the current LOGID
         String xpath = "/mets:mets/mets:structLink/mets:smLink[@xlink:from=\"" + indexObj.getLogId() + "\"]/@xlink:to";
         List<String> physIdList = xp.evaluateToStringList(xpath, null);
-        if (physIdList == null || physIdList.isEmpty()) {
+        boolean noPhysIdsMapped = physIdList == null || physIdList.isEmpty();
+        List<PhysicalElement> pages = noPhysIdsMapped ? new ArrayList<>() : writeStrategy.getPagesForPhysIdList(physIdList);
+        if (pages.isEmpty() && isWork) {
+            // Incomplete mapping (pages only mapped to sub-elements): treat the top element as mapped to all pages,
+            // so that it is indexed the same way as with a complete mapping
+            List<PhysicalElement> allPages = writeStrategy.getPagesForPhysIdList(getAllPagePhysIds());
+            if (!allPages.isEmpty()) {
+                logger.warn("No pages mapped to top element '{}' - treating it as mapped to all {} pages.", indexObj.getLogId(),
+                        allPages.size());
+                pages = allPages;
+            }
+        }
+        if (noPhysIdsMapped && pages.isEmpty()) {
             logger.warn("No pages mapped to '{}'.", indexObj.getLogId());
             return Collections.emptyList();
         }
-
-        List<PhysicalElement> pages = writeStrategy.getPagesForPhysIdList(physIdList);
         if (pages.isEmpty()) {
             logger.warn("No pages found for {}", indexObj.getLogId());
         }
