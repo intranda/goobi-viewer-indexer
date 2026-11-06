@@ -298,7 +298,7 @@ class MetadataHelperTest extends AbstractTest {
     @Test
     void collectGroupMetadataValues_shouldConcatenateValuesIfConcatenateEnabled() throws Exception {
         Configuration shippedConfig = new Configuration(new File("src/main/resources/config_indexer.xml").getAbsolutePath());
-        FieldConfig fieldConfig = shippedConfig.getMetadataConfigurationManager().getConfigurationListForField("MD_CORPORATEAUTHOR").get(0);
+        FieldConfig fieldConfig = shippedConfig.getMetadataConfigurationManager().getConfigurationListForField("MD_CORPORATE_AUTHOR").get(0);
         assertNotNull(fieldConfig);
         // Shipped config enables concatenation for untyped corporate name parts
         assertTrue(fieldConfig.getGroupEntity().getSubfields().get(SolrConstants.MD_VALUE).isConcatenate());
@@ -329,7 +329,7 @@ class MetadataHelperTest extends AbstractTest {
     @Test
     void collectGroupMetadataValues_shouldKeepSeparateValuesIfConcatenateDisabled() throws Exception {
         Configuration shippedConfig = new Configuration(new File("src/main/resources/config_indexer.xml").getAbsolutePath());
-        FieldConfig fieldConfig = shippedConfig.getMetadataConfigurationManager().getConfigurationListForField("MD_CORPORATEAUTHOR").get(0);
+        FieldConfig fieldConfig = shippedConfig.getMetadataConfigurationManager().getConfigurationListForField("MD_CORPORATE_AUTHOR").get(0);
         assertNotNull(fieldConfig);
 
         Element eleName = createCorporateNameElement();
