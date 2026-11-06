@@ -2000,167 +2000,15 @@
 			</list>
 		</MD_CORPORATIONSEARCH>
 
-		<MD_CORPORATEADDRESSEE>
-			<list>
-				<item>
-					<xpath>mets:xmlData/mods:mods/mods:name[@type="corporate"][mods:role/mods:roleTerm="rcp"[@authority="marcrelator"][@type="code"]]</xpath>
-					<groupEntity type="CORPORATION">
-						<field name="MD_VALUE">mods:displayForm</field>
-						<field name="MD_LINK">@xlink:href</field>
-						<field name="MD_CORPORATION" concatenate="true" separator=". ">mods:namePart[not(@type)]</field>
-						<field name="MD_LASTNAME">mods:namePart[@type="family"]</field>
-						<field name="MD_FIRSTNAME">mods:namePart[@type="given"]</field>
-						<field name="MD_LIFEPERIOD">mods:namePart[@type="date"]</field>
-						<field name="MD_TERMSOFADDRESS">mods:namePart[@type="termsOfAddress"]</field>
-					</groupEntity>
-				</item>
-			</list>
-		</MD_CORPORATEADDRESSEE>
-
-		<MD_CORPORATEARTIST>
-			<list>
-				<item>
-					<xpath>mets:xmlData/mods:mods/mods:name[@type="corporate"][mods:role/mods:roleTerm="art"[@authority="marcrelator"][@type="code"]]</xpath>
-					<groupEntity type="CORPORATION">
-						<field name="MD_VALUE">mods:displayForm</field>
-						<field name="MD_LINK">@xlink:href</field>
-						<field name="MD_CORPORATION" concatenate="true" separator=". ">mods:namePart[not(@type)]</field>
-						<field name="MD_LASTNAME">mods:namePart[@type="family"]</field>
-						<field name="MD_FIRSTNAME">mods:namePart[@type="given"]</field>
-						<field name="MD_LIFEPERIOD">mods:namePart[@type="date"]</field>
-						<field name="MD_TERMSOFADDRESS">mods:namePart[@type="termsOfAddress"]</field>
-					</groupEntity>
-				</item>
-			</list>
-		</MD_CORPORATEARTIST>
-
-		<MD_CORPORATEAUTHOR>
-			<list>
-				<item>
-					<xpath>mets:xmlData/mods:mods/mods:name[@type="corporate"][mods:role/mods:roleTerm="aut"[@authority="marcrelator"][@type="code"]]</xpath>
-					<groupEntity type="CORPORATION">
-						<field name="MD_VALUE" concatenate="true" separator=". ">mods:namePart[not(@type)]</field>
-						<field name="MD_LINK">@xlink:href</field>
-						<field name="MD_CORPORATION" concatenate="true" separator=". ">mods:namePart[not(@type)]</field>
-						<field name="MD_LASTNAME">mods:namePart[@type="family"]</field>
-						<field name="MD_FIRSTNAME">mods:namePart[@type="given"]</field>
-						<field name="MD_LIFEPERIOD">mods:namePart[@type="date"]</field>
-						<field name="MD_TERMSOFADDRESS">mods:namePart[@type="termsOfAddress"]</field>
-					</groupEntity>
-				</item>
-			</list>
-		</MD_CORPORATEAUTHOR>
-
-		<MD_CORPORATECONTRIBUTOR>
-			<list>
-				<item>
-					<xpath>mets:xmlData/mods:mods/mods:name[@type="corporate"][mods:role/mods:roleTerm="ctb"[@authority="marcrelator"][@type="code"]]</xpath>
-					<groupEntity type="CORPORATION">
-						<field name="MD_VALUE">mods:displayForm</field>
-						<field name="MD_LINK">@xlink:href</field>
-						<field name="MD_CORPORATION" concatenate="true" separator=". ">mods:namePart[not(@type)]</field>
-						<field name="MD_LASTNAME">mods:namePart[@type="family"]</field>
-						<field name="MD_FIRSTNAME">mods:namePart[@type="given"]</field>
-						<field name="MD_LIFEPERIOD">mods:namePart[@type="date"]</field>
-						<field name="MD_TERMSOFADDRESS">mods:namePart[@type="termsOfAddress"]</field>
-					</groupEntity>
-				</item>
-			</list>
-		</MD_CORPORATECONTRIBUTOR>
-
-		<MD_CORPORATECORRESPONDENT>
-			<list>
-				<item>
-					<xpath>mets:xmlData/mods:mods/mods:name[@type="corporate"][mods:role/mods:roleTerm="crp"[@authority="marcrelator"][@type="code"]]</xpath>
-					<groupEntity type="CORPORATION">
-						<field name="MD_VALUE">mods:displayForm</field>
-						<field name="MD_LINK">@xlink:href</field>
-						<field name="MD_CORPORATION" concatenate="true" separator=". ">mods:namePart[not(@type)]</field>
-						<field name="MD_LASTNAME">mods:namePart[@type="family"]</field>
-						<field name="MD_FIRSTNAME">mods:namePart[@type="given"]</field>
-						<field name="MD_LIFEPERIOD">mods:namePart[@type="date"]</field>
-						<field name="MD_TERMSOFADDRESS">mods:namePart[@type="termsOfAddress"]</field>
-					</groupEntity>
-				</item>
-			</list>
-		</MD_CORPORATECORRESPONDENT>
-
-		<MD_CORPORATECREATOR>
-			<list>
-				<item>
-					<xpath>mets:xmlData/mods:mods/mods:name[@type="corporate"][mods:role/mods:roleTerm="cre"[@authority="marcrelator"][@type="code"]]</xpath>
-					<groupEntity type="CORPORATION">
-						<field name="MD_VALUE">mods:displayForm</field>
-						<field name="MD_LINK">@xlink:href</field>
-						<field name="MD_CORPORATION" concatenate="true" separator=". ">mods:namePart[not(@type)]</field>
-						<field name="MD_LASTNAME">mods:namePart[@type="family"]</field>
-						<field name="MD_FIRSTNAME">mods:namePart[@type="given"]</field>
-						<field name="MD_LIFEPERIOD">mods:namePart[@type="date"]</field>
-						<field name="MD_TERMSOFADDRESS">mods:namePart[@type="termsOfAddress"]</field>
-					</groupEntity>
-				</item>
-			</list>
-		</MD_CORPORATECREATOR>
-
-		<MD_CORPORATEDEPICTED>
-			<list>
-				<item>
-					<xpath>mets:xmlData/mods:mods/mods:name[@type="corporate"][mods:role/mods:roleTerm="dpc"[@authority="marcrelator"][@type="code"]]</xpath>
-					<groupEntity type="CORPORATION">
-						<field name="MD_VALUE">mods:displayForm</field>
-						<field name="MD_LINK">@xlink:href</field>
-						<field name="MD_CORPORATION" concatenate="true" separator=". ">mods:namePart[not(@type)]</field>
-						<field name="MD_LASTNAME">mods:namePart[@type="family"]</field>
-						<field name="MD_FIRSTNAME">mods:namePart[@type="given"]</field>
-						<field name="MD_LIFEPERIOD">mods:namePart[@type="date"]</field>
-						<field name="MD_TERMSOFADDRESS">mods:namePart[@type="termsOfAddress"]</field>
-					</groupEntity>
-				</item>
-			</list>
-		</MD_CORPORATEDEPICTED>
-
-		<MD_CORPORATEFORMEROWNER>
-			<list>
-				<item>
-					<xpath>mets:xmlData/mods:mods/mods:name[@type="corporate"][mods:role/mods:roleTerm="fmo"[@authority="marcrelator"][@type="code"]]</xpath>
-					<groupEntity type="CORPORATION">
-						<field name="MD_VALUE">mods:displayForm</field>
-						<field name="MD_LINK">@xlink:href</field>
-						<field name="MD_CORPORATION" concatenate="true" separator=". ">mods:namePart[not(@type)]</field>
-						<field name="MD_LASTNAME">mods:namePart[@type="family"]</field>
-						<field name="MD_FIRSTNAME">mods:namePart[@type="given"]</field>
-						<field name="MD_LIFEPERIOD">mods:namePart[@type="date"]</field>
-						<field name="MD_TERMSOFADDRESS">mods:namePart[@type="termsOfAddress"]</field>
-					</groupEntity>
-				</item>
-			</list>
-		</MD_CORPORATEFORMEROWNER>
-
-		<MD_CORPORATEORIGINATOR>
-			<list>
-				<item>
-					<xpath>mets:xmlData/mods:mods/mods:name[@type="corporate"][mods:role/mods:roleTerm="org"[@authority="marcrelator"][@type="code"]]</xpath>
-					<groupEntity type="CORPORATION">
-						<field name="MD_VALUE">mods:displayForm</field>
-						<field name="MD_LINK">@xlink:href</field>
-						<field name="MD_CORPORATION" concatenate="true" separator=". ">mods:namePart[not(@type)]</field>
-						<field name="MD_LASTNAME">mods:namePart[@type="family"]</field>
-						<field name="MD_FIRSTNAME">mods:namePart[@type="given"]</field>
-						<field name="MD_LIFEPERIOD">mods:namePart[@type="date"]</field>
-						<field name="MD_TERMSOFADDRESS">mods:namePart[@type="termsOfAddress"]</field>
-					</groupEntity>
-				</item>
-			</list>
-		</MD_CORPORATEORIGINATOR>
-        
-        <MD_CORPORATEOTHER>
+        <MD_CORPORATE_ADDRESSEE>
             <list>
                 <item>
-                    <xpath>mets:xmlData/mods:mods/mods:name[@type="corporate"][mods:role/mods:roleTerm="oth"[@authority="marcrelator"][@type="code"]]</xpath>
+                    <xpath>mets:xmlData/mods:mods/mods:name[@type='corporate'][mods:role/mods:roleTerm="rcp"[@authority='marcrelator'][@type='code']]</xpath>
                     <groupEntity type="CORPORATION">
                         <field name="MD_VALUE">mods:displayForm</field>
+                        <field name="MD_DISPLAYFORM">mods:displayForm</field>
                         <field name="MD_LINK">@xlink:href</field>
-                        <field name="MD_CORPORATION" concatenate="true" separator=". ">mods:namePart[not(@type)]</field>
+                        <field name="MD_CORPORATION">mods:namePart[not(@type)]</field>
                         <field name="MD_LASTNAME">mods:namePart[@type="family"]</field>
                         <field name="MD_FIRSTNAME">mods:namePart[@type="given"]</field>
                         <field name="MD_LIFEPERIOD">mods:namePart[@type="date"]</field>
@@ -2168,7 +2016,481 @@
                     </groupEntity>
                 </item>
             </list>
-        </MD_CORPORATEOTHER>
+        </MD_CORPORATE_ADDRESSEE>
+
+        <MD_CORPORATE_ARTIST>
+            <list>
+                <item>
+                    <xpath>mets:xmlData/mods:mods/mods:name[@type='corporate'][mods:role/mods:roleTerm="art"[@authority='marcrelator'][@type='code']]</xpath>
+                    <groupEntity type="CORPORATION">
+                        <field name="MD_VALUE" concatenate="true" separator=". ">mods:namePart[not(@type)]</field>
+                        <field name="MD_LINK">@xlink:href</field>
+                        <field name="MD_CORPORATION">mods:namePart[not(@type)]</field>
+                        <field name="MD_LASTNAME">mods:namePart[@type="family"]</field>
+                        <field name="MD_FIRSTNAME">mods:namePart[@type="given"]</field>
+                        <field name="MD_LIFEPERIOD">mods:namePart[@type="date"]</field>
+                        <field name="MD_TERMSOFADDRESS">mods:namePart[@type="termsOfAddress"]</field>
+                    </groupEntity>
+                </item>
+            </list>
+        </MD_CORPORATE_ARTIST>
+
+        <MD_CORPORATE_AUTHOR>
+            <list>
+                <item>
+                    <xpath>mets:xmlData/mods:mods/mods:name[@type='corporate'][mods:role/mods:roleTerm="aut"[@authority='marcrelator'][@type='code']]</xpath>
+                    <groupEntity type="CORPORATION">
+                        <field name="MD_VALUE" concatenate="true" separator=". ">mods:namePart[not(@type)]</field>
+                        <field name="MD_LINK">@xlink:href</field>
+                        <field name="MD_CORPORATION" concatenate="true" separator=". ">mods:namePart[not(@type)]</field>
+                        <field name="MD_LIFEPERIOD">mods:namePart[@type="date"]</field>
+                        <field name="MD_TERMSOFADDRESS">mods:namePart[@type="termsOfAddress"]</field>
+                    </groupEntity>
+                </item>
+            </list>
+        </MD_CORPORATE_AUTHOR>
+        
+        <MD_CORPORATE_CLIENT>
+            <list>
+                <item>
+                    <xpath>mets:xmlData/mods:mods/mods:name[@type='corporate'][mods:role/mods:roleTerm="cli"[@authority='marcrelator'][@type='code']]</xpath>
+                    <groupEntity type="CORPORATION">
+                        <field name="MD_VALUE" concatenate="true" separator=". ">mods:namePart[not(@type)]</field>
+                        <field name="MD_LINK">@xlink:href</field>
+                        <field name="MD_CORPORATION" concatenate="true" separator=". ">mods:namePart[not(@type)]</field>
+                        <field name="MD_LIFEPERIOD">mods:namePart[@type="date"]</field>
+                        <field name="MD_TERMSOFADDRESS">mods:namePart[@type="termsOfAddress"]</field>
+                    </groupEntity>
+                </item>
+            </list>
+        </MD_CORPORATE_CLIENT>
+
+        <MD_CORPORATE_COMPILER>
+            <list>
+                <item>
+                    <xpath>mets:xmlData/mods:mods/mods:name[@type='corporate'][mods:role/mods:roleTerm="com"[@authority='marcrelator'][@type='code']]</xpath>
+                    <groupEntity type="CORPORATION">
+                        <field name="MD_VALUE" concatenate="true" separator=". ">mods:namePart[not(@type)]</field>
+                        <field name="MD_LINK">@xlink:href</field>
+                        <field name="MD_CORPORATION" concatenate="true" separator=". ">mods:namePart[not(@type)]</field>
+                        <field name="MD_LIFEPERIOD">mods:namePart[@type="date"]</field>
+                        <field name="MD_TERMSOFADDRESS">mods:namePart[@type="termsOfAddress"]</field>
+                    </groupEntity>
+                </item>
+            </list>
+        </MD_CORPORATE_COMPILER>
+        
+        <MD_CORPORATE_COMPOSER>
+            <list>
+                <item>
+                    <xpath>mets:xmlData/mods:mods/mods:name[@type='corporate'][mods:role/mods:roleTerm="cmp"[@authority='marcrelator'][@type='code']]</xpath>
+                    <groupEntity type="CORPORATION">
+                        <field name="MD_VALUE" concatenate="true" separator=". ">mods:namePart[not(@type)]</field>
+                        <field name="MD_LINK">@xlink:href</field>
+                        <field name="MD_CORPORATION" concatenate="true" separator=". ">mods:namePart[not(@type)]</field>
+                        <field name="MD_LIFEPERIOD">mods:namePart[@type="date"]</field>
+                        <field name="MD_TERMSOFADDRESS">mods:namePart[@type="termsOfAddress"]</field>
+                    </groupEntity>
+                </item>
+            </list>
+        </MD_CORPORATE_COMPOSER>
+        
+        <MD_CORPORATE_CONTRIBUTOR>
+            <list>
+                <item>
+                    <xpath>mets:xmlData/mods:mods/mods:name[@type='corporate'][mods:role/mods:roleTerm="ctb"[@authority='marcrelator'][@type='code']]</xpath>
+                    <groupEntity type="CORPORATION">
+                        <field name="MD_VALUE" concatenate="true" separator=". ">mods:namePart[not(@type)]</field>
+                        <field name="MD_LINK">@xlink:href</field>
+                        <field name="MD_CORPORATION" concatenate="true" separator=". ">mods:namePart[not(@type)]</field>
+                        <field name="MD_LIFEPERIOD">mods:namePart[@type="date"]</field>
+                        <field name="MD_TERMSOFADDRESS">mods:namePart[@type="termsOfAddress"]</field>
+                    </groupEntity>
+                </item>
+            </list>
+        </MD_CORPORATE_CONTRIBUTOR>
+
+        <MD_CORPORATE_CORRESPONDENT>
+            <list>
+                <item>
+                    <xpath>mets:xmlData/mods:mods/mods:name[@type='corporate'][mods:role/mods:roleTerm="crp"[@authority='marcrelator'][@type='code']]</xpath>
+                    <groupEntity type="CORPORATION">
+                        <field name="MD_VALUE" concatenate="true" separator=". ">mods:namePart[not(@type)]</field>
+                        <field name="MD_LINK">@xlink:href</field>
+                        <field name="MD_CORPORATION" concatenate="true" separator=". ">mods:namePart[not(@type)]</field>
+                        <field name="MD_LIFEPERIOD">mods:namePart[@type="date"]</field>
+                        <field name="MD_TERMSOFADDRESS">mods:namePart[@type="termsOfAddress"]</field>
+                    </groupEntity>
+                </item>
+            </list>
+        </MD_CORPORATE_CORRESPONDENT>
+        
+        <MD_CORPORATE_CREATOR>
+            <list>
+                <item>
+                    <xpath>mets:xmlData/mods:mods/mods:name[@type='corporate'][mods:role/mods:roleTerm="cre"[@authority='marcrelator'][@type='code']]
+
+                    </xpath>
+                    <groupEntity type="CORPORATION">
+                        <field name="MD_VALUE" concatenate="true" separator=". ">mods:namePart[not(@type)]</field>
+                        <field name="MD_LINK">@xlink:href</field>
+                        <field name="MD_CORPORATION" concatenate="true" separator=". ">mods:namePart[not(@type)]</field>
+                        <field name="MD_LIFEPERIOD">mods:namePart[@type="date"]</field>
+                        <field name="MD_TERMSOFADDRESS">mods:namePart[@type="termsOfAddress"]</field>
+                    </groupEntity>
+                </item>
+            </list>
+        </MD_CORPORATE_CREATOR>
+        
+        <MD_CORPORATE_DEDICATEE>
+            <list>
+                <item>
+                    <xpath>mets:xmlData/mods:mods/mods:name[@type='corporate'][mods:role/mods:roleTerm="dte"[@authority='marcrelator'][@type='code']]</xpath>
+                    <groupEntity type="CORPORATION">
+                        <field name="MD_VALUE">mods:displayForm</field>
+                        <field name="MD_DISPLAYFORM">mods:displayForm</field>
+                        <field name="MD_LINK">@xlink:href</field>
+                        <field name="MD_CORPORATION">mods:namePart[not(@type)]</field>
+                        <field name="MD_LASTNAME">mods:namePart[@type="family"]</field>
+                        <field name="MD_FIRSTNAME">mods:namePart[@type="given"]</field>
+                        <field name="MD_LIFEPERIOD">mods:namePart[@type="date"]</field>
+                        <field name="MD_TERMSOFADDRESS">mods:namePart[@type="termsOfAddress"]</field>
+                    </groupEntity>
+                </item>
+            </list>
+        </MD_CORPORATE_DEDICATEE>
+        
+        <MD_CORPORATE_DEGREE_GRANTING_INSTITUTION>
+            <list>
+                <item>
+                    <xpath>mets:xmlData/mods:mods/mods:name[@type='corporate'][mods:role/mods:roleTerm="dgg"[@authority='marcrelator'][@type='code']]</xpath>
+                    <groupEntity type="CORPORATION">
+                        <field name="MD_VALUE">mods:displayForm</field>
+                        <field name="MD_DISPLAYFORM">mods:displayForm</field>
+                        <field name="MD_LINK">@xlink:href</field>
+                        <field name="MD_CORPORATION">mods:namePart[not(@type)]</field>
+                        <field name="MD_LASTNAME">mods:namePart[@type="family"]</field>
+                        <field name="MD_FIRSTNAME">mods:namePart[@type="given"]</field>
+                        <field name="MD_LIFEPERIOD">mods:namePart[@type="date"]</field>
+                        <field name="MD_TERMSOFADDRESS">mods:namePart[@type="termsOfAddress"]</field>
+                    </groupEntity>
+                </item>
+            </list>
+        </MD_CORPORATE_DEGREE_GRANTING_INSTITUTION>
+
+        <MD_CORPORATE_DEPICTED>
+            <list>
+                <item>
+                    <xpath>mets:xmlData/mods:mods/mods:name[@type='corporate'][mods:role/mods:roleTerm="dpc"[@authority='marcrelator'][@type='code']]</xpath>
+                    <groupEntity type="CORPORATION">
+                        <field name="MD_VALUE" concatenate="true" separator=". ">mods:namePart[not(@type)]</field>
+                        <field name="MD_LINK">@xlink:href</field>
+                        <field name="MD_CORPORATION" concatenate="true" separator=". ">mods:namePart[not(@type)]</field>
+                        <field name="MD_LIFEPERIOD">mods:namePart[@type="date"]</field>
+                        <field name="MD_TERMSOFADDRESS">mods:namePart[@type="termsOfAddress"]</field>
+                    </groupEntity>
+                </item>
+            </list>
+        </MD_CORPORATE_DEPICTED>
+        
+        <MD_CORPORATE_DISTRIBUTOR>
+            <list>
+                <item>
+                    <xpath>mets:xmlData/mods:mods/mods:name[@type='corporate'][mods:role/mods:roleTerm="dst"[@authority='marcrelator'][@type='code']]</xpath>
+                    <groupEntity type="CORPORATION">
+                        <field name="MD_VALUE" concatenate="true" separator=". ">mods:namePart[not(@type)]</field>
+                        <field name="MD_LINK">@xlink:href</field>
+                        <field name="MD_CORPORATION" concatenate="true" separator=". ">mods:namePart[not(@type)]</field>
+                        <field name="MD_LIFEPERIOD">mods:namePart[@type="date"]</field>
+                        <field name="MD_TERMSOFADDRESS">mods:namePart[@type="termsOfAddress"]</field>
+                    </groupEntity>
+                </item>
+            </list>
+        </MD_CORPORATE_DISTRIBUTOR>
+        
+        <MD_CORPORATE_EDITOR>
+            <list>
+                <item>
+                    <xpath>mets:xmlData/mods:mods/mods:name[@type='corporate'][mods:role/mods:roleTerm="edt"[@authority='marcrelator'][@type='code']]</xpath>
+                    <groupEntity type="CORPORATION">
+                        <field name="MD_VALUE" concatenate="true" separator=". ">mods:namePart[not(@type)]</field>
+                        <field name="MD_LINK">@xlink:href</field>
+                        <field name="MD_CORPORATION" concatenate="true" separator=". ">mods:namePart[not(@type)]</field>
+                        <field name="MD_LIFEPERIOD">mods:namePart[@type="date"]</field>
+                        <field name="MD_TERMSOFADDRESS">mods:namePart[@type="termsOfAddress"]</field>
+                    </groupEntity>
+                </item>
+            </list>
+        </MD_CORPORATE_EDITOR>
+
+        <MD_CORPORATE_FORMER_OWNER>
+            <list>
+                <item>
+                    <xpath>mets:xmlData/mods:mods/mods:name[@type='corporate'][mods:role/mods:roleTerm="fmo"[@authority='marcrelator'][@type='code']]
+
+                    </xpath>
+                    <groupEntity type="CORPORATION">
+                        <field name="MD_VALUE" concatenate="true" separator=". ">mods:namePart[not(@type)]</field>
+                        <field name="MD_LINK">@xlink:href</field>
+                        <field name="MD_CORPORATION" concatenate="true" separator=". ">mods:namePart[not(@type)]</field>
+                        <field name="MD_LIFEPERIOD">mods:namePart[@type="date"]</field>
+                        <field name="MD_TERMSOFADDRESS">mods:namePart[@type="termsOfAddress"]</field>
+                    </groupEntity>
+                </item>
+            </list>
+        </MD_CORPORATE_FORMER_OWNER>
+        
+        <MD_CORPORATE_HONOREE>
+            <list>
+                <item>
+                    <xpath>mets:xmlData/mods:mods/mods:name[@type='corporate'][mods:role/mods:roleTerm="hnr"[@authority='marcrelator'][@type='code']]</xpath>
+                    <groupEntity type="CORPORATION">
+                        <field name="MD_VALUE" concatenate="true" separator=". ">mods:namePart[not(@type)]</field>
+                        <field name="MD_LINK">@xlink:href</field>
+                        <field name="MD_CORPORATION" concatenate="true" separator=". ">mods:namePart[not(@type)]</field>
+                        <field name="MD_LIFEPERIOD">mods:namePart[@type="date"]</field>
+                        <field name="MD_TERMSOFADDRESS">mods:namePart[@type="termsOfAddress"]</field>
+                    </groupEntity>
+                </item>
+            </list>
+        </MD_CORPORATE_HONOREE>
+        
+        <MD_CORPORATE_HOST>
+            <list>
+                <item>
+                    <xpath>mets:xmlData/mods:mods/mods:name[@type='corporate'][mods:role/mods:roleTerm="hst"[@authority='marcrelator'][@type='code']]</xpath>
+                    <groupEntity type="CORPORATION">
+                        <field name="MD_VALUE" concatenate="true" separator=". ">mods:namePart[not(@type)]</field>
+                        <field name="MD_LINK">@xlink:href</field>
+                        <field name="MD_CORPORATION" concatenate="true" separator=". ">mods:namePart[not(@type)]</field>
+                        <field name="MD_LIFEPERIOD">mods:namePart[@type="date"]</field>
+                        <field name="MD_TERMSOFADDRESS">mods:namePart[@type="termsOfAddress"]</field>
+                    </groupEntity>
+                </item>
+            </list>
+        </MD_CORPORATE_HOST>
+        
+        <MD_CORPORATE_ORGANIZER>
+            <list>
+                <item>
+                    <xpath>mets:xmlData/mods:mods/mods:name[@type='corporate'][mods:role/mods:roleTerm="orm"[@authority='marcrelator'][@type='code']]</xpath>
+                    <groupEntity type="CORPORATION">
+                        <field name="MD_VALUE" concatenate="true" separator=". ">mods:namePart[not(@type)]</field>
+                        <field name="MD_LINK">@xlink:href</field>
+                        <field name="MD_CORPORATION" concatenate="true" separator=". ">mods:namePart[not(@type)]</field>
+                        <field name="MD_LIFEPERIOD">mods:namePart[@type="date"]</field>
+                        <field name="MD_TERMSOFADDRESS">mods:namePart[@type="termsOfAddress"]</field>
+                    </groupEntity>
+                </item>
+            </list>
+        </MD_CORPORATE_ORGANIZER>
+
+        <MD_CORPORATE_ORIGINATOR>
+            <list>
+                <item>
+                    <xpath>mets:xmlData/mods:mods/mods:name[@type='corporate'][mods:role/mods:roleTerm="org"[@authority='marcrelator'][@type='code']]</xpath>
+                    <groupEntity type="CORPORATION">
+                        <field name="MD_VALUE" concatenate="true" separator=". ">mods:namePart[not(@type)]</field>
+                        <field name="MD_LINK">@xlink:href</field>
+                        <field name="MD_CORPORATION" concatenate="true" separator=". ">mods:namePart[not(@type)]</field>
+                        <field name="MD_LIFEPERIOD">mods:namePart[@type="date"]</field>
+                        <field name="MD_TERMSOFADDRESS">mods:namePart[@type="termsOfAddress"]</field>
+                    </groupEntity>
+                </item>
+            </list>
+        </MD_CORPORATE_ORIGINATOR>
+        
+        <MD_CORPORATE_OTHER>
+            <list>
+                <item>
+                    <xpath>mets:xmlData/mods:mods/mods:name[@type='corporate'][mods:role/mods:roleTerm="oth"[@authority='marcrelator'][@type='code']]
+
+                    </xpath>
+                    <groupEntity type="CORPORATION">
+                        <field name="MD_VALUE" concatenate="true" separator=". ">mods:namePart[not(@type)]</field>
+                        <field name="MD_LINK">@xlink:href</field>
+                        <field name="MD_CORPORATION" concatenate="true" separator=". ">mods:namePart[not(@type)]</field>
+                        <field name="MD_LIFEPERIOD">mods:namePart[@type="date"]</field>
+                        <field name="MD_TERMSOFADDRESS">mods:namePart[@type="termsOfAddress"]</field>
+                    </groupEntity>
+                </item>
+            </list>
+        </MD_CORPORATE_OTHER>
+        
+        <MD_CORPORATE_PHOTOGRAPHER>
+            <list>
+                <item>
+                    <xpath>mets:xmlData/mods:mods/mods:name[@type='corporate'][mods:role/mods:roleTerm="pht"[@authority='marcrelator'][@type='code']]</xpath>
+                    <groupEntity type="CORPORATION">
+                        <field name="MD_VALUE" concatenate="true" separator=". ">mods:namePart[not(@type)]</field>
+                        <field name="MD_LINK">@xlink:href</field>
+                        <field name="MD_CORPORATION" concatenate="true" separator=". ">mods:namePart[not(@type)]</field>
+                        <field name="MD_LIFEPERIOD">mods:namePart[@type="date"]</field>
+                        <field name="MD_TERMSOFADDRESS">mods:namePart[@type="termsOfAddress"]</field>
+                    </groupEntity>
+                </item>
+            </list>
+        </MD_CORPORATE_PHOTOGRAPHER>
+        
+        <MD_CORPORATE_PRINTER>
+            <list>
+                <item>
+                    <xpath>mets:xmlData/mods:mods/mods:name[@type='corporate'][mods:role/mods:roleTerm="org"[@authority='marcrelator'][@type='code']]</xpath>
+                    <groupEntity type="CORPORATION">
+                        <field name="MD_VALUE" concatenate="true" separator=". ">mods:namePart[not(@type)]</field>
+                        <field name="MD_LINK">@xlink:href</field>
+                        <field name="MD_CORPORATION" concatenate="true" separator=". ">mods:namePart[not(@type)]</field>
+                        <field name="MD_LIFEPERIOD">mods:namePart[@type="date"]</field>
+                        <field name="MD_TERMSOFADDRESS">mods:namePart[@type="termsOfAddress"]</field>
+                    </groupEntity>
+                </item>
+            </list>
+        </MD_CORPORATE_PRINTER>
+        
+        <MD_CORPORATE_PUBLISHER>
+            <list>
+                <item>
+                    <xpath>mets:xmlData/mods:mods/mods:name[@type='corporate'][mods:role/mods:roleTerm="pbl"[@authority='marcrelator'][@type='code']]
+
+                    </xpath>
+                    <groupEntity type="CORPORATION">
+                        <field name="MD_VALUE" concatenate="true" separator=". ">mods:namePart[not(@type)]</field>
+                        <field name="MD_LINK">@xlink:href</field>
+                        <field name="MD_CORPORATION" concatenate="true" separator=". ">mods:namePart[not(@type)]</field>
+                        <field name="MD_LIFEPERIOD">mods:namePart[@type="date"]</field>
+                        <field name="MD_TERMSOFADDRESS">mods:namePart[@type="termsOfAddress"]</field>
+                    </groupEntity>
+                </item>
+            </list>
+        </MD_CORPORATE_PUBLISHER>
+        
+        <MD_CORPORATE_PUBLISHING_DIRECTOR>
+            <list>
+                <item>
+                    <xpath>mets:xmlData/mods:mods/mods:name[@type='corporate'][mods:role/mods:roleTerm="pbd"[@authority='marcrelator'][@type='code']]</xpath>
+                    <groupEntity type="CORPORATION">
+                        <field name="MD_VALUE" concatenate="true" separator=". ">mods:namePart[not(@type)]</field>
+                        <field name="MD_LINK">@xlink:href</field>
+                        <field name="MD_CORPORATION" concatenate="true" separator=". ">mods:namePart[not(@type)]</field>
+                        <field name="MD_LIFEPERIOD">mods:namePart[@type="date"]</field>
+                        <field name="MD_TERMSOFADDRESS">mods:namePart[@type="termsOfAddress"]</field>
+                    </groupEntity>
+                </item>
+            </list>
+        </MD_CORPORATE_PUBLISHING_DIRECTOR>
+        
+        <MD_CORPORATE_SPONSOR>
+            <list>
+                <item>
+                    <xpath>mets:xmlData/mods:mods/mods:name[@type='corporate'][mods:role/mods:roleTerm="spn"[@authority='marcrelator'][@type='code']]</xpath>
+                    <groupEntity type="CORPORATION">
+                        <field name="MD_VALUE" concatenate="true" separator=". ">mods:namePart[not(@type)]</field>
+                        <field name="MD_LINK">@xlink:href</field>
+                        <field name="MD_CORPORATION" concatenate="true" separator=". ">mods:namePart[not(@type)]</field>
+                        <field name="MD_LIFEPERIOD">mods:namePart[@type="date"]</field>
+                        <field name="MD_TERMSOFADDRESS">mods:namePart[@type="termsOfAddress"]</field>
+                    </groupEntity>
+                </item>
+            </list>
+        </MD_CORPORATE_SPONSOR>
+        
+        <MD_CORPORATE_TRANSLATOR>
+            <list>
+                <item>
+                    <xpath>mets:xmlData/mods:mods/mods:name[@type='corporate'][mods:role/mods:roleTerm="trl"[@authority='marcrelator'][@type='code']]</xpath>
+                    <groupEntity type="CORPORATION">
+                        <field name="MD_VALUE" concatenate="true" separator=". ">mods:namePart[not(@type)]</field>
+                        <field name="MD_LINK">@xlink:href</field>
+                        <field name="MD_CORPORATION" concatenate="true" separator=". ">mods:namePart[not(@type)]</field>
+                        <field name="MD_LIFEPERIOD">mods:namePart[@type="date"]</field>
+                        <field name="MD_TERMSOFADDRESS">mods:namePart[@type="termsOfAddress"]</field>
+                    </groupEntity>
+                </item>
+            </list>
+        </MD_CORPORATE_TRANSLATOR>
+        
+        <MD_CORPORATE_WRITER_OF_ADDED_TEXT>
+            <list>
+                <item>
+                    <xpath>mets:xmlData/mods:mods/mods:name[@type='corporate'][mods:role/mods:roleTerm="wat"[@authority='marcrelator'][@type='code']]</xpath>
+                    <groupEntity type="CORPORATION">
+                        <field name="MD_VALUE" concatenate="true" separator=". ">mods:namePart[not(@type)]</field>
+                        <field name="MD_LINK">@xlink:href</field>
+                        <field name="MD_CORPORATION" concatenate="true" separator=". ">mods:namePart[not(@type)]</field>
+                        <field name="MD_LIFEPERIOD">mods:namePart[@type="date"]</field>
+                        <field name="MD_TERMSOFADDRESS">mods:namePart[@type="termsOfAddress"]</field>
+                    </groupEntity>
+                </item>
+            </list>
+        </MD_CORPORATE_WRITER_OF_ADDED_TEXT>
+        
+        <MD_CORPORATE_WRITER_OF_FOREWORD>
+            <list>
+                <item>
+                    <xpath>mets:xmlData/mods:mods/mods:name[@type='corporate'][mods:role/mods:roleTerm="wfw"[@authority='marcrelator'][@type='code']]
+
+                    </xpath>
+                    <groupEntity type="CORPORATION">
+                        <field name="MD_VALUE" concatenate="true" separator=". ">mods:namePart[not(@type)]</field>
+                        <field name="MD_LINK">@xlink:href</field>
+                        <field name="MD_CORPORATION" concatenate="true" separator=". ">mods:namePart[not(@type)]</field>
+                        <field name="MD_LIFEPERIOD">mods:namePart[@type="date"]</field>
+                        <field name="MD_TERMSOFADDRESS">mods:namePart[@type="termsOfAddress"]</field>
+                    </groupEntity>
+                </item>
+            </list>
+        </MD_CORPORATE_WRITER_OF_FOREWORD>
+        
+        <MD_CORPORATE_WRITER_OF_INTRODUCTION>
+            <list>
+                <item>
+                    <xpath>mets:xmlData/mods:mods/mods:name[@type='corporate'][mods:role/mods:roleTerm="win"[@authority='marcrelator'][@type='code']]
+
+                    </xpath>
+                    <groupEntity type="CORPORATION">
+                        <field name="MD_VALUE" concatenate="true" separator=". ">mods:namePart[not(@type)]</field>
+                        <field name="MD_LINK">@xlink:href</field>
+                        <field name="MD_CORPORATION" concatenate="true" separator=". ">mods:namePart[not(@type)]</field>
+                        <field name="MD_LIFEPERIOD">mods:namePart[@type="date"]</field>
+                        <field name="MD_TERMSOFADDRESS">mods:namePart[@type="termsOfAddress"]</field>
+                    </groupEntity>
+                </item>
+            </list>
+        </MD_CORPORATE_WRITER_OF_INTRODUCTION>
+        
+        <MD_CORPORATE_WRITER_OF_PREFACE>
+            <list>
+                <item>
+                    <xpath>mets:xmlData/mods:mods/mods:name[@type='corporate'][mods:role/mods:roleTerm="wpr"[@authority='marcrelator'][@type='code']]
+
+                    </xpath>
+                    <groupEntity type="CORPORATION">
+                        <field name="MD_VALUE" concatenate="true" separator=". ">mods:namePart[not(@type)]</field>
+                        <field name="MD_LINK">@xlink:href</field>
+                        <field name="MD_CORPORATION" concatenate="true" separator=". ">mods:namePart[not(@type)]</field>
+                        <field name="MD_LIFEPERIOD">mods:namePart[@type="date"]</field>
+                        <field name="MD_TERMSOFADDRESS">mods:namePart[@type="termsOfAddress"]</field>
+                    </groupEntity>
+                </item>
+            </list>
+        </MD_CORPORATE_WRITER_OF_PREFACE>
+        
+        <MD_CORPORATE_WRITER_OF_SUPPLEMENTARY_TEXT>
+            <list>
+                <item>
+                    <xpath>mets:xmlData/mods:mods/mods:name[@type='corporate'][mods:role/mods:roleTerm="wst"[@authority='marcrelator'][@type='code']]
+
+                    </xpath>
+                    <groupEntity type="CORPORATION">
+                        <field name="MD_VALUE" concatenate="true" separator=". ">mods:namePart[not(@type)]</field>
+                        <field name="MD_LINK">@xlink:href</field>
+                        <field name="MD_CORPORATION" concatenate="true" separator=". ">mods:namePart[not(@type)]</field>
+                        <field name="MD_LIFEPERIOD">mods:namePart[@type="date"]</field>
+                        <field name="MD_TERMSOFADDRESS">mods:namePart[@type="termsOfAddress"]</field>
+                    </groupEntity>
+                </item>
+            </list>
+        </MD_CORPORATE_WRITER_OF_SUPPLEMENTARY_TEXT>
 
 		<MD_ZDB>
 			<list>
