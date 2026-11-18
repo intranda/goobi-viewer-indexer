@@ -167,6 +167,10 @@ public final class Configuration {
         namespaces.put("mm", Namespace.getNamespace("mm", "http://www.mycore.de/metsmaker/v1"));
         namespaces.put("tei", Namespace.getNamespace("tei", "http://www.tei-c.org/ns/1.0"));
         namespaces.put("denkxweb", Namespace.getNamespace("denkxweb", "http://denkxweb.de/"));
+        namespaces.put("exml", Namespace.getNamespace("exml", JDomXP.NAMESPACE_URI_ENTITYXML));
+        namespaces.put("gndo", Namespace.getNamespace("gndo", "https://d-nb.info/standards/elementset/gnd#"));
+        namespaces.put("foaf", Namespace.getNamespace("foaf", "http://xmlns.com/foaf/0.1/"));
+        namespaces.put("owl", Namespace.getNamespace("owl", "http://www.w3.org/2002/07/owl#"));
         namespaces.put("dc", Namespace.getNamespace("dc", "http://purl.org/dc/elements/1.1/"));
         namespaces.put("pnx", Namespace.getNamespace("pnx", "http://www.exlibrisgroup.com/xsd/primo/primo_nm_bib"));
         namespaces.put("rdf", Namespace.getNamespace("rdf", "http://www.w3.org/1999/02/22-rdf-syntax-ns#"));

@@ -68,6 +68,7 @@ import io.goobi.viewer.indexer.Indexer;
 import io.goobi.viewer.indexer.DenkXwebIndexer;
 import io.goobi.viewer.indexer.DocUpdateIndexer;
 import io.goobi.viewer.indexer.DublinCoreIndexer;
+import io.goobi.viewer.indexer.EntityXmlIndexer;
 import io.goobi.viewer.indexer.Ead3Indexer;
 import io.goobi.viewer.indexer.EadIndexer;
 import io.goobi.viewer.indexer.LidoIndexer;
@@ -125,6 +126,8 @@ public class Hotfolder {
     private boolean eadEnabled = true;
     /** Constant <code>denkxwebEnabled=true</code> */
     private boolean denkxwebEnabled = true;
+    /** If no indexedEntityXml folder is configured, entityXML indexing will be automatically disabled via this flag. */
+    private boolean entityXmlEnabled = true;
     /** If no indexedDC folder is configured, Dublin Core indexing will be automatically disabled via this flag. */
     private boolean dcEnabled = true;
     /** Constant <code>worldviewsEnabled=true</code> */
@@ -146,6 +149,8 @@ public class Hotfolder {
     private Path errorMets;
     private Path origLido;
     private Path origDenkxWeb;
+    /** Optional folder for copies of original (multi-record) entityXML files. */
+    private Path origEntityXml;
     private Path successFolder;
 
     private List<String> addVolumeCollectionsToAnchorFields = Collections.emptyList();
@@ -435,6 +440,18 @@ public class Hotfolder {
         } else {
             denkxwebEnabled = false;
             logger.warn("<origDenkXweb> not defined - DenkXweb indexing is disabled.");
+        }
+
+        // entityXML folders (the folder for original files is optional)
+        if (StringUtils.isEmpty(config.getConfiguration(DataRepository.PARAM_INDEXED_ENTITYXML))) {
+            entityXmlEnabled = false;
+            logger.warn("<{}> not defined - entityXML indexing is disabled.", DataRepository.PARAM_INDEXED_ENTITYXML);
+        }
+        if (StringUtils.isNotEmpty(config.getConfiguration("origEntityXml"))) {
+            origEntityXml = Paths.get(config.getConfiguration("origEntityXml"));
+            if (!Utils.checkAndCreateDirectory(origEntityXml)) {
+                throw new FatalIndexerException(ERROR_COULD_NOT_CREATE_DIR + origEntityXml.toAbsolutePath().toString());
+            }
         }
 
         // Dublin Core folder
@@ -1365,6 +1382,15 @@ public class Hotfolder {
                             Files.delete(sourceFile);
                         }
                         break;
+                    case ENTITYXML:
+                        if (entityXmlEnabled) {
+                            indexer = new EntityXmlIndexer(this);
+                            identifiers = indexer.addToIndex(sourceFile, reindexSettings);
+                        } else {
+                            logger.error("entityXML indexing is disabled - please make sure all folders are configured.");
+                            Files.delete(sourceFile);
+                        }
+                        break;
                     case DUBLINCORE:
                         if (dcEnabled) {
                             indexer = new DublinCoreIndexer(this);
@@ -1513,6 +1539,10 @@ public class Hotfolder {
                 actualXmlFile =
                         Paths.get(dataRepository.getDir(DataRepository.PARAM_INDEXED_DENKXWEB).toAbsolutePath().toString(), baseFileName + ".xml");
             }
+            if (!Files.exists(actualXmlFile) && dataRepository.getDir(DataRepository.PARAM_INDEXED_ENTITYXML) != null) {
+                actualXmlFile =
+                        Paths.get(dataRepository.getDir(DataRepository.PARAM_INDEXED_ENTITYXML).toAbsolutePath().toString(), baseFileName + ".xml");
+            }
             if (!Files.exists(actualXmlFile) && dataRepository.getDir(DataRepository.PARAM_INDEXED_DUBLINCORE) != null) {
                 actualXmlFile =
                         Paths.get(dataRepository.getDir(DataRepository.PARAM_INDEXED_DUBLINCORE).toAbsolutePath().toString(), baseFileName + ".xml");
@@ -1547,6 +1577,8 @@ public class Hotfolder {
                         format = FileFormat.EAD;
                     } else if (deleteFile.getParent().equals(dataRepository.getDir(DataRepository.PARAM_INDEXED_DENKXWEB))) {
                         format = FileFormat.DENKXWEB;
+                    } else if (deleteFile.getParent().equals(dataRepository.getDir(DataRepository.PARAM_INDEXED_ENTITYXML))) {
+                        format = FileFormat.ENTITYXML;
                     } else if (deleteFile.getParent().equals(dataRepository.getDir(DataRepository.PARAM_INDEXED_DUBLINCORE))) {
                         format = FileFormat.DUBLINCORE;
                     } else if (doc.containsKey(SolrConstants.DATEDELETED)) {
@@ -1574,6 +1606,7 @@ public class Hotfolder {
                 case DENKXWEB:
                 case DUBLINCORE:
                 case EAD:
+                case ENTITYXML:
                 case LIDO:
                 case METS:
                 case METS_MARC:
@@ -1940,6 +1973,15 @@ public class Hotfolder {
      */
     public Path getOrigDenkxWeb() {
         return origDenkxWeb;
+    }
+
+    /**
+     * Getter for the field <code>origEntityXml</code>.
+     *
+     * @return the origEntityXml; null if not configured
+     */
+    public Path getOrigEntityXml() {
+        return origEntityXml;
     }
 
     /**

@@ -25,6 +25,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 
 import javax.xml.stream.XMLInputFactory;
@@ -59,6 +60,12 @@ import io.goobi.viewer.indexer.SolrIndexerDaemon;
  */
 public class JDomXP {
 
+    /** Namespace URI of entityXML (GND entity exchange format). */
+    public static final String NAMESPACE_URI_ENTITYXML = "https://sub.uni-goettingen.de/met/standards/entity-xml#";
+
+    /** entityXML elements that wrap entity records (as opposed to entity record elements such as exml:person). */
+    private static final Set<String> ENTITYXML_CONTAINER_ELEMENTS = Set.of("entityXML", "collection", "data", "list");
+
     public enum FileFormat {
         UNKNOWN,
         METS,
@@ -67,6 +74,7 @@ public class JDomXP {
         EAD,
         EAD3,
         DENKXWEB,
+        ENTITYXML,
         DUBLINCORE,
         WORLDVIEWS,
         CMS,
@@ -91,6 +99,8 @@ public class JDomXP {
                     return EAD;
                 case "DENKXWEB":
                     return DENKXWEB;
+                case "ENTITYXML":
+                    return ENTITYXML;
                 case "DUBLINCORE":
                     return DUBLINCORE;
                 case "WORLDVIEWS":
@@ -628,6 +638,57 @@ public class JDomXP {
     }
 
     /**
+     * Splits an entityXML document into a list of individual entity record documents (one per child element of
+     * <code>exml:data/exml:list</code>). A file whose root element is already a single entity (e.g. a previously indexed record file from the
+     * data repository) is returned as is.
+     *
+     * @param file entityXML file
+     * @return List of entity record documents; empty list if file is null, not readable or not entityXML
+     * @should split multi record documents correctly
+     * @should leave single record documents as is
+     * @should return empty list for non entityxml documents
+     * @should return empty list for non-existing files
+     * @should return empty list given null
+     */
+    public static List<Document> splitEntityXmlFile(File file) {
+        if (file == null) {
+            return Collections.emptyList();
+        }
+
+        try {
+            Document doc = new JDomXP(file).doc;
+            Element eleRoot = doc.getRootElement();
+            if (!NAMESPACE_URI_ENTITYXML.equals(eleRoot.getNamespaceURI())) {
+                logger.warn("Not an entityXML document, root element: {}", eleRoot.getName());
+                return Collections.emptyList();
+            }
+            if (!ENTITYXML_CONTAINER_ELEMENTS.contains(eleRoot.getName())) {
+                // Single entity record file
+                return Collections.singletonList(doc);
+            }
+
+            List<Element> eleLists = new ArrayList<>();
+            for (Element eleList : doc.getDescendants(Filters.element("list", Namespace.getNamespace(NAMESPACE_URI_ENTITYXML)))) {
+                eleLists.add(eleList);
+            }
+            List<Document> ret = new ArrayList<>();
+            for (Element eleList : eleLists) {
+                // Detach instead of clone so that large deliveries are not held in memory twice
+                for (Element eleEntity : new ArrayList<>(eleList.getChildren())) {
+                    if (NAMESPACE_URI_ENTITYXML.equals(eleEntity.getNamespaceURI())) {
+                        ret.add(new Document(eleEntity.detach()));
+                    }
+                }
+            }
+            return ret;
+        } catch (IOException | JDOMException e) {
+            logger.error(e.getMessage());
+        }
+
+        return Collections.emptyList();
+    }
+
+    /**
      * Splits a multi-record DenkXweb document into a list of individual record documents.
      *
      * @param file a {@link java.io.File} object.
@@ -728,6 +789,7 @@ public class JDomXP {
      * @should detect ead2 files correctly
      * @should detect ead3 files correctly
      * @should detect denkxweb files correctly
+     * @should detect entityxml files correctly
      * @should detect dublin core files correctly
      * @should detect worldviews files correctly
      * @should detect abbyy files correctly
@@ -795,6 +857,10 @@ public class JDomXP {
         }
         if (rootNamespaceUri.equals("http://denkxweb.de/")) {
             return FileFormat.DENKXWEB;
+        }
+        // Must be checked before Dublin Core because entityXML root elements usually declare the dc prefix
+        if (rootNamespaceUri.equals(NAMESPACE_URI_ENTITYXML)) {
+            return FileFormat.ENTITYXML;
         }
         if (isPrefixDeclaredOnRoot(reader, "dc")) {
             return FileFormat.DUBLINCORE;

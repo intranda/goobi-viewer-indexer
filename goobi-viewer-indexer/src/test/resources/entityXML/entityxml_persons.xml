@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Synthetic test data (no real persons), modelled on GND entityXML person deliveries -->
+<entityXML xmlns="https://sub.uni-goettingen.de/met/standards/entity-xml#" xmlns:dc="http://purl.org/dc/elements/1.1/"
+    xmlns:dnb="https://www.dnb.de" xmlns:foaf="http://xmlns.com/foaf/0.1/" xmlns:geo="http://www.opengis.net/ont/geosparql#"
+    xmlns:gndo="https://d-nb.info/standards/elementset/gnd#" xmlns:owl="http://www.w3.org/2002/07/owl#"
+    xmlns:skos="http://www.w3.org/2004/02/skos/core#" xmlns:wgs84="http://www.w3.org/2003/01/geo/wgs84_pos#">
+    <exml:collection xmlns:exml="https://sub.uni-goettingen.de/met/standards/entity-xml#">
+        <exml:metadata>
+            <exml:title>Test delivery</exml:title>
+            <exml:abstract>Synthetic entityXML test data</exml:abstract>
+            <exml:provider id="TST">
+                <exml:title>Test provider</exml:title>
+                <exml:respStmt id="AB">
+                    <exml:resp>Test</exml:resp>
+                    <exml:name>Doe, Jane</exml:name>
+                    <exml:contact>
+                        <exml:mail>jane.doe@example.com</exml:mail>
+                    </exml:contact>
+                </exml:respStmt>
+            </exml:provider>
+            <exml:revision status="opened">
+                <exml:change when="2026-09-21" who="AB">Sample</exml:change>
+            </exml:revision>
+        </exml:metadata>
+        <exml:data>
+            <exml:list>
+                <!-- All person fields -->
+                <exml:person xml:id="p0123456789" gndo:uri="https://d-nb.info/gnd/0000000001" agency="merge">
+                    <foaf:page>https://example.com/mustermann</foaf:page>
+                    <gndo:academicDegree>Prof. Dr.</gndo:academicDegree>
+                    <gndo:acquaintanceshipOrFriendship>
+                        <gndo:forename>Erika</gndo:forename>
+                        <gndo:surname>Musterfrau</gndo:surname>
+                        <exml:note>Korrespondenzpartnerin</exml:note>
+                    </gndo:acquaintanceshipOrFriendship>
+                    <gndo:affiliation>Musteruniversität</gndo:affiliation>
+                    <gndo:biographicalOrHistoricalInformation>Max Mustermann ist ein Dummy, um alles zu testen.</gndo:biographicalOrHistoricalInformation>
+                    <gndo:dateOfBirth iso-date="1500-05-10">10.05.1500</gndo:dateOfBirth>
+                    <gndo:dateOfDeath iso-date="1595-08-06">06.08.1595</gndo:dateOfDeath>
+                    <gndo:dateOfDeath alternative="true" iso-date="1596-08-06">06.08.1596</gndo:dateOfDeath>
+                    <gndo:familialRelationship>
+                        <gndo:forename>Luise</gndo:forename>
+                        <gndo:surname>Schmidt</gndo:surname>
+                        <exml:note>Mutter</exml:note>
+                    </gndo:familialRelationship>
+                    <gndo:fieldOfStudy>Modellierung von Daten</gndo:fieldOfStudy>
+                    <gndo:functionOrRole></gndo:functionOrRole>
+                    <gndo:gender gndo:term="https://d-nb.info/standards/vocab/gnd/gender#male">männlich</gndo:gender>
+                    <gndo:geographicAreaCode gndo:term="https://d-nb.info/standards/vocab/gnd/geographic-area-code#XA-DE"/>
+                    <gndo:gndSubjectCategory gndo:term="https://d-nb.info/standards/vocab/gnd/gnd-sc#9.5p">9.5p Personen zu Soziologie</gndo:gndSubjectCategory>
+                    <gndo:languageCode gndo:term="http://id.loc.gov/vocabulary/iso639-2/deu">de</gndo:languageCode>
+                    <gndo:periodOfActivity iso-from="1520" iso-to="1590">
+                        <exml:label>1520-1590</exml:label>
+                        <exml:note>Lehrtätigkeit</exml:note>
+                    </gndo:periodOfActivity>
+                    <gndo:placeOfActivity iso-from="1520" iso-to="1590">Musterstadt</gndo:placeOfActivity>
+                    <gndo:placeOfBirth>Muster-
+                        dorf an der
+                        Leine</gndo:placeOfBirth>
+                    <gndo:placeOfDeath>Musterstadt</gndo:placeOfDeath>
+                    <gndo:playedInstrument>
+                        <exml:label>Countertenor</exml:label>
+                        <exml:note>Stimmlage</exml:note>
+                    </gndo:playedInstrument>
+                    <gndo:preferredName>
+                        <gndo:surname>Mustermann</gndo:surname>,
+                        <gndo:forename>Max</gndo:forename>
+                    </gndo:preferredName>
+                    <gndo:preferredName type="original" script="Arab" xml:lang="ara">
+                        <gndo:forename>احمد</gndo:forename>
+                        <gndo:surname>مرزوقي</gndo:surname>
+                    </gndo:preferredName>
+                    <gndo:professionOrOccupation gndo:type="significant">Hochschullehrer</gndo:professionOrOccupation>
+                    <gndo:professionOrOccupation>Gummibärchentester</gndo:professionOrOccupation>
+                    <gndo:pseudonym>Moritz Musterknabe</gndo:pseudonym>
+                    <gndo:publication>
+                        <exml:title>Paradoxien der Musterdemokratie</exml:title>
+                        <exml:date>2024</exml:date>
+                    </gndo:publication>
+                    <gndo:publication>Werk ohne Autor</gndo:publication>
+                    <gndo:relatesTo gndo:code="beza">Lehrer von: Moritz Musterknabe</gndo:relatesTo>
+                    <gndo:titleOfNobility>Fürst von Musterhausen</gndo:titleOfNobility>
+                    <gndo:variantName>
+                        <gndo:prefix>von</gndo:prefix>
+                        <gndo:surname>Musterjunge</gndo:surname>,
+                        <gndo:forename>Maximilian</gndo:forename>
+                        <gndo:counting>III.</gndo:counting>
+                        <gndo:nameAddition>Graf von Musterhausen</gndo:nameAddition>
+                    </gndo:variantName>
+                    <gndo:variantName>
+                        <gndo:personalName>Mustermann</gndo:personalName>
+                        <gndo:epithetGenericNameTitleOrTerritory>Der Grimmige</gndo:epithetGenericNameTitleOrTerritory>
+                    </gndo:variantName>
+                    <owl:sameAs>https://example.com/viaf/123</owl:sameAs>
+                    <skos:note>Testdatensatz mit allen Feldern.</skos:note>
+                    <skos:note gndo:type="internal">Geheime interne Anmerkung</skos:note>
+                    <exml:source url="https://example.com/source">
+                        <exml:title>Homepage</exml:title>
+                        <exml:note>Stand: 29.10.2018</exml:note>
+                    </exml:source>
+                    <exml:revision status="opened">
+                        <exml:change when="2024-05-20" who="AB">Datensatz angelegt.</exml:change>
+                    </exml:revision>
+                </exml:person>
+                <!-- Typical delivery record -->
+                <exml:person xml:id="p0123456790" agency="create" gndo:tbk="d">
+                    <gndo:preferredName>
+                        <gndo:surname>Beispiel</gndo:surname>
+                        <gndo:forename>Anna Maria</gndo:forename>
+                    </gndo:preferredName>
+                    <gndo:variantName>
+                        <gndo:surname>Beispiel</gndo:surname>
+                        <gndo:forename>Mia</gndo:forename>
+                    </gndo:variantName>
+                    <gndo:variantName gndo:code="nafr">
+                        <gndo:surname>Probe</gndo:surname>
+                        <gndo:forename>Anna Maria</gndo:forename>
+                    </gndo:variantName>
+                    <gndo:date gndo:code="datz" iso-date="1941-02-26"><exml:label>1941-02-26</exml:label><exml:note>Ausbürgerung</exml:note></gndo:date>
+                    <gndo:dateOfBirth iso-date="1882-03-20"/>
+                    <gndo:dateOfBirth alternative="true" iso-date="1883-03-20"/>
+                    <gndo:professionOrOccupation gndo:type="significant">Kaufmann</gndo:professionOrOccupation>
+                    <gndo:placeOfBirth>Musterort</gndo:placeOfBirth>
+                    <gndo:placeOfActivity>Frankfurt am
+                        Main</gndo:placeOfActivity>
+                <gndo:geographicAreaCode gndo:term="https://d-nb.info/standards/vocab/gnd/geographic-area-code#ZZ"/><revision status="opened"><exml:change when="2026-09-26" who="AB">Datensatz angelegt</exml:change></revision>
+                </exml:person>
+                <!-- Personal name only -->
+                <exml:person xml:id="p0123456791" agency="create" gndo:tbk="d">
+                    <gndo:preferredName>
+                        <gndo:personalName>Maria
+                            Wilhelmine</gndo:personalName>
+                    </gndo:preferredName>
+                    <gndo:dateOfBirth iso-date="1901"/>
+                <gndo:geographicAreaCode gndo:term="https://d-nb.info/standards/vocab/gnd/geographic-area-code#ZZ"/><revision status="opened"><exml:change when="2026-09-26" who="AB">Datensatz angelegt</exml:change></revision>
+                </exml:person>
+            </exml:list>
+        </exml:data>
+    </exml:collection>
+</entityXML>

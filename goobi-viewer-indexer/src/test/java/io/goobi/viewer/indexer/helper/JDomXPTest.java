@@ -44,6 +44,7 @@ class JDomXPTest extends AbstractTest {
     private static final String EAD2_FILE = "src/test/resources/EAD/Akte_Koch.xml";
     private static final String EAD3_FILE = "src/test/resources/EAD/EAD3_example.xml";
     private static final String EAD_C_XPATH = "ead:ead/ead:archdesc/ead:dsc/ead:c";
+    private static final String ENTITYXML_FILE = "src/test/resources/entityXML/entityxml_persons.xml";
 
     /**
      * @see JDomXP#addNamespace(Namespace)
@@ -165,6 +166,75 @@ class JDomXPTest extends AbstractTest {
 
     /**
      * @see JDomXP#determineFileFormat(File)
+     * @verifies detect entityxml files correctly
+     */
+    @Test
+    void determineFileFormat_shouldDetectEntityxmlFilesCorrectly() throws Exception {
+        // Root element declares the dc prefix, which must not lead to Dublin Core detection
+        Assertions.assertEquals(FileFormat.ENTITYXML, JDomXP.determineFileFormat(new File(ENTITYXML_FILE)));
+    }
+
+    /**
+     * @see JDomXP#splitEntityXmlFile(File)
+     * @verifies split multi record documents correctly
+     */
+    @Test
+    void splitEntityXmlFile_shouldSplitMultiRecordDocumentsCorrectly() throws Exception {
+        List<Document> docs = JDomXP.splitEntityXmlFile(new File(ENTITYXML_FILE));
+        Assertions.assertEquals(3, docs.size());
+        Assertions.assertEquals("person", docs.get(0).getRootElement().getName());
+        Assertions.assertEquals(JDomXP.NAMESPACE_URI_ENTITYXML, docs.get(0).getRootElement().getNamespaceURI());
+        Assertions.assertEquals("p0123456789", docs.get(0).getRootElement().getAttributeValue("id", Namespace.XML_NAMESPACE));
+        Assertions.assertEquals("p0123456791", docs.get(2).getRootElement().getAttributeValue("id", Namespace.XML_NAMESPACE));
+    }
+
+    /**
+     * @see JDomXP#splitEntityXmlFile(File)
+     * @verifies leave single record documents as is
+     */
+    @Test
+    void splitEntityXmlFile_shouldLeaveSingleRecordDocumentsAsIs(@TempDir Path tempDir) throws Exception {
+        Document recordDoc = JDomXP.splitEntityXmlFile(new File(ENTITYXML_FILE)).get(1);
+        Path recordFile = tempDir.resolve("p0123456790.xml");
+        try (java.io.OutputStream out = Files.newOutputStream(recordFile)) {
+            new org.jdom2.output.XMLOutputter().output(recordDoc, out);
+        }
+        Assertions.assertEquals(FileFormat.ENTITYXML, JDomXP.determineFileFormat(recordFile.toFile()));
+
+        List<Document> docs = JDomXP.splitEntityXmlFile(recordFile.toFile());
+        Assertions.assertEquals(1, docs.size());
+        Assertions.assertEquals("p0123456790", docs.get(0).getRootElement().getAttributeValue("id", Namespace.XML_NAMESPACE));
+    }
+
+    /**
+     * @see JDomXP#splitEntityXmlFile(File)
+     * @verifies return empty list for non entityxml documents
+     */
+    @Test
+    void splitEntityXmlFile_shouldReturnEmptyListForNonEntityxmlDocuments() throws Exception {
+        Assertions.assertTrue(JDomXP.splitEntityXmlFile(new File("src/test/resources/DC/record.xml")).isEmpty());
+    }
+
+    /**
+     * @see JDomXP#splitEntityXmlFile(File)
+     * @verifies return empty list for non-existing files
+     */
+    @Test
+    void splitEntityXmlFile_shouldReturnEmptyListForNonexistingFiles() throws Exception {
+        Assertions.assertTrue(JDomXP.splitEntityXmlFile(new File("src/test/resources/entityXML/notfound.xml")).isEmpty());
+    }
+
+    /**
+     * @see JDomXP#splitEntityXmlFile(File)
+     * @verifies return empty list given null
+     */
+    @Test
+    void splitEntityXmlFile_shouldReturnEmptyListGivenNull() throws Exception {
+        Assertions.assertTrue(JDomXP.splitEntityXmlFile(null).isEmpty());
+    }
+
+    /**
+     * @see JDomXP#determineFileFormat(File)
      * @verifies detect dublin core files correctly
      */
     @Test
@@ -275,6 +345,9 @@ class JDomXPTest extends AbstractTest {
         }
         if (uri.equals("http://denkxweb.de/")) {
             return FileFormat.DENKXWEB;
+        }
+        if (uri.equals(JDomXP.NAMESPACE_URI_ENTITYXML)) {
+            return FileFormat.ENTITYXML;
         }
         if (root.getNamespace("dc") != null) {
             return FileFormat.DUBLINCORE;

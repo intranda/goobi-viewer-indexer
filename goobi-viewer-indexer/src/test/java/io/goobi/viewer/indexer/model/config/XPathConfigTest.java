@@ -54,6 +54,10 @@ class XPathConfigTest extends AbstractTest {
                 .contains(FileFormat.LIDO));
         Assertions.assertTrue(XPathConfig.determineSupportedFormats("dc:title", "MD_TITLE").contains(FileFormat.DUBLINCORE));
         Assertions.assertTrue(XPathConfig.determineSupportedFormats("//denkxweb:name", "MD_TITLE").contains(FileFormat.DENKXWEB));
+        Assertions.assertTrue(XPathConfig.determineSupportedFormats("gndo:placeOfBirth", "MD_PLACEOFBIRTH").contains(FileFormat.ENTITYXML));
+        Assertions.assertTrue(XPathConfig.determineSupportedFormats("/exml:*/@xml:id", "PI").contains(FileFormat.ENTITYXML));
+        Assertions.assertTrue(XPathConfig.determineSupportedFormats("foaf:page", "MD_HOMEPAGE").contains(FileFormat.ENTITYXML));
+        Assertions.assertTrue(XPathConfig.determineSupportedFormats("owl:sameAs", "MD_SAMEAS").contains(FileFormat.ENTITYXML));
     }
 
     /**

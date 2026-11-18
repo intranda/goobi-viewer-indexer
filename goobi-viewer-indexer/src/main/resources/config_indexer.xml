@@ -68,6 +68,7 @@
 		<indexedLido>indexed_lido</indexedLido>
 		<indexedEad>indexed_ead</indexedEad>
 		<indexedDenkXweb>indexed_denkxweb</indexedDenkXweb>
+		<indexedEntityXml>indexed_entityxml</indexedEntityXml>
 		<indexedDublinCore>indexed_dublincore</indexedDublinCore>
 		<indexedCMS>indexed_cms</indexedCMS>
         <indexedStatistics>indexed_statistics</indexedStatistics>
@@ -79,6 +80,8 @@
 		<errorMets>/opt/digiverso/viewer/error_mets/</errorMets>
 		<origLido>/opt/digiverso/viewer/orig_lido/</origLido>
 		<origDenkXweb>/opt/digiverso/viewer/orig_denkxweb/</origDenkXweb>
+		<!-- Optional: copies of original (multi-record) entityXML files -->
+		<origEntityXml>/opt/digiverso/viewer/orig_entityxml/</origEntityXml>
 
 		<!-- Delete images, full-texts, etc. from the hotfolder if indexing has failed (default is false) -->
 		<deleteContentFilesOnFailure>false</deleteContentFilesOnFailure>
@@ -347,6 +350,11 @@
 			<Grafik>Illustration</Grafik>
 			<pathologisches_Präparat>PathologicalSpecimen</pathologisches_Präparat>
 			<Münze>Coin</Münze>
+			<!-- entityXML -->
+			<person>Person</person>
+			<corporateBody>CorporateBody</corporateBody>
+			<place>Place</place>
+			<work>Work</work>
 		</list>
 	</docstructmapping>
 
@@ -377,6 +385,7 @@
 					<xpath>/mets:mets/@OBJID</xpath>
 					<xpath>lido:administrativeMetadata/lido:recordWrap/lido:recordID</xpath>
 					<xpath>//denkxweb:recId</xpath>
+					<xpath>/exml:*/@xml:id</xpath>
 					<xpath>dc:identifier</xpath>
 					<xpath>ead:ead/ead:archdesc/ead:dsc/ead:c[@level="collection"]/@id</xpath>
 					<getnode>first</getnode>
@@ -753,6 +762,7 @@
                     <xpath>ead:archdesc/ead:did/ead:unittitle</xpath>
                     <xpath>ead:eadheader/ead:filedesc/ead:titlestmt/ead:titleproper</xpath>
                     
+					<xpath>normalize-space(concat(gndo:preferredName[1]/gndo:personalName, ' ', gndo:preferredName[1]/gndo:surname, substring(', ', 1, 2 * (gndo:preferredName[1]/gndo:surname and gndo:preferredName[1]/gndo:forename)), gndo:preferredName[1]/gndo:forename, ' ', gndo:preferredName[1]/gndo:prefix, ' ', gndo:preferredName[1]/gndo:counting))</xpath>
 					<addToDefault>true</addToDefault>
 					<addSortField>true</addSortField>
 					<replace string="&lt;ns&gt;"></replace>
@@ -3223,6 +3233,18 @@
 					<addToDefault>true</addToDefault>
 					<addSortField>true</addSortField>
 				</item>
+				<!-- entityXML -->
+				<item>
+					<xpath>gndo:professionOrOccupation</xpath>
+					<addToDefault>true</addToDefault>
+					<groupEntity type="OTHER">
+						<field name="MD_VALUE">normalize-space(exml:label | self::*[not(exml:label)])</field>
+						<!-- 'significant' = main profession -->
+						<field name="MD_TYPE">@gndo:type</field>
+						<field name="MD_NOTE">exml:note</field>
+						<field name="NORM_URI">@gndo:ref</field>
+					</groupEntity>
+				</item>
 			</list>
 		</MD_OCCUPATION>
 
@@ -3242,6 +3264,11 @@
 					<xpath>lido:descriptiveMetadata/lido:objectClassificationWrap/lido:classificationWrap/lido:classification[@lido:type="Geschlecht"]/lido:term</xpath>
 					<addToDefault>true</addToDefault>
 					<addSortField>true</addSortField>
+				</item>
+				<!-- entityXML -->
+				<item>
+					<xpath>gndo:gender</xpath>
+					<addToDefault>false</addToDefault>
 				</item>
 			</list>
 		</MD_SEX>
@@ -3900,6 +3927,11 @@
 					<addSortField>true</addSortField>
 					<addUntokenizedVersion>true</addUntokenizedVersion>
 				</item>
+				<!-- entityXML -->
+				<item>
+					<xpath>gndo:biographicalOrHistoricalInformation</xpath>
+					<addToDefault>true</addToDefault>
+				</item>
 			</list>
 		</MD_BIOGRAPHICALINFORMATION>
 
@@ -4396,6 +4428,373 @@
 			</list>
 		</MD_PROTECTION_LANG_DE>
 
+
+		<!-- ===== entityXML (GND entity exchange format, namespaces exml/gndo) ===== -->
+
+		<MD_GNDURI>
+			<list>
+				<item>
+					<xpath>@gndo:uri</xpath>
+					<addToDefault>false</addToDefault>
+				</item>
+			</list>
+		</MD_GNDURI>
+
+		<MD_PREFERREDNAME>
+			<list>
+				<item>
+					<xpath>gndo:preferredName</xpath>
+					<addToDefault>true</addToDefault>
+					<addSortField>true</addSortField>
+					<groupEntity type="PERSON">
+						<field name="MD_VALUE">normalize-space(concat(gndo:personalName, ' ', gndo:surname, substring(', ', 1, 2 * (gndo:surname and gndo:forename)), gndo:forename, ' ', gndo:prefix, ' ', gndo:counting))</field>
+						<field name="MD_LASTNAME">gndo:surname</field>
+						<field name="MD_FIRSTNAME">gndo:forename</field>
+						<field name="MD_PERSONALNAME">gndo:personalName</field>
+						<field name="MD_PREFIX">gndo:prefix</field>
+						<field name="MD_COUNTING">gndo:counting</field>
+						<field name="MD_NAMEADDITION">gndo:nameAddition</field>
+						<field name="MD_EPITHET">gndo:epithetGenericNameTitleOrTerritory</field>
+						<field name="MD_TYPE">@type</field>
+						<field name="MD_LANGUAGE">@xml:lang</field>
+						<field name="MD_SCRIPT">@script</field>
+					</groupEntity>
+				</item>
+			</list>
+		</MD_PREFERREDNAME>
+
+		<MD_VARIANTNAME>
+			<list>
+				<item>
+					<xpath>gndo:variantName</xpath>
+					<addToDefault>true</addToDefault>
+					<groupEntity type="PERSON">
+						<field name="MD_VALUE">normalize-space(concat(gndo:personalName, ' ', gndo:surname, substring(', ', 1, 2 * (gndo:surname and gndo:forename)), gndo:forename, ' ', gndo:prefix, ' ', gndo:counting))</field>
+						<field name="MD_LASTNAME">gndo:surname</field>
+						<field name="MD_FIRSTNAME">gndo:forename</field>
+						<field name="MD_PERSONALNAME">gndo:personalName</field>
+						<field name="MD_PREFIX">gndo:prefix</field>
+						<field name="MD_COUNTING">gndo:counting</field>
+						<field name="MD_NAMEADDITION">gndo:nameAddition</field>
+						<field name="MD_EPITHET">gndo:epithetGenericNameTitleOrTerritory</field>
+						<!-- GND code, e.g. 'nafr' = former name -->
+						<field name="MD_CODE">@gndo:code</field>
+						<field name="MD_LANGUAGE">@xml:lang</field>
+						<field name="MD_SCRIPT">@script</field>
+					</groupEntity>
+				</item>
+			</list>
+		</MD_VARIANTNAME>
+
+		<MD_DATEOFBIRTH>
+			<list>
+				<item>
+					<xpath>gndo:dateOfBirth[not(@alternative='true')]/@iso-date</xpath>
+					<addToDefault>true</addToDefault>
+					<addSortField>true</addSortField>
+				</item>
+			</list>
+		</MD_DATEOFBIRTH>
+
+		<MD_DATEOFBIRTH_ALTERNATIVE>
+			<list>
+				<item>
+					<xpath>gndo:dateOfBirth[@alternative='true']/@iso-date</xpath>
+					<addToDefault>true</addToDefault>
+				</item>
+			</list>
+		</MD_DATEOFBIRTH_ALTERNATIVE>
+
+		<MD_DATEOFDEATH>
+			<list>
+				<item>
+					<xpath>gndo:dateOfDeath[not(@alternative='true')]/@iso-date</xpath>
+					<addToDefault>true</addToDefault>
+					<addSortField>true</addSortField>
+				</item>
+			</list>
+		</MD_DATEOFDEATH>
+
+		<MD_DATEOFDEATH_ALTERNATIVE>
+			<list>
+				<item>
+					<xpath>gndo:dateOfDeath[@alternative='true']/@iso-date</xpath>
+					<addToDefault>true</addToDefault>
+				</item>
+			</list>
+		</MD_DATEOFDEATH_ALTERNATIVE>
+
+		<!-- gndo:date: dated event, meaning in exml:note (e.g. 'Ausbürgerung') -->
+		<MD_EVENTDATE>
+			<list>
+				<item>
+					<xpath>gndo:date</xpath>
+					<addToDefault>true</addToDefault>
+					<groupEntity type="EVENT">
+						<field name="MD_VALUE">normalize-space(exml:label | self::*[not(exml:label)])</field>
+						<field name="MD_DATE">@iso-date</field>
+						<field name="MD_DATESTART">@iso-from</field>
+						<field name="MD_DATEEND">@iso-to</field>
+						<field name="MD_NOTE">exml:note</field>
+						<field name="MD_CODE">@gndo:code</field>
+					</groupEntity>
+				</item>
+			</list>
+		</MD_EVENTDATE>
+
+		<MD_PLACEOFBIRTH>
+			<list>
+				<item>
+					<xpath>gndo:placeOfBirth</xpath>
+					<addToDefault>true</addToDefault>
+					<addSortField>true</addSortField>
+					<groupEntity type="LOCATION">
+						<field name="MD_VALUE">normalize-space(exml:label | self::*[not(exml:label)])</field>
+						<field name="MD_NOTE">exml:note</field>
+						<field name="NORM_URI">@gndo:ref</field>
+					</groupEntity>
+				</item>
+			</list>
+		</MD_PLACEOFBIRTH>
+
+		<MD_PLACEOFDEATH>
+			<list>
+				<item>
+					<xpath>gndo:placeOfDeath</xpath>
+					<addToDefault>true</addToDefault>
+					<addSortField>true</addSortField>
+					<groupEntity type="LOCATION">
+						<field name="MD_VALUE">normalize-space(exml:label | self::*[not(exml:label)])</field>
+						<field name="MD_NOTE">exml:note</field>
+						<field name="NORM_URI">@gndo:ref</field>
+					</groupEntity>
+				</item>
+			</list>
+		</MD_PLACEOFDEATH>
+
+		<MD_PLACEOFACTIVITY>
+			<list>
+				<item>
+					<xpath>gndo:placeOfActivity</xpath>
+					<addToDefault>true</addToDefault>
+					<groupEntity type="LOCATION">
+						<field name="MD_VALUE">normalize-space(exml:label | self::*[not(exml:label)])</field>
+						<field name="MD_DATE">@iso-date</field>
+						<field name="MD_DATESTART">@iso-from</field>
+						<field name="MD_DATEEND">@iso-to</field>
+						<field name="MD_NOTE">exml:note</field>
+						<field name="NORM_URI">@gndo:ref</field>
+					</groupEntity>
+				</item>
+			</list>
+		</MD_PLACEOFACTIVITY>
+
+
+		<MD_PERIODOFACTIVITY>
+			<list>
+				<item>
+					<xpath>gndo:periodOfActivity</xpath>
+					<addToDefault>true</addToDefault>
+					<groupEntity type="OTHER">
+						<field name="MD_VALUE">normalize-space(exml:label | self::*[not(exml:label)])</field>
+						<field name="MD_DATESTART">@iso-from</field>
+						<field name="MD_DATEEND">@iso-to</field>
+						<field name="MD_NOTE">exml:note</field>
+					</groupEntity>
+				</item>
+			</list>
+		</MD_PERIODOFACTIVITY>
+
+		<MD_AFFILIATION>
+			<list>
+				<item>
+					<xpath>gndo:affiliation</xpath>
+					<addToDefault>true</addToDefault>
+					<groupEntity type="CORPORATION">
+						<field name="MD_VALUE">normalize-space(exml:label | self::*[not(exml:label)])</field>
+						<field name="MD_NOTE">exml:note</field>
+						<field name="NORM_URI">@gndo:ref</field>
+					</groupEntity>
+				</item>
+			</list>
+		</MD_AFFILIATION>
+
+		<MD_FIELDOFSTUDY>
+			<list>
+				<item>
+					<xpath>gndo:fieldOfStudy</xpath>
+					<addToDefault>true</addToDefault>
+					<groupEntity type="SUBJECT">
+						<field name="MD_VALUE">normalize-space(exml:label | self::*[not(exml:label)])</field>
+						<field name="MD_NOTE">exml:note</field>
+						<field name="NORM_URI">@gndo:ref</field>
+					</groupEntity>
+				</item>
+			</list>
+		</MD_FIELDOFSTUDY>
+
+		<MD_PLAYEDINSTRUMENT>
+			<list>
+				<item>
+					<xpath>gndo:playedInstrument</xpath>
+					<addToDefault>true</addToDefault>
+					<groupEntity type="OTHER">
+						<field name="MD_VALUE">normalize-space(exml:label | self::*[not(exml:label)])</field>
+						<field name="MD_NOTE">exml:note</field>
+						<field name="NORM_URI">@gndo:ref</field>
+					</groupEntity>
+				</item>
+			</list>
+		</MD_PLAYEDINSTRUMENT>
+
+		<!-- Related persons: family members, acquaintances and generic relations -->
+		<MD_RELATEDPERSON>
+			<list>
+				<item>
+					<xpath>gndo:familialRelationship | gndo:acquaintanceshipOrFriendship | gndo:relatesTo</xpath>
+					<addToDefault>true</addToDefault>
+					<allowDuplicateValues>true</allowDuplicateValues>
+					<groupEntity type="RELATIONSHIP">
+						<!-- Name parts (familialRelationship etc.) or plain text (relatesTo) -->
+						<field name="MD_VALUE">normalize-space(concat(gndo:personalName, ' ', gndo:surname, substring(', ', 1, 2 * (gndo:surname and gndo:forename)), gndo:forename, ' ', gndo:prefix, ' ', gndo:counting))</field>
+						<field name="MD_VALUE">normalize-space(self::*[not(*)])</field>
+						<field name="MD_LASTNAME">gndo:surname</field>
+						<field name="MD_FIRSTNAME">gndo:forename</field>
+						<!-- Relationship type, e.g. 'familialRelationship' -->
+						<field name="MD_RELATIONSHIPTYPE">local-name()</field>
+						<!-- Role, e.g. 'Mutter' -->
+						<field name="MD_NOTE">exml:note</field>
+						<field name="MD_CODE">@gndo:code</field>
+						<field name="NORM_URI">@gndo:ref</field>
+					</groupEntity>
+				</item>
+			</list>
+		</MD_RELATEDPERSON>
+
+		<MD_PUBLICATION>
+			<list>
+				<item>
+					<xpath>gndo:publication</xpath>
+					<addToDefault>true</addToDefault>
+					<groupEntity type="OTHER">
+						<field name="MD_VALUE">normalize-space(exml:title | self::*[not(exml:title)])</field>
+						<field name="MD_DATE">exml:date</field>
+						<field name="MD_NOTE">exml:note</field>
+						<!-- Usually a DNB title URI, not a GND authority record -->
+						<field name="MD_URI">@gndo:ref</field>
+					</groupEntity>
+				</item>
+			</list>
+		</MD_PUBLICATION>
+
+		<MD_PSEUDONYM>
+			<list>
+				<item>
+					<xpath>gndo:pseudonym</xpath>
+					<addToDefault>true</addToDefault>
+				</item>
+			</list>
+		</MD_PSEUDONYM>
+
+		<MD_ACADEMICDEGREE>
+			<list>
+				<item>
+					<xpath>gndo:academicDegree</xpath>
+					<addToDefault>true</addToDefault>
+				</item>
+			</list>
+		</MD_ACADEMICDEGREE>
+
+		<MD_TITLEOFNOBILITY>
+			<list>
+				<item>
+					<xpath>gndo:titleOfNobility</xpath>
+					<addToDefault>true</addToDefault>
+				</item>
+			</list>
+		</MD_TITLEOFNOBILITY>
+
+		<MD_FUNCTIONORROLE>
+			<list>
+				<item>
+					<xpath>gndo:functionOrRole</xpath>
+					<addToDefault>true</addToDefault>
+				</item>
+			</list>
+		</MD_FUNCTIONORROLE>
+
+
+
+		<MD_LANGUAGECODE>
+			<list>
+				<item>
+					<xpath>gndo:languageCode</xpath>
+					<addToDefault>false</addToDefault>
+				</item>
+			</list>
+		</MD_LANGUAGECODE>
+
+		<MD_GNDSUBJECTCATEGORY>
+			<list>
+				<item>
+					<xpath>gndo:gndSubjectCategory</xpath>
+					<addToDefault>false</addToDefault>
+				</item>
+			</list>
+		</MD_GNDSUBJECTCATEGORY>
+
+		<!-- Code only, e.g. 'XA-DE' ('ZZ' = unknown) -->
+		<MD_GEOGRAPHICAREACODE>
+			<list>
+				<item>
+					<xpath>gndo:geographicAreaCode/@gndo:term</xpath>
+					<addToDefault>false</addToDefault>
+					<replace regex="^.*#"></replace>
+				</item>
+			</list>
+		</MD_GEOGRAPHICAREACODE>
+
+		<MD_SAMEAS>
+			<list>
+				<item>
+					<xpath>owl:sameAs</xpath>
+					<addToDefault>false</addToDefault>
+				</item>
+			</list>
+		</MD_SAMEAS>
+
+		<MD_HOMEPAGE>
+			<list>
+				<item>
+					<xpath>foaf:page</xpath>
+					<addToDefault>false</addToDefault>
+				</item>
+			</list>
+		</MD_HOMEPAGE>
+
+		<!-- Internal notes (gndo:type="internal") must not be indexed -->
+		<MD_NOTE>
+			<list>
+				<item>
+					<xpath>skos:note[not(@gndo:type='internal')]</xpath>
+					<addToDefault>true</addToDefault>
+				</item>
+			</list>
+		</MD_NOTE>
+
+		<MD_SOURCE>
+			<list>
+				<item>
+					<xpath>exml:source</xpath>
+					<addToDefault>false</addToDefault>
+					<groupEntity type="OTHER">
+						<field name="MD_VALUE">normalize-space(exml:title | self::*[not(exml:title)])</field>
+						<field name="MD_URL">@url</field>
+						<field name="MD_NOTE">exml:note</field>
+					</groupEntity>
+				</item>
+			</list>
+		</MD_SOURCE>
 
     </fields>
  

@@ -63,6 +63,8 @@ public class DataRepository {
     public static final String PARAM_INDEXED_EAD = "indexedEad";
     /** Constant <code>PARAM_INDEXED_DENKXWEB="indexedDenkXweb"</code> */
     public static final String PARAM_INDEXED_DENKXWEB = "indexedDenkXweb";
+    /** Constant <code>PARAM_INDEXED_ENTITYXML="indexedEntityXml"</code> */
+    public static final String PARAM_INDEXED_ENTITYXML = "indexedEntityXml";
     /** Constant <code>PARAM_INDEXED_DC="indexedDC"</code> */
     public static final String PARAM_INDEXED_DUBLINCORE = "indexedDublinCore";
     /** Constant <code>PARAM_INDEXED_CMS="indexedCMS"</code> */
@@ -184,6 +186,7 @@ public class DataRepository {
         checkAndCreateDataSubdir(PARAM_INDEXED_LIDO, createFolders);
         checkAndCreateDataSubdir(PARAM_INDEXED_EAD, createFolders);
         checkAndCreateDataSubdir(PARAM_INDEXED_DENKXWEB, createFolders);
+        checkAndCreateDataSubdir(PARAM_INDEXED_ENTITYXML, createFolders);
         checkAndCreateDataSubdir(PARAM_INDEXED_DUBLINCORE, createFolders);
         checkAndCreateDataSubdir(PARAM_INDEXED_CMS, createFolders);
         checkAndCreateDataSubdir(PARAM_INDEXED_STATISTICS, createFolders);
@@ -277,7 +280,7 @@ public class DataRepository {
         String config = SolrIndexerDaemon.getInstance().getConfiguration().getConfiguration(dataDirName);
         if (StringUtils.isEmpty(config)) {
             switch (dataDirName) {
-                case PARAM_INDEXED_METS, PARAM_INDEXED_LIDO, PARAM_INDEXED_EAD, PARAM_INDEXED_DENKXWEB:
+                case PARAM_INDEXED_METS, PARAM_INDEXED_LIDO, PARAM_INDEXED_EAD, PARAM_INDEXED_DENKXWEB, PARAM_INDEXED_ENTITYXML:
                 case PARAM_INDEXED_DUBLINCORE, PARAM_INDEXED_CMS, PARAM_INDEXED_STATISTICS:
                     return;
                 default:
@@ -391,6 +394,8 @@ public class DataRepository {
         logger.info("Data repository '{}' contains {} EAD records.", path, eadRecords);
         int denkxwebRecords = countFiles(getDir(PARAM_INDEXED_DENKXWEB));
         logger.info("Data repository '{}' contains {} DenkXweb records.", path, denkxwebRecords);
+        int entityXmlRecords = countFiles(getDir(PARAM_INDEXED_ENTITYXML));
+        logger.info("Data repository '{}' contains {} entityXML records.", path, entityXmlRecords);
         int dcRecords = countFiles(getDir(PARAM_INDEXED_DUBLINCORE));
         logger.info("Data repository '{}' contains {} Dublin Core records.", path, dcRecords);
         int cmsRecords = countFiles(getDir(PARAM_INDEXED_CMS));
@@ -398,7 +403,7 @@ public class DataRepository {
         int statisticsRecords = countFiles(getDir(PARAM_INDEXED_STATISTICS));
         logger.info("Data repository '{}' contains {} usage statistics records.", path, statisticsRecords);
 
-        return metsRecords + lidoRecords + eadRecords + denkxwebRecords + dcRecords + cmsRecords;
+        return metsRecords + lidoRecords + eadRecords + denkxwebRecords + entityXmlRecords + dcRecords + cmsRecords;
     }
 
     /**
@@ -497,6 +502,18 @@ public class DataRepository {
                     logger.info("Deleted old repository DenkXweb file: {}", oldRecordFile.toAbsolutePath());
                 } catch (IOException e) {
                     logger.error("Could not delete old repository DenkXweb file: {}", oldRecordFile.toAbsolutePath());
+                }
+            }
+        }
+        // ENTITYXML
+        if (getDir(PARAM_INDEXED_ENTITYXML) != null) {
+            Path oldRecordFile = Paths.get(getDir(PARAM_INDEXED_ENTITYXML).toAbsolutePath().toString(), pi + ".xml");
+            if (Files.isRegularFile(oldRecordFile)) {
+                try {
+                    Files.delete(oldRecordFile);
+                    logger.info("Deleted old repository entityXML file: {}", oldRecordFile.toAbsolutePath());
+                } catch (IOException e) {
+                    logger.error("Could not delete old repository entityXML file: {}", oldRecordFile.toAbsolutePath());
                 }
             }
         }
