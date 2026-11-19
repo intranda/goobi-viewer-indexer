@@ -1306,6 +1306,7 @@
 						<field name="MD_VALUE">normalize-space(self::*)</field>
 						<field name="MD_ROLE">local-name()</field>
 						<field name="NORM_URI">@gndo:ref</field>
+						<field name="MD_URI">@ref</field>
 					</groupEntity>
 				</item>
 			</list>
@@ -1447,6 +1448,7 @@
 						<field name="MD_VALUE">normalize-space(self::*)</field>
 						<field name="MD_ROLE">@gndo:role</field>
 						<field name="NORM_URI">@gndo:ref</field>
+						<field name="MD_URI">@ref</field>
 					</groupEntity>
 				</item>
 			</list>
@@ -1629,6 +1631,7 @@
 					<groupEntity type="PERSON">
 						<field name="MD_VALUE">normalize-space(self::*)</field>
 						<field name="NORM_URI">@gndo:ref</field>
+						<field name="MD_URI">@ref</field>
 					</groupEntity>
 				</item>
 			</list>
@@ -2579,6 +2582,7 @@
 					<groupEntity type="SUBJECT">
 						<field name="MD_VALUE">normalize-space(self::*)</field>
 						<field name="NORM_URI">@gndo:ref</field>
+						<field name="MD_URI">@ref</field>
 					</groupEntity>
 				</item>
 			</list>
@@ -3296,6 +3300,7 @@
 						<field name="MD_TYPE">@gndo:type</field>
 						<field name="MD_NOTE">exml:note</field>
 						<field name="NORM_URI">@gndo:ref</field>
+						<field name="MD_URI">@ref</field>
 					</groupEntity>
 				</item>
 			</list>
@@ -4492,6 +4497,7 @@
 
 
 		<!-- ===== entityXML (GND entity exchange format, namespaces exml/gndo) ===== -->
+		<!-- NORM_URI: GND link (@gndo:ref), authority data is fetched; MD_URI: other links (@ref, e.g. GeoNames), not fetched -->
 
 		<MD_GNDURI>
 			<list>
@@ -4501,6 +4507,17 @@
 				</item>
 			</list>
 		</MD_GNDURI>
+
+		<!-- GND entity type of the record, e.g. 'LiteraryOrLegendaryCharacter' -->
+		<MD_ENTITYTYPE>
+			<list>
+				<item>
+					<xpath>@gndo:type</xpath>
+					<addToDefault>false</addToDefault>
+					<replace regex="^.*#"></replace>
+				</item>
+			</list>
+		</MD_ENTITYTYPE>
 
 		<MD_PREFERREDNAME>
 			<list>
@@ -4556,10 +4573,11 @@
 			</list>
 		</MD_VARIANTNAME>
 
+		<!-- Dates of birth/death: ISO date, else ISO interval notBefore/notAfter (e.g. '1984/1985'), else the text -->
 		<MD_DATEOFBIRTH>
 			<list>
 				<item>
-					<xpath>gndo:dateOfBirth[not(@alternative='true')]/@iso-date</xpath>
+					<xpath>normalize-space(concat(gndo:dateOfBirth[not(@alternative='true')][1]/@iso-date, substring(concat(gndo:dateOfBirth[not(@alternative='true')][1]/@iso-notBefore, '/', gndo:dateOfBirth[not(@alternative='true')][1]/@iso-notAfter), 1, 100 * (not(gndo:dateOfBirth[not(@alternative='true')][1]/@iso-date) and (gndo:dateOfBirth[not(@alternative='true')][1]/@iso-notBefore or gndo:dateOfBirth[not(@alternative='true')][1]/@iso-notAfter))), substring(gndo:dateOfBirth[not(@alternative='true')][1], 1, 100000 * not(gndo:dateOfBirth[not(@alternative='true')][1]/@iso-date or gndo:dateOfBirth[not(@alternative='true')][1]/@iso-notBefore or gndo:dateOfBirth[not(@alternative='true')][1]/@iso-notAfter))))</xpath>
 					<addToDefault>true</addToDefault>
 					<addSortField>true</addSortField>
 				</item>
@@ -4569,7 +4587,7 @@
 		<MD_DATEOFBIRTH_ALTERNATIVE>
 			<list>
 				<item>
-					<xpath>gndo:dateOfBirth[@alternative='true']/@iso-date</xpath>
+					<xpath>normalize-space(concat(gndo:dateOfBirth[@alternative='true'][1]/@iso-date, substring(concat(gndo:dateOfBirth[@alternative='true'][1]/@iso-notBefore, '/', gndo:dateOfBirth[@alternative='true'][1]/@iso-notAfter), 1, 100 * (not(gndo:dateOfBirth[@alternative='true'][1]/@iso-date) and (gndo:dateOfBirth[@alternative='true'][1]/@iso-notBefore or gndo:dateOfBirth[@alternative='true'][1]/@iso-notAfter))), substring(gndo:dateOfBirth[@alternative='true'][1], 1, 100000 * not(gndo:dateOfBirth[@alternative='true'][1]/@iso-date or gndo:dateOfBirth[@alternative='true'][1]/@iso-notBefore or gndo:dateOfBirth[@alternative='true'][1]/@iso-notAfter))))</xpath>
 					<addToDefault>true</addToDefault>
 				</item>
 			</list>
@@ -4578,7 +4596,7 @@
 		<MD_DATEOFDEATH>
 			<list>
 				<item>
-					<xpath>gndo:dateOfDeath[not(@alternative='true')]/@iso-date</xpath>
+					<xpath>normalize-space(concat(gndo:dateOfDeath[not(@alternative='true')][1]/@iso-date, substring(concat(gndo:dateOfDeath[not(@alternative='true')][1]/@iso-notBefore, '/', gndo:dateOfDeath[not(@alternative='true')][1]/@iso-notAfter), 1, 100 * (not(gndo:dateOfDeath[not(@alternative='true')][1]/@iso-date) and (gndo:dateOfDeath[not(@alternative='true')][1]/@iso-notBefore or gndo:dateOfDeath[not(@alternative='true')][1]/@iso-notAfter))), substring(gndo:dateOfDeath[not(@alternative='true')][1], 1, 100000 * not(gndo:dateOfDeath[not(@alternative='true')][1]/@iso-date or gndo:dateOfDeath[not(@alternative='true')][1]/@iso-notBefore or gndo:dateOfDeath[not(@alternative='true')][1]/@iso-notAfter))))</xpath>
 					<addToDefault>true</addToDefault>
 					<addSortField>true</addSortField>
 				</item>
@@ -4588,7 +4606,7 @@
 		<MD_DATEOFDEATH_ALTERNATIVE>
 			<list>
 				<item>
-					<xpath>gndo:dateOfDeath[@alternative='true']/@iso-date</xpath>
+					<xpath>normalize-space(concat(gndo:dateOfDeath[@alternative='true'][1]/@iso-date, substring(concat(gndo:dateOfDeath[@alternative='true'][1]/@iso-notBefore, '/', gndo:dateOfDeath[@alternative='true'][1]/@iso-notAfter), 1, 100 * (not(gndo:dateOfDeath[@alternative='true'][1]/@iso-date) and (gndo:dateOfDeath[@alternative='true'][1]/@iso-notBefore or gndo:dateOfDeath[@alternative='true'][1]/@iso-notAfter))), substring(gndo:dateOfDeath[@alternative='true'][1], 1, 100000 * not(gndo:dateOfDeath[@alternative='true'][1]/@iso-date or gndo:dateOfDeath[@alternative='true'][1]/@iso-notBefore or gndo:dateOfDeath[@alternative='true'][1]/@iso-notAfter))))</xpath>
 					<addToDefault>true</addToDefault>
 				</item>
 			</list>
@@ -4622,6 +4640,7 @@
 						<field name="MD_VALUE">normalize-space(exml:label | self::*[not(exml:label)])</field>
 						<field name="MD_NOTE">exml:note</field>
 						<field name="NORM_URI">@gndo:ref</field>
+						<field name="MD_URI">@ref</field>
 					</groupEntity>
 				</item>
 			</list>
@@ -4637,6 +4656,7 @@
 						<field name="MD_VALUE">normalize-space(exml:label | self::*[not(exml:label)])</field>
 						<field name="MD_NOTE">exml:note</field>
 						<field name="NORM_URI">@gndo:ref</field>
+						<field name="MD_URI">@ref</field>
 					</groupEntity>
 				</item>
 			</list>
@@ -4654,6 +4674,7 @@
 						<field name="MD_DATEEND">@iso-to</field>
 						<field name="MD_NOTE">exml:note</field>
 						<field name="NORM_URI">@gndo:ref</field>
+						<field name="MD_URI">@ref</field>
 					</groupEntity>
 				</item>
 			</list>
@@ -4684,6 +4705,7 @@
 						<field name="MD_VALUE">normalize-space(exml:label | self::*[not(exml:label)])</field>
 						<field name="MD_NOTE">exml:note</field>
 						<field name="NORM_URI">@gndo:ref</field>
+						<field name="MD_URI">@ref</field>
 					</groupEntity>
 				</item>
 			</list>
@@ -4698,6 +4720,7 @@
 						<field name="MD_VALUE">normalize-space(exml:label | self::*[not(exml:label)])</field>
 						<field name="MD_NOTE">exml:note</field>
 						<field name="NORM_URI">@gndo:ref</field>
+						<field name="MD_URI">@ref</field>
 					</groupEntity>
 				</item>
 			</list>
@@ -4712,6 +4735,7 @@
 						<field name="MD_VALUE">normalize-space(exml:label | self::*[not(exml:label)])</field>
 						<field name="MD_NOTE">exml:note</field>
 						<field name="NORM_URI">@gndo:ref</field>
+						<field name="MD_URI">@ref</field>
 					</groupEntity>
 				</item>
 			</list>
@@ -4723,10 +4747,10 @@
 				<item>
 					<xpath>gndo:familialRelationship | gndo:acquaintanceshipOrFriendship | gndo:relatesTo</xpath>
 					<addToDefault>true</addToDefault>
-					<allowDuplicateValues>true</allowDuplicateValues>
 					<groupEntity type="RELATIONSHIP">
-						<!-- Name parts (familialRelationship etc.) or plain text (relatesTo) -->
+						<!-- Name parts (familialRelationship etc.), exml:label or plain text (relatesTo) -->
 						<field name="MD_VALUE">normalize-space(concat(gndo:personalName, ' ', gndo:surname, substring(', ', 1, 2 * (gndo:surname and gndo:forename)), gndo:forename, ' ', gndo:prefix, ' ', gndo:counting))</field>
+						<field name="MD_VALUE">normalize-space(exml:label)</field>
 						<field name="MD_VALUE">normalize-space(self::*[not(*)])</field>
 						<field name="MD_LASTNAME">gndo:surname</field>
 						<field name="MD_FIRSTNAME">gndo:forename</field>
@@ -4736,6 +4760,7 @@
 						<field name="MD_NOTE">exml:note</field>
 						<field name="MD_CODE">@gndo:code</field>
 						<field name="NORM_URI">@gndo:ref</field>
+						<field name="MD_URI">@ref</field>
 					</groupEntity>
 				</item>
 			</list>
@@ -4751,7 +4776,7 @@
 						<field name="MD_DATE">exml:date</field>
 						<field name="MD_NOTE">exml:note</field>
 						<!-- Usually a DNB title URI, not a GND authority record -->
-						<field name="MD_URI">@gndo:ref</field>
+						<field name="MD_URI">@gndo:ref | @ref</field>
 					</groupEntity>
 				</item>
 			</list>
@@ -4923,6 +4948,7 @@
 					<groupEntity type="OTHER">
 						<field name="MD_VALUE">normalize-space(self::*)</field>
 						<field name="NORM_URI">@gndo:ref</field>
+						<field name="MD_URI">@ref</field>
 					</groupEntity>
 				</item>
 			</list>
@@ -4937,6 +4963,7 @@
 						<field name="MD_VALUE">normalize-space(self::*)</field>
 						<field name="MD_TYPE">@gndo:type</field>
 						<field name="NORM_URI">@gndo:ref</field>
+						<field name="MD_URI">@ref</field>
 					</groupEntity>
 				</item>
 			</list>
@@ -4951,6 +4978,7 @@
 						<field name="MD_VALUE">normalize-space(self::*)</field>
 						<field name="MD_TYPE">@gndo:type</field>
 						<field name="NORM_URI">@gndo:ref</field>
+						<field name="MD_URI">@ref</field>
 					</groupEntity>
 				</item>
 			</list>
@@ -4966,6 +4994,7 @@
 						<field name="MD_VALUE">normalize-space(self::*)</field>
 						<field name="MD_RELATIONSHIPTYPE">local-name()</field>
 						<field name="NORM_URI">@gndo:ref</field>
+						<field name="MD_URI">@ref</field>
 					</groupEntity>
 				</item>
 			</list>
@@ -4981,6 +5010,7 @@
 						<field name="MD_VALUE">normalize-space(self::*)</field>
 						<field name="MD_RELATIONSHIPTYPE">local-name()</field>
 						<field name="NORM_URI">@gndo:ref</field>
+						<field name="MD_URI">@ref</field>
 					</groupEntity>
 				</item>
 			</list>
@@ -4994,6 +5024,7 @@
 					<groupEntity type="LOCATION">
 						<field name="MD_VALUE">normalize-space(self::*)</field>
 						<field name="NORM_URI">@gndo:ref</field>
+						<field name="MD_URI">@ref</field>
 					</groupEntity>
 				</item>
 			</list>
@@ -5008,6 +5039,7 @@
 					<groupEntity type="LOCATION">
 						<field name="MD_VALUE">normalize-space(self::*)</field>
 						<field name="NORM_URI">@gndo:ref</field>
+						<field name="MD_URI">@ref</field>
 					</groupEntity>
 				</item>
 			</list>
@@ -5112,6 +5144,7 @@
 					<groupEntity type="OTHER">
 						<field name="MD_VALUE">normalize-space(self::*)</field>
 						<field name="NORM_URI">@gndo:ref</field>
+						<field name="MD_URI">@ref</field>
 					</groupEntity>
 				</item>
 			</list>
@@ -5128,6 +5161,7 @@
 						<field name="MD_NOTE">exml:note</field>
 						<field name="MD_RELATIONSHIPTYPE">local-name()</field>
 						<field name="NORM_URI">@gndo:ref</field>
+						<field name="MD_URI">@ref</field>
 					</groupEntity>
 				</item>
 			</list>
@@ -5142,6 +5176,7 @@
 						<field name="MD_VALUE">normalize-space(exml:label | self::*[not(exml:label)])</field>
 						<field name="MD_NOTE">exml:note</field>
 						<field name="NORM_URI">@gndo:ref</field>
+						<field name="MD_URI">@ref</field>
 					</groupEntity>
 				</item>
 			</list>
@@ -5155,6 +5190,7 @@
 					<groupEntity type="CORPORATION">
 						<field name="MD_VALUE">normalize-space(self::*)</field>
 						<field name="NORM_URI">@gndo:ref</field>
+						<field name="MD_URI">@ref</field>
 					</groupEntity>
 				</item>
 			</list>
@@ -5168,6 +5204,7 @@
 					<groupEntity type="PERSON">
 						<field name="MD_VALUE">normalize-space(self::*)</field>
 						<field name="NORM_URI">@gndo:ref</field>
+						<field name="MD_URI">@ref</field>
 					</groupEntity>
 				</item>
 			</list>
@@ -5182,6 +5219,7 @@
 					<groupEntity type="OTHER">
 						<field name="MD_VALUE">normalize-space(self::*)</field>
 						<field name="NORM_URI">@gndo:ref</field>
+						<field name="MD_URI">@ref</field>
 					</groupEntity>
 				</item>
 			</list>
@@ -5196,6 +5234,7 @@
 					<groupEntity type="OTHER">
 						<field name="MD_VALUE">normalize-space(self::*)</field>
 						<field name="NORM_URI">@gndo:ref</field>
+						<field name="MD_URI">@ref</field>
 					</groupEntity>
 				</item>
 			</list>
@@ -5210,6 +5249,7 @@
 					<groupEntity type="OTHER">
 						<field name="MD_VALUE">normalize-space(self::*)</field>
 						<field name="NORM_URI">@gndo:ref</field>
+						<field name="MD_URI">@ref</field>
 					</groupEntity>
 				</item>
 			</list>

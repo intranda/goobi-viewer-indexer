@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Synthetic test data (no real persons): value variants seen in DANTE exports (approximate and text-only dates, relations with
+     label/note, non-GND links, duplicate relations, record-level GND entity type) -->
+<entityXML xmlns="https://sub.uni-goettingen.de/met/standards/entity-xml#" xmlns:gndo="https://d-nb.info/standards/elementset/gnd#">
+    <collection>
+        <data>
+            <list>
+                <person xml:id="p0000000099" gndo:type="https://d-nb.info/standards/elementset/gnd#LiteraryOrLegendaryCharacter">
+                    <gndo:preferredName>
+                        <gndo:surname>Musterfigur</gndo:surname>, <gndo:forename>Fritz</gndo:forename>
+                    </gndo:preferredName>
+                    <gndo:dateOfBirth iso-notBefore="1984" iso-notAfter="1985">um 1984</gndo:dateOfBirth>
+                    <gndo:dateOfDeath>nach 2075</gndo:dateOfDeath>
+                    <gndo:placeOfDeath ref="https://example.com/geonames/123">Musterhafen</gndo:placeOfDeath>
+                    <gndo:relatesTo gndo:code="rela" ref="https://example.com/terminology/1">
+                        <label>Muster, Hans</label>
+                        <note>weite Entsprechung (broadMatch)</note>
+                    </gndo:relatesTo>
+                    <gndo:relatesTo gndo:code="rela" ref="https://example.com/terminology/1">
+                        <label>Muster, Hans</label>
+                        <note>weite Entsprechung (broadMatch)</note>
+                    </gndo:relatesTo>
+                    <gndo:relatesTo gndo:code="rela" ref="https://example.com/terminology/2">Beispiel, Berta</gndo:relatesTo>
+                    <gndo:relatesTo gndo:code="rela" ref="https://example.com/terminology/2">Beispiel, Berta</gndo:relatesTo>
+                </person>
+            </list>
+        </data>
+    </collection>
+</entityXML>

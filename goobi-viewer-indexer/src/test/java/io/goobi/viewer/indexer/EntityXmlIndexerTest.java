@@ -317,6 +317,36 @@ class EntityXmlIndexerTest extends AbstractSolrEnabledTest {
     }
 
     /**
+     * @see EntityXmlIndexer#index(Document,Map,ISolrWriteStrategy)
+     * @verifies index approximate dates and labelled relations correctly
+     */
+    @Test
+    void index_shouldIndexApproximateDatesAndLabelledRelationsCorrectly() throws Exception {
+        List<Document> recordDocs = JDomXP.splitEntityXmlFile(new File("src/test/resources/entityXML/entityxml_value_variants.xml"));
+        Assertions.assertEquals(1, recordDocs.size());
+        IndexingResult result = new EntityXmlIndexer(hotfolder).index(recordDocs.get(0), new HashMap<>(), null);
+        Assertions.assertEquals(IndexingResultStatus.OK, result.getStatus(), result.getError());
+
+        SolrDocument doc = getTopDoc("p0000000099");
+        Assertions.assertEquals("LiteraryOrLegendaryCharacter", doc.getFirstValue("MD_ENTITYTYPE"));
+        // ISO interval from iso-notBefore/iso-notAfter is preferred over the text
+        Assertions.assertEquals("1984/1985", doc.getFirstValue("MD_DATEOFBIRTH"));
+        // Text only
+        Assertions.assertEquals("nach 2075", doc.getFirstValue("MD_DATEOFDEATH"));
+
+        // Non-GND link
+        Assertions.assertEquals("https://example.com/geonames/123", getGroupedDoc(doc, "MD_PLACEOFDEATH").getFirstValue("MD_URI"));
+
+        // Relation with exml:label and exml:note; duplicates are indexed once
+        Assertions.assertEquals(2, getGroupedDocs(doc, "MD_RELATEDPERSON").size());
+        SolrDocument relDoc = getGroupedDoc(doc, "MD_RELATEDPERSON", "Muster, Hans");
+        Assertions.assertEquals("weite Entsprechung (broadMatch)", relDoc.getFirstValue("MD_NOTE"));
+        Assertions.assertEquals("https://example.com/terminology/1", relDoc.getFirstValue("MD_URI"));
+        Assertions.assertEquals("https://example.com/terminology/2",
+                getGroupedDoc(doc, "MD_RELATEDPERSON", "Beispiel, Berta").getFirstValue("MD_URI"));
+    }
+
+    /**
      * Indexes all records from the test file.
      *
      * @throws Exception
