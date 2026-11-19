@@ -106,6 +106,13 @@
 			<list>
 			    <intranda>http://www.intranda.com/</intranda>
 			    <gml>http://www.opengis.net/gml/3.2</gml>
+			    <!-- Namespaces used in entityXML files (only needed if entityXML files are indexed; the entityXML namespace itself (exml) is built in) -->
+			    <gndo>https://d-nb.info/standards/elementset/gnd#</gndo>
+			    <foaf>http://xmlns.com/foaf/0.1/</foaf>
+			    <owl>http://www.w3.org/2002/07/owl#</owl>
+			    <geo>http://www.opengis.net/ont/geosparql#</geo>
+			    <wgs84>http://www.w3.org/2003/01/geo/wgs84_pos#</wgs84>
+			    <bf>http://id.loc.gov/ontologies/bibframe/</bf>
 			</list>
 		</namespaces>
 		
@@ -238,6 +245,11 @@
 			<corporateBody>CorporateBody</corporateBody>
 			<place>Place</place>
 			<work>Work</work>
+			<expression>Expression</expression>
+			<manifestation>Manifestation</manifestation>
+			<event>Event</event>
+			<subjectHeading>SubjectHeading</subjectHeading>
+			<entity>Entity</entity>
 		</list>
 	</docstructmapping>
 
@@ -486,7 +498,10 @@
                     <xpath>mets:xmlData/bib/record/datafield[@tag="245"]/subfield[@code="a"]</xpath>
                     <xpath>lido:descriptiveMetadata/lido:objectIdentificationWrap/lido:titleWrap/lido:titleSet/lido:appellationValue</xpath>
                     
-					<xpath>normalize-space(concat(gndo:preferredName[1]/gndo:personalName, ' ', gndo:preferredName[1]/gndo:surname, substring(', ', 1, 2 * (gndo:preferredName[1]/gndo:surname and gndo:preferredName[1]/gndo:forename)), gndo:preferredName[1]/gndo:forename, ' ', gndo:preferredName[1]/gndo:prefix, ' ', gndo:preferredName[1]/gndo:counting))</xpath>
+					<xpath>normalize-space(substring(concat(gndo:preferredName[1]/gndo:personalName, ' ', gndo:preferredName[1]/gndo:surname, substring(', ', 1, 2 * (gndo:preferredName[1]/gndo:surname and gndo:preferredName[1]/gndo:forename)), gndo:preferredName[1]/gndo:forename, ' ', gndo:preferredName[1]/gndo:prefix, ' ', gndo:preferredName[1]/gndo:counting), 1, 100000 * (gndo:preferredName[1]/gndo:surname or gndo:preferredName[1]/gndo:forename or gndo:preferredName[1]/gndo:personalName)))</xpath>
+					<xpath>normalize-space(substring(concat(gndo:preferredName[1]/gndo:title, substring(' : ', 1, 3 * boolean(gndo:preferredName[1]/gndo:subtitle)), gndo:preferredName[1]/gndo:subtitle, ' ', gndo:preferredName[1]/gndo:counting), 1, 100000 * boolean(gndo:preferredName[1]/gndo:title)))</xpath>
+					<xpath>normalize-space(concat(gndo:preferredName[1][not(gndo:surname or gndo:forename or gndo:personalName or gndo:title)]/text()[1], ' ', gndo:preferredName[1][not(gndo:surname or gndo:forename or gndo:personalName or gndo:title)]/gndo:counting, ' ', gndo:preferredName[1][not(gndo:surname or gndo:forename or gndo:personalName or gndo:title)]/text()[2]))</xpath>
+					<xpath>self::exml:*[not(gndo:preferredName)]/dc:title</xpath>
 					<addToDefault>true</addToDefault>
 					<addSortField>true</addSortField>
 					<replace string="&lt;ns&gt;"></replace>
@@ -700,6 +715,16 @@
                     <replace regex="^, "/>
                     <replace regex="^,$"/>
 				</item>
+				<!-- entityXML -->
+				<item>
+					<xpath>gndo:firstAuthor | gndo:author</xpath>
+					<addToDefault>true</addToDefault>
+					<groupEntity type="PERSON">
+						<field name="MD_VALUE">normalize-space(self::*)</field>
+						<field name="MD_ROLE">local-name()</field>
+						<field name="NORM_URI">@gndo:ref</field>
+					</groupEntity>
+				</item>
 			</list>
 		</MD_AUTHOR>
 
@@ -719,6 +744,15 @@
 					<xpath>mets:xmlData/mods:mods/mods:name[@type="personal"][mods:role/mods:roleTerm="edt"[@authority='marcrelator'][@type='code']]/mods:displayForm</xpath>
 					<getnode>first</getnode>
 					<onefield>false</onefield>
+				</item>
+				<!-- entityXML -->
+				<item>
+					<xpath>gndo:editor</xpath>
+					<addToDefault>true</addToDefault>
+					<groupEntity type="PERSON">
+						<field name="MD_VALUE">normalize-space(self::*)</field>
+						<field name="NORM_URI">@gndo:ref</field>
+					</groupEntity>
 				</item>
 			</list>
 		</MD_EDITOR>
@@ -786,6 +820,16 @@
                     <getnode>first</getnode>
 					<onefield>false</onefield>
 					<addToDefault>true</addToDefault>
+				</item>
+				<!-- entityXML -->
+				<item>
+					<xpath>gndo:contributor</xpath>
+					<addToDefault>true</addToDefault>
+					<groupEntity type="PERSON">
+						<field name="MD_VALUE">normalize-space(self::*)</field>
+						<field name="MD_ROLE">@gndo:role</field>
+						<field name="NORM_URI">@gndo:ref</field>
+					</groupEntity>
 				</item>
 			</list>
 		</MD_CONTRIBUTOR>
@@ -907,6 +951,15 @@
 					<addToDefault>true</addToDefault>
 					<addSortField>true</addSortField>
 					<addUntokenizedVersion>false</addUntokenizedVersion>
+				</item>
+				<!-- entityXML -->
+				<item>
+					<xpath>gndo:topic</xpath>
+					<addToDefault>true</addToDefault>
+					<groupEntity type="SUBJECT">
+						<field name="MD_VALUE">normalize-space(self::*)</field>
+						<field name="NORM_URI">@gndo:ref</field>
+					</groupEntity>
 				</item>
 			</list>
 		</MD_TOPIC>
@@ -1757,7 +1810,11 @@
 					<addToDefault>true</addToDefault>
 					<addSortField>true</addSortField>
 					<groupEntity type="PERSON">
-						<field name="MD_VALUE">normalize-space(concat(gndo:personalName, ' ', gndo:surname, substring(', ', 1, 2 * (gndo:surname and gndo:forename)), gndo:forename, ' ', gndo:prefix, ' ', gndo:counting))</field>
+						<field name="MD_VALUE">normalize-space(substring(concat(gndo:personalName, ' ', gndo:surname, substring(', ', 1, 2 * (gndo:surname and gndo:forename)), gndo:forename, ' ', gndo:prefix, ' ', gndo:counting), 1, 100000 * (gndo:surname or gndo:forename or gndo:personalName)))</field>
+						<field name="MD_VALUE">normalize-space(substring(concat(gndo:title, substring(' : ', 1, 3 * boolean(gndo:subtitle)), gndo:subtitle, ' ', gndo:counting), 1, 100000 * boolean(gndo:title)))</field>
+						<field name="MD_VALUE">normalize-space(concat(self::*[not(gndo:surname or gndo:forename or gndo:personalName or gndo:title)]/text()[1], ' ', self::*[not(gndo:surname or gndo:forename or gndo:personalName or gndo:title)]/gndo:counting, ' ', self::*[not(gndo:surname or gndo:forename or gndo:personalName or gndo:title)]/text()[2]))</field>
+						<field name="MD_MAINTITLE">gndo:title</field>
+						<field name="MD_SUBTITLE">gndo:subtitle</field>
 						<field name="MD_LASTNAME">gndo:surname</field>
 						<field name="MD_FIRSTNAME">gndo:forename</field>
 						<field name="MD_PERSONALNAME">gndo:personalName</field>
@@ -1779,7 +1836,11 @@
 					<xpath>gndo:variantName</xpath>
 					<addToDefault>true</addToDefault>
 					<groupEntity type="PERSON">
-						<field name="MD_VALUE">normalize-space(concat(gndo:personalName, ' ', gndo:surname, substring(', ', 1, 2 * (gndo:surname and gndo:forename)), gndo:forename, ' ', gndo:prefix, ' ', gndo:counting))</field>
+						<field name="MD_VALUE">normalize-space(substring(concat(gndo:personalName, ' ', gndo:surname, substring(', ', 1, 2 * (gndo:surname and gndo:forename)), gndo:forename, ' ', gndo:prefix, ' ', gndo:counting), 1, 100000 * (gndo:surname or gndo:forename or gndo:personalName)))</field>
+						<field name="MD_VALUE">normalize-space(substring(concat(gndo:title, substring(' : ', 1, 3 * boolean(gndo:subtitle)), gndo:subtitle, ' ', gndo:counting), 1, 100000 * boolean(gndo:title)))</field>
+						<field name="MD_VALUE">normalize-space(concat(self::*[not(gndo:surname or gndo:forename or gndo:personalName or gndo:title)]/text()[1], ' ', self::*[not(gndo:surname or gndo:forename or gndo:personalName or gndo:title)]/gndo:counting, ' ', self::*[not(gndo:surname or gndo:forename or gndo:personalName or gndo:title)]/text()[2]))</field>
+						<field name="MD_MAINTITLE">gndo:title</field>
+						<field name="MD_SUBTITLE">gndo:subtitle</field>
 						<field name="MD_LASTNAME">gndo:surname</field>
 						<field name="MD_FIRSTNAME">gndo:forename</field>
 						<field name="MD_PERSONALNAME">gndo:personalName</field>
@@ -2100,6 +2161,7 @@
 			<list>
 				<item>
 					<xpath>foaf:page</xpath>
+					<xpath>gndo:homepage</xpath>
 					<addToDefault>false</addToDefault>
 				</item>
 			</list>
@@ -2128,6 +2190,367 @@
 				</item>
 			</list>
 		</MD_SOURCE>
+
+		<!-- ===== entityXML: corporate bodies, places, works, events, subject headings, expressions, manifestations ===== -->
+
+		<MD_GNDIDENTIFIER>
+			<list>
+				<item>
+					<xpath>gndo:gndIdentifier</xpath>
+					<addToDefault>false</addToDefault>
+				</item>
+			</list>
+		</MD_GNDIDENTIFIER>
+
+		<!-- GND identifier of a possible duplicate (element name as in the spec) -->
+		<MD_GNDIDENTIFIER_DUPLICATE>
+			<list>
+				<item>
+					<xpath>exml:dublicateGndIdentifier</xpath>
+					<addToDefault>false</addToDefault>
+				</item>
+			</list>
+		</MD_GNDIDENTIFIER_DUPLICATE>
+
+		<MD_IMAGE>
+			<list>
+				<item>
+					<xpath>exml:img/@src</xpath>
+					<addToDefault>false</addToDefault>
+				</item>
+			</list>
+		</MD_IMAGE>
+
+		<MD_WEBRESOURCE>
+			<list>
+				<item>
+					<xpath>exml:ref[not(@target)] | exml:ref/@target</xpath>
+					<addToDefault>false</addToDefault>
+				</item>
+			</list>
+		</MD_WEBRESOURCE>
+
+		<MD_ABBREVIATEDNAME>
+			<list>
+				<item>
+					<xpath>gndo:abbreviatedName</xpath>
+					<addToDefault>true</addToDefault>
+				</item>
+			</list>
+		</MD_ABBREVIATEDNAME>
+
+		<MD_TEMPORARYNAME>
+			<list>
+				<item>
+					<xpath>gndo:temporaryName</xpath>
+					<addToDefault>true</addToDefault>
+					<groupEntity type="OTHER">
+						<field name="MD_VALUE">normalize-space(self::*)</field>
+						<field name="NORM_URI">@gndo:ref</field>
+					</groupEntity>
+				</item>
+			</list>
+		</MD_TEMPORARYNAME>
+
+		<MD_BROADERTERM>
+			<list>
+				<item>
+					<xpath>gndo:broaderTerm</xpath>
+					<addToDefault>true</addToDefault>
+					<groupEntity type="SUBJECT">
+						<field name="MD_VALUE">normalize-space(self::*)</field>
+						<field name="MD_TYPE">@gndo:type</field>
+						<field name="NORM_URI">@gndo:ref</field>
+					</groupEntity>
+				</item>
+			</list>
+		</MD_BROADERTERM>
+
+		<MD_NARROWERTERM>
+			<list>
+				<item>
+					<xpath>gndo:narrowerTerm</xpath>
+					<addToDefault>true</addToDefault>
+					<groupEntity type="SUBJECT">
+						<field name="MD_VALUE">normalize-space(self::*)</field>
+						<field name="MD_TYPE">@gndo:type</field>
+						<field name="NORM_URI">@gndo:ref</field>
+					</groupEntity>
+				</item>
+			</list>
+		</MD_NARROWERTERM>
+
+		<!-- Preceding corporate body, place or subject heading -->
+		<MD_PREDECESSOR>
+			<list>
+				<item>
+					<xpath>gndo:precedingCorporateBody | gndo:precedingPlaceOrGeographicName | gndo:precedingSubjectHeading</xpath>
+					<addToDefault>true</addToDefault>
+					<groupEntity type="OTHER">
+						<field name="MD_VALUE">normalize-space(self::*)</field>
+						<field name="MD_RELATIONSHIPTYPE">local-name()</field>
+						<field name="NORM_URI">@gndo:ref</field>
+					</groupEntity>
+				</item>
+			</list>
+		</MD_PREDECESSOR>
+
+		<!-- Succeeding corporate body, place or subject heading -->
+		<MD_SUCCESSOR>
+			<list>
+				<item>
+					<xpath>gndo:succeedingCorporateBody | gndo:succeedingPlaceOrGeographicName | gndo:succeedingSubjectHeading</xpath>
+					<addToDefault>true</addToDefault>
+					<groupEntity type="OTHER">
+						<field name="MD_VALUE">normalize-space(self::*)</field>
+						<field name="MD_RELATIONSHIPTYPE">local-name()</field>
+						<field name="NORM_URI">@gndo:ref</field>
+					</groupEntity>
+				</item>
+			</list>
+		</MD_SUCCESSOR>
+
+		<MD_PLACEOFBUSINESS>
+			<list>
+				<item>
+					<xpath>gndo:placeOfBusiness</xpath>
+					<addToDefault>true</addToDefault>
+					<groupEntity type="LOCATION">
+						<field name="MD_VALUE">normalize-space(self::*)</field>
+						<field name="NORM_URI">@gndo:ref</field>
+					</groupEntity>
+				</item>
+			</list>
+		</MD_PLACEOFBUSINESS>
+
+		<!-- Place where an event took place or where a place is located -->
+		<MD_PLACE>
+			<list>
+				<item>
+					<xpath>gndo:place</xpath>
+					<addToDefault>true</addToDefault>
+					<groupEntity type="LOCATION">
+						<field name="MD_VALUE">normalize-space(self::*)</field>
+						<field name="NORM_URI">@gndo:ref</field>
+					</groupEntity>
+				</item>
+			</list>
+		</MD_PLACE>
+
+		<MD_HIERARCHICALSUPERIORPLACE>
+			<list>
+				<item>
+					<xpath>gndo:hierarchicalSuperiorOfPlaceOrGeographicName</xpath>
+					<addToDefault>true</addToDefault>
+				</item>
+			</list>
+		</MD_HIERARCHICALSUPERIORPLACE>
+
+		<!-- Dates: MD_VALUE is the text, else the ISO date (range) -->
+		<MD_DATEOFESTABLISHMENT>
+			<list>
+				<item>
+					<xpath>gndo:dateOfEstablishment</xpath>
+					<addToDefault>true</addToDefault>
+					<groupEntity type="OTHER">
+						<field name="MD_VALUE">normalize-space(self::*)</field>
+						<field name="MD_VALUE">normalize-space(substring(@iso-date, 1, 100 * not(normalize-space(.))))</field>
+						<field name="MD_VALUE">normalize-space(substring(concat(@iso-notBefore, substring('/', 1, number(boolean(@iso-notAfter))), @iso-notAfter), 1, 100 * (not(normalize-space(.)) and not(@iso-date))))</field>
+						<field name="MD_DATE">@iso-date</field>
+						<field name="MD_DATESTART">@iso-notBefore</field>
+						<field name="MD_DATEEND">@iso-notAfter</field>
+					</groupEntity>
+				</item>
+			</list>
+		</MD_DATEOFESTABLISHMENT>
+
+		<MD_DATEOFTERMINATION>
+			<list>
+				<item>
+					<xpath>gndo:dateOfTermination</xpath>
+					<addToDefault>true</addToDefault>
+					<groupEntity type="OTHER">
+						<field name="MD_VALUE">normalize-space(self::*)</field>
+						<field name="MD_VALUE">normalize-space(substring(@iso-date, 1, 100 * not(normalize-space(.))))</field>
+						<field name="MD_VALUE">normalize-space(substring(concat(@iso-notBefore, substring('/', 1, number(boolean(@iso-notAfter))), @iso-notAfter), 1, 100 * (not(normalize-space(.)) and not(@iso-date))))</field>
+						<field name="MD_DATE">@iso-date</field>
+						<field name="MD_DATESTART">@iso-notBefore</field>
+						<field name="MD_DATEEND">@iso-notAfter</field>
+					</groupEntity>
+				</item>
+			</list>
+		</MD_DATEOFTERMINATION>
+
+		<MD_DATEOFESTABLISHMENTANDTERMINATION>
+			<list>
+				<item>
+					<xpath>gndo:dateOfEstablishmentAndTermination</xpath>
+					<addToDefault>true</addToDefault>
+					<groupEntity type="OTHER">
+						<field name="MD_VALUE">normalize-space(self::*)</field>
+						<field name="MD_VALUE">normalize-space(substring(concat(@iso-from, substring('/', 1, number(boolean(@iso-to))), @iso-to), 1, 100 * not(normalize-space(.))))</field>
+						<field name="MD_DATESTART">@iso-from</field>
+						<field name="MD_DATEEND">@iso-to</field>
+					</groupEntity>
+				</item>
+			</list>
+		</MD_DATEOFESTABLISHMENTANDTERMINATION>
+
+		<MD_DATEOFPUBLICATION>
+			<list>
+				<item>
+					<xpath>gndo:dateOfPublication</xpath>
+					<addToDefault>true</addToDefault>
+					<groupEntity type="OTHER">
+						<field name="MD_VALUE">normalize-space(self::*)</field>
+						<field name="MD_VALUE">normalize-space(substring(@iso-date, 1, 100 * not(normalize-space(.))))</field>
+						<field name="MD_VALUE">normalize-space(substring(concat(@iso-notBefore, substring('/', 1, number(boolean(@iso-notAfter))), @iso-notAfter), 1, 100 * (not(normalize-space(.)) and not(@iso-date))))</field>
+						<field name="MD_DATE">@iso-date</field>
+						<field name="MD_DATESTART">@iso-notBefore</field>
+						<field name="MD_DATEEND">@iso-notAfter</field>
+					</groupEntity>
+				</item>
+			</list>
+		</MD_DATEOFPUBLICATION>
+
+		<MD_DATEOFCONFERENCEOREVENT>
+			<list>
+				<item>
+					<xpath>gndo:dateOfConferenceOrEvent</xpath>
+					<addToDefault>true</addToDefault>
+					<groupEntity type="OTHER">
+						<field name="MD_VALUE">normalize-space(self::*)</field>
+						<field name="MD_VALUE">normalize-space(substring(concat(@iso-from, substring('/', 1, number(boolean(@iso-to))), @iso-to), 1, 100 * not(normalize-space(.))))</field>
+						<field name="MD_DATESTART">@iso-from</field>
+						<field name="MD_DATEEND">@iso-to</field>
+					</groupEntity>
+				</item>
+			</list>
+		</MD_DATEOFCONFERENCEOREVENT>
+
+		<MD_FORMOFWORK>
+			<list>
+				<item>
+					<xpath>gndo:formOfWorkAndExpression</xpath>
+					<addToDefault>true</addToDefault>
+					<groupEntity type="OTHER">
+						<field name="MD_VALUE">normalize-space(self::*)</field>
+						<field name="NORM_URI">@gndo:ref</field>
+					</groupEntity>
+				</item>
+			</list>
+		</MD_FORMOFWORK>
+
+		<!-- Related works; MD_RELATIONSHIPTYPE: relatedWork, accordingWork or literarySource -->
+		<MD_RELATEDWORK>
+			<list>
+				<item>
+					<xpath>gndo:relatedWork | gndo:accordingWork | gndo:literarySource</xpath>
+					<addToDefault>true</addToDefault>
+					<groupEntity type="OTHER">
+						<field name="MD_VALUE">normalize-space(exml:label | self::*[not(exml:label)])</field>
+						<field name="MD_NOTE">exml:note</field>
+						<field name="MD_RELATIONSHIPTYPE">local-name()</field>
+						<field name="NORM_URI">@gndo:ref</field>
+					</groupEntity>
+				</item>
+			</list>
+		</MD_RELATEDWORK>
+
+		<MD_ORGANIZERORHOST>
+			<list>
+				<item>
+					<xpath>gndo:organizerOrHost</xpath>
+					<addToDefault>true</addToDefault>
+					<groupEntity type="CORPORATION">
+						<field name="MD_VALUE">normalize-space(exml:label | self::*[not(exml:label)])</field>
+						<field name="MD_NOTE">exml:note</field>
+						<field name="NORM_URI">@gndo:ref</field>
+					</groupEntity>
+				</item>
+			</list>
+		</MD_ORGANIZERORHOST>
+
+		<MD_EXHIBITOR>
+			<list>
+				<item>
+					<xpath>gndo:exhibitor</xpath>
+					<addToDefault>true</addToDefault>
+					<groupEntity type="CORPORATION">
+						<field name="MD_VALUE">normalize-space(self::*)</field>
+						<field name="NORM_URI">@gndo:ref</field>
+					</groupEntity>
+				</item>
+			</list>
+		</MD_EXHIBITOR>
+
+		<MD_INVENTOR>
+			<list>
+				<item>
+					<xpath>gndo:inventor</xpath>
+					<addToDefault>true</addToDefault>
+					<groupEntity type="PERSON">
+						<field name="MD_VALUE">normalize-space(self::*)</field>
+						<field name="NORM_URI">@gndo:ref</field>
+					</groupEntity>
+				</item>
+			</list>
+		</MD_INVENTOR>
+
+		<!-- Work realized by an expression -->
+		<MD_REALIZATIONOF>
+			<list>
+				<item>
+					<xpath>exml:realizationOf</xpath>
+					<addToDefault>true</addToDefault>
+					<groupEntity type="OTHER">
+						<field name="MD_VALUE">normalize-space(self::*)</field>
+						<field name="NORM_URI">@gndo:ref</field>
+					</groupEntity>
+				</item>
+			</list>
+		</MD_REALIZATIONOF>
+
+		<!-- Expression embodied by a manifestation -->
+		<MD_EMBODIMENTOF>
+			<list>
+				<item>
+					<xpath>exml:embodimentOf</xpath>
+					<addToDefault>true</addToDefault>
+					<groupEntity type="OTHER">
+						<field name="MD_VALUE">normalize-space(self::*)</field>
+						<field name="NORM_URI">@gndo:ref</field>
+					</groupEntity>
+				</item>
+			</list>
+		</MD_EMBODIMENTOF>
+
+		<!-- Work instantiated by a manifestation -->
+		<MD_INSTANCEOF>
+			<list>
+				<item>
+					<xpath>bf:instanceOf</xpath>
+					<addToDefault>true</addToDefault>
+					<groupEntity type="OTHER">
+						<field name="MD_VALUE">normalize-space(self::*)</field>
+						<field name="NORM_URI">@gndo:ref</field>
+					</groupEntity>
+				</item>
+			</list>
+		</MD_INSTANCEOF>
+
+		<MD_GEOJSON_POINT>
+			<list>
+				<item>
+					<xpath>geo:hasGeometry</xpath>
+					<addToDefault>false</addToDefault>
+					<geoJSONSource separator=" / " addSearchField="true">mods:coordinates/point</geoJSONSource>
+					<groupEntity type="LOCATION">
+						<field name="MD_VALUE">concat(wgs84:long, " / ", wgs84:lat)</field>
+					</groupEntity>
+				</item>
+			</list>
+		</MD_GEOJSON_POINT>
 
 	</fields>
 

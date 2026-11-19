@@ -76,7 +76,8 @@ public class XPathConfig {
             }
         } else if (SolrConstants.EAD_NODE_ID.equals(fieldname) || xpath.contains("ead:") || xpath.equals("@otherlevel")) {
             ret.add(FileFormat.EAD);
-        } else if (xpath.contains("exml:") || xpath.contains("gndo:") || xpath.contains("foaf:") || xpath.contains("owl:")) {
+        } else if (xpath.contains("exml:") || xpath.contains("gndo:") || xpath.contains("foaf:") || xpath.contains("owl:")
+                || xpath.contains("geo:") || xpath.contains("wgs84:") || xpath.contains("bf:")) {
             ret.add(FileFormat.ENTITYXML);
         } else if (xpath.contains("lido:")) {
             ret.add(FileFormat.LIDO);

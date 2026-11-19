@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Synthetic test data (no real entities) covering the non-person entity types of entityXML -->
+<entityXML xmlns="https://sub.uni-goettingen.de/met/standards/entity-xml#" xmlns:dc="http://purl.org/dc/elements/1.1/"
+    xmlns:foaf="http://xmlns.com/foaf/0.1/" xmlns:geo="http://www.opengis.net/ont/geosparql#"
+    xmlns:gndo="https://d-nb.info/standards/elementset/gnd#" xmlns:owl="http://www.w3.org/2002/07/owl#"
+    xmlns:skos="http://www.w3.org/2004/02/skos/core#" xmlns:wgs84="http://www.w3.org/2003/01/geo/wgs84_pos#"
+    xmlns:bf="http://id.loc.gov/ontologies/bibframe/">
+    <collection>
+        <metadata>
+            <title>Test delivery: other entity types</title>
+        </metadata>
+        <data>
+            <list>
+                <corporateBody xml:id="c0000000001" agency="create">
+                    <gndo:preferredName>Musterverein<gndo:counting>2.</gndo:counting></gndo:preferredName>
+                    <gndo:variantName>Verein der Muster</gndo:variantName>
+                    <gndo:abbreviatedName>MV</gndo:abbreviatedName>
+                    <gndo:temporaryName>Musterclub</gndo:temporaryName>
+                    <gndo:placeOfBusiness>Musterstadt</gndo:placeOfBusiness>
+                    <gndo:precedingCorporateBody>Alter Musterverein</gndo:precedingCorporateBody>
+                    <gndo:succeedingCorporateBody>Neuer Musterverein</gndo:succeedingCorporateBody>
+                    <gndo:dateOfEstablishment iso-date="1901-05-01"/>
+                    <gndo:dateOfTermination iso-notBefore="1950" iso-notAfter="1955"/>
+                    <gndo:topic>Vereinswesen</gndo:topic>
+                    <gndo:gndIdentifier>1234567-8</gndo:gndIdentifier>
+                    <dublicateGndIdentifier>8765432-1</dublicateGndIdentifier>
+                    <img src="https://example.com/logo.png"/>
+                    <ref target="https://example.com/verein"/>
+                    <revision status="opened"><change when="2026-11-19" who="AB">Datensatz angelegt</change></revision>
+                </corporateBody>
+                <place xml:id="g0000000001" agency="create">
+                    <gndo:preferredName>Musterdorf</gndo:preferredName>
+                    <gndo:hierarchicalSuperiorOfPlaceOrGeographicName>Musterland</gndo:hierarchicalSuperiorOfPlaceOrGeographicName>
+                    <gndo:precedingPlaceOrGeographicName>Altmusterdorf</gndo:precedingPlaceOrGeographicName>
+                    <gndo:dateOfEstablishmentAndTermination iso-from="1200" iso-to="1803"/>
+                    <geo:hasGeometry>
+                        <wgs84:lat>51.53</wgs84:lat>
+                        <wgs84:long>9.93</wgs84:long>
+                    </geo:hasGeometry>
+                </place>
+                <work xml:id="w0000000001" agency="create">
+                    <gndo:preferredName><gndo:title>Musterroman</gndo:title><gndo:subtitle>Eine Erzählung</gndo:subtitle></gndo:preferredName>
+                    <gndo:variantName>Der Musterroman</gndo:variantName>
+                    <gndo:firstAuthor>Mustermann, Max</gndo:firstAuthor>
+                    <gndo:author>Musterfrau, Erika</gndo:author>
+                    <gndo:contributor gndo:role="Illustrator">Beispiel, Anna</gndo:contributor>
+                    <gndo:editor>Probe, Paul</gndo:editor>
+                    <gndo:dateOfPublication iso-date="1899">1899</gndo:dateOfPublication>
+                    <gndo:formOfWorkAndExpression>Roman</gndo:formOfWorkAndExpression>
+                    <gndo:relatedWork><label>Musterroman, Teil 2</label><note>Fortsetzung</note></gndo:relatedWork>
+                    <gndo:literarySource>Mustersage</gndo:literarySource>
+                </work>
+                <event xml:id="e0000000001" agency="create">
+                    <gndo:preferredName>Mustertagung</gndo:preferredName>
+                    <gndo:dateOfConferenceOrEvent iso-from="2001-06-01" iso-to="2001-06-03"/>
+                    <gndo:organizerOrHost>Musterverein</gndo:organizerOrHost>
+                    <gndo:exhibitor>Mustermuseum</gndo:exhibitor>
+                    <gndo:place>Musterstadt</gndo:place>
+                </event>
+                <subjectHeading xml:id="s0000000001" agency="create">
+                    <gndo:preferredName>Musterkunde</gndo:preferredName>
+                    <gndo:broaderTerm gndo:type="generic">Kunde</gndo:broaderTerm>
+                    <gndo:narrowerTerm>Angewandte Musterkunde</gndo:narrowerTerm>
+                    <gndo:succeedingSubjectHeading>Neue Musterkunde</gndo:succeedingSubjectHeading>
+                    <gndo:inventor>Mustermann, Max</gndo:inventor>
+                    <gndo:homepage>https://example.com/musterkunde</gndo:homepage>
+                </subjectHeading>
+                <expression xml:id="x0000000001" agency="create">
+                    <gndo:preferredName>Musterroman (Deutsch)</gndo:preferredName>
+                    <realizationOf>Musterroman</realizationOf>
+                </expression>
+                <manifestation xml:id="m0000000001" agency="create">
+                    <dc:title>Musterroman, Erstausgabe</dc:title>
+                    <embodimentOf>Musterroman (Deutsch)</embodimentOf>
+                    <bf:instanceOf>Musterroman</bf:instanceOf>
+                </manifestation>
+            </list>
+        </data>
+    </collection>
+</entityXML>

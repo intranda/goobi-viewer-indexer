@@ -58,6 +58,8 @@ class XPathConfigTest extends AbstractTest {
         Assertions.assertTrue(XPathConfig.determineSupportedFormats("/exml:*/@xml:id", "PI").contains(FileFormat.ENTITYXML));
         Assertions.assertTrue(XPathConfig.determineSupportedFormats("foaf:page", "MD_HOMEPAGE").contains(FileFormat.ENTITYXML));
         Assertions.assertTrue(XPathConfig.determineSupportedFormats("owl:sameAs", "MD_SAMEAS").contains(FileFormat.ENTITYXML));
+        Assertions.assertTrue(XPathConfig.determineSupportedFormats("geo:hasGeometry", "MD_GEOJSON_POINT").contains(FileFormat.ENTITYXML));
+        Assertions.assertTrue(XPathConfig.determineSupportedFormats("bf:instanceOf", "MD_INSTANCEOF").contains(FileFormat.ENTITYXML));
     }
 
     /**

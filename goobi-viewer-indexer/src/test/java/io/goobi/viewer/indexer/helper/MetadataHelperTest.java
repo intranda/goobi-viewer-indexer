@@ -161,7 +161,8 @@ class MetadataHelperTest extends AbstractTest {
         Configuration shippedConfig = new Configuration(new File("src/main/resources/config_indexer.xml").getAbsolutePath());
         List<FieldConfig> fieldConfigurations = shippedConfig.getMetadataConfigurationManager().getConfigurationListForField("MD_AUTHOR");
         assertNotNull(fieldConfigurations);
-        assertEquals(1, fieldConfigurations.size());
+        // First item: MODS/MARC/EAD (a second item maps entityXML)
+        assertFalse(fieldConfigurations.isEmpty());
         FieldConfig fieldConfig = fieldConfigurations.get(0);
         assertNotNull(fieldConfig.getGroupEntity());
 
@@ -357,7 +358,8 @@ class MetadataHelperTest extends AbstractTest {
         List<FieldConfig> fieldConfigurations =
                 SolrIndexerDaemon.getInstance().getConfiguration().getMetadataConfigurationManager().getConfigurationListForField("MD_AUTHOR");
         assertNotNull(fieldConfigurations);
-        assertEquals(1, fieldConfigurations.size());
+        // First item: MODS/MARC/EAD (a second item maps entityXML)
+        assertFalse(fieldConfigurations.isEmpty());
         FieldConfig fieldConfig = fieldConfigurations.get(0);
         assertNotNull(fieldConfig.getGroupEntity());
 
@@ -440,7 +442,8 @@ class MetadataHelperTest extends AbstractTest {
         List<FieldConfig> fieldConfigurations =
                 SolrIndexerDaemon.getInstance().getConfiguration().getMetadataConfigurationManager().getConfigurationListForField("MD_AUTHOR");
         assertNotNull(fieldConfigurations);
-        assertEquals(1, fieldConfigurations.size());
+        // First item: MODS/MARC/EAD (a second item maps entityXML)
+        assertFalse(fieldConfigurations.isEmpty());
         FieldConfig fieldConfig = fieldConfigurations.get(0);
         assertNotNull(fieldConfig.getGroupEntity());
         fieldConfig.setLowercase(true);

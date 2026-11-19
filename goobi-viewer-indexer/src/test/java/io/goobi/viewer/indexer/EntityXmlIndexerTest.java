@@ -211,6 +211,112 @@ class EntityXmlIndexerTest extends AbstractSolrEnabledTest {
     }
 
     /**
+     * @see EntityXmlIndexer#index(Document,Map,ISolrWriteStrategy)
+     * @verifies index other entity types correctly
+     */
+    @Test
+    void index_shouldIndexOtherEntityTypesCorrectly() throws Exception {
+        List<Document> recordDocs = JDomXP.splitEntityXmlFile(new File("src/test/resources/entityXML/entityxml_other_entities.xml"));
+        Assertions.assertEquals(7, recordDocs.size());
+        Map<String, Path> dataFolders = new HashMap<>();
+        for (Document recordDoc : recordDocs) {
+            IndexingResult result = new EntityXmlIndexer(hotfolder).index(recordDoc, dataFolders, null);
+            Assertions.assertEquals(IndexingResultStatus.OK, result.getStatus(), result.getError());
+        }
+
+        // Corporate body: plain text name with counting
+        {
+            SolrDocument doc = getTopDoc("c0000000001");
+            Assertions.assertEquals("CorporateBody", doc.getFieldValue(SolrConstants.DOCSTRCT));
+            Assertions.assertEquals("Musterverein 2.", doc.getFieldValue(SolrConstants.LABEL));
+            assertFieldValues(doc, "MD_PREFERREDNAME", "Musterverein 2.");
+            assertFieldValues(doc, "MD_VARIANTNAME", "Verein der Muster");
+            assertFieldValues(doc, "MD_ABBREVIATEDNAME", "MV");
+            assertFieldValues(doc, "MD_TEMPORARYNAME", "Musterclub");
+            assertFieldValues(doc, "MD_PLACEOFBUSINESS", "Musterstadt");
+            assertFieldValues(doc, "MD_PREDECESSOR", "Alter Musterverein");
+            assertFieldValues(doc, "MD_SUCCESSOR", "Neuer Musterverein");
+            assertFieldValues(doc, "MD_DATEOFESTABLISHMENT", "1901-05-01");
+            assertFieldValues(doc, "MD_DATEOFTERMINATION", "1950/1955");
+            assertFieldValues(doc, "MD_TOPIC", "Vereinswesen");
+            assertFieldValues(doc, "MD_GNDIDENTIFIER", "1234567-8");
+            assertFieldValues(doc, "MD_GNDIDENTIFIER_DUPLICATE", "8765432-1");
+            assertFieldValues(doc, "MD_IMAGE", "https://example.com/logo.png");
+            assertFieldValues(doc, "MD_WEBRESOURCE", "https://example.com/verein");
+            Assertions.assertEquals("precedingCorporateBody",
+                    getGroupedDoc(doc, "MD_PREDECESSOR").getFirstValue("MD_RELATIONSHIPTYPE"));
+        }
+
+        // Place: coordinates
+        {
+            SolrDocument doc = getTopDoc("g0000000001");
+            Assertions.assertEquals("Place", doc.getFieldValue(SolrConstants.DOCSTRCT));
+            Assertions.assertEquals("Musterdorf", doc.getFieldValue(SolrConstants.LABEL));
+            assertFieldValues(doc, "MD_HIERARCHICALSUPERIORPLACE", "Musterland");
+            assertFieldValues(doc, "MD_PREDECESSOR", "Altmusterdorf");
+            assertFieldValues(doc, "MD_DATEOFESTABLISHMENTANDTERMINATION", "1200/1803");
+            // GeoJSON with longitude first
+            Assertions.assertTrue(String.valueOf(doc.getFirstValue("MD_GEOJSON_POINT")).contains("\"coordinates\":[9.93,51.53]"),
+                    String.valueOf(doc.getFirstValue("MD_GEOJSON_POINT")));
+        }
+
+        // Work: title with subtitle, persons
+        {
+            SolrDocument doc = getTopDoc("w0000000001");
+            Assertions.assertEquals("Work", doc.getFieldValue(SolrConstants.DOCSTRCT));
+            Assertions.assertEquals("Musterroman : Eine Erzählung", doc.getFieldValue(SolrConstants.LABEL));
+            assertFieldValues(doc, "MD_VARIANTNAME", "Der Musterroman");
+            assertFieldValues(doc, "MD_AUTHOR", "Mustermann, Max", "Musterfrau, Erika");
+            assertFieldValues(doc, "MD_CONTRIBUTOR", "Beispiel, Anna");
+            assertFieldValues(doc, "MD_EDITOR", "Probe, Paul");
+            assertFieldValues(doc, "MD_DATEOFPUBLICATION", "1899");
+            assertFieldValues(doc, "MD_FORMOFWORK", "Roman");
+            assertFieldValues(doc, "MD_RELATEDWORK", "Musterroman, Teil 2", "Mustersage");
+            SolrDocument preferredName = getGroupedDoc(doc, "MD_PREFERREDNAME");
+            Assertions.assertEquals("Musterroman", preferredName.getFirstValue("MD_MAINTITLE"));
+            Assertions.assertEquals("Eine Erzählung", preferredName.getFirstValue("MD_SUBTITLE"));
+            Assertions.assertEquals("firstAuthor", getGroupedDoc(doc, "MD_AUTHOR", "Mustermann, Max").getFirstValue("MD_ROLE"));
+            Assertions.assertEquals("Illustrator", getGroupedDoc(doc, "MD_CONTRIBUTOR").getFirstValue("MD_ROLE"));
+            Assertions.assertEquals("Fortsetzung", getGroupedDoc(doc, "MD_RELATEDWORK", "Musterroman, Teil 2").getFirstValue("MD_NOTE"));
+        }
+
+        // Event
+        {
+            SolrDocument doc = getTopDoc("e0000000001");
+            Assertions.assertEquals("Event", doc.getFieldValue(SolrConstants.DOCSTRCT));
+            Assertions.assertEquals("Mustertagung", doc.getFieldValue(SolrConstants.LABEL));
+            assertFieldValues(doc, "MD_DATEOFCONFERENCEOREVENT", "2001-06-01/2001-06-03");
+            assertFieldValues(doc, "MD_ORGANIZERORHOST", "Musterverein");
+            assertFieldValues(doc, "MD_EXHIBITOR", "Mustermuseum");
+            assertFieldValues(doc, "MD_PLACE", "Musterstadt");
+        }
+
+        // Subject heading
+        {
+            SolrDocument doc = getTopDoc("s0000000001");
+            Assertions.assertEquals("SubjectHeading", doc.getFieldValue(SolrConstants.DOCSTRCT));
+            assertFieldValues(doc, "MD_BROADERTERM", "Kunde");
+            assertFieldValues(doc, "MD_NARROWERTERM", "Angewandte Musterkunde");
+            assertFieldValues(doc, "MD_SUCCESSOR", "Neue Musterkunde");
+            assertFieldValues(doc, "MD_INVENTOR", "Mustermann, Max");
+            assertFieldValues(doc, "MD_HOMEPAGE", "https://example.com/musterkunde");
+            Assertions.assertEquals("generic", getGroupedDoc(doc, "MD_BROADERTERM").getFirstValue("MD_TYPE"));
+        }
+
+        // Expression and manifestation (manifestation has dc:title instead of a preferred name)
+        {
+            SolrDocument doc = getTopDoc("x0000000001");
+            Assertions.assertEquals("Expression", doc.getFieldValue(SolrConstants.DOCSTRCT));
+            assertFieldValues(doc, "MD_REALIZATIONOF", "Musterroman");
+            doc = getTopDoc("m0000000001");
+            Assertions.assertEquals("Manifestation", doc.getFieldValue(SolrConstants.DOCSTRCT));
+            Assertions.assertEquals("Musterroman, Erstausgabe", doc.getFieldValue(SolrConstants.LABEL));
+            assertFieldValues(doc, "MD_EMBODIMENTOF", "Musterroman (Deutsch)");
+            assertFieldValues(doc, "MD_INSTANCEOF", "Musterroman");
+        }
+    }
+
+    /**
      * Indexes all records from the test file.
      *
      * @throws Exception

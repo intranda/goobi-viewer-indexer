@@ -209,6 +209,7 @@ public class EntityXmlIndexer extends Indexer {
      * @should index record correctly
      * @should update record correctly
      * @should not index internal notes
+     * @should index other entity types correctly
      */
     public IndexingResult index(Document doc, Map<String, Path> dataFolders, final ISolrWriteStrategy inWriteStrategy) {
         IndexingResult ret = new IndexingResult();
