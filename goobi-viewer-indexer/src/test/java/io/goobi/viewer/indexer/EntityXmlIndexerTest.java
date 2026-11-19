@@ -318,10 +318,10 @@ class EntityXmlIndexerTest extends AbstractSolrEnabledTest {
 
     /**
      * @see EntityXmlIndexer#index(Document,Map,ISolrWriteStrategy)
-     * @verifies index approximate dates and labelled relations correctly
+     * @verifies index approximate dates and labeled relations correctly
      */
     @Test
-    void index_shouldIndexApproximateDatesAndLabelledRelationsCorrectly() throws Exception {
+    void index_shouldIndexApproximateDatesAndLabeledRelationsCorrectly() throws Exception {
         List<Document> recordDocs = JDomXP.splitEntityXmlFile(new File("src/test/resources/entityXML/entityxml_value_variants.xml"));
         Assertions.assertEquals(1, recordDocs.size());
         IndexingResult result = new EntityXmlIndexer(hotfolder).index(recordDocs.get(0), new HashMap<>(), null);
@@ -344,6 +344,32 @@ class EntityXmlIndexerTest extends AbstractSolrEnabledTest {
         Assertions.assertEquals("https://example.com/terminology/1", relDoc.getFirstValue("MD_URI"));
         Assertions.assertEquals("https://example.com/terminology/2",
                 getGroupedDoc(doc, "MD_RELATEDPERSON", "Beispiel, Berta").getFirstValue("MD_URI"));
+    }
+
+    /**
+     * @see EntityXmlIndexer#index(Document,Map,ISolrWriteStrategy)
+     * @verifies index vocabulary codes and pseudonym links correctly
+     */
+    @Test
+    void index_shouldIndexVocabularyCodesAndPseudonymLinksCorrectly() throws Exception {
+        List<Document> recordDocs = JDomXP.splitEntityXmlFile(new File("src/test/resources/entityXML/entityxml_value_variants.xml"));
+        IndexingResult result = new EntityXmlIndexer(hotfolder).index(recordDocs.get(0), new HashMap<>(), null);
+        Assertions.assertEquals(IndexingResultStatus.OK, result.getStatus(), result.getError());
+
+        SolrDocument doc = getTopDoc("p0000000099");
+        assertFieldValues(doc, "MD_SEX", "divers");
+        // Several URIs in one @gndo:term attribute
+        assertFieldValues(doc, "MD_SEX_CODE", "male female");
+        assertFieldValues(doc, "MD_GNDSUBJECTCATEGORY", "Personen zu Soziologie");
+        assertFieldValues(doc, "MD_GNDSUBJECTCATEGORY_CODE", "9.5p");
+        // From @gndo:code instead of the text
+        assertFieldValues(doc, "MD_LANGUAGECODE", "fre");
+        assertFieldValues(doc, "MD_PSEUDONYM", "Fritz Figur");
+        Assertions.assertEquals("https://example.com/terminology/3", getGroupedDoc(doc, "MD_PSEUDONYM").getFirstValue("MD_URI"));
+
+        // Language code from the vocabulary URI
+        indexAll();
+        assertFieldValues(getTopDoc(PI_FULL), "MD_LANGUAGECODE", "deu");
     }
 
     /**

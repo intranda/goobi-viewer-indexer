@@ -22,6 +22,10 @@
                     </gndo:relatesTo>
                     <gndo:relatesTo gndo:code="rela" ref="https://example.com/terminology/2">Beispiel, Berta</gndo:relatesTo>
                     <gndo:relatesTo gndo:code="rela" ref="https://example.com/terminology/2">Beispiel, Berta</gndo:relatesTo>
+                    <gndo:pseudonym ref="https://example.com/terminology/3">Fritz Figur</gndo:pseudonym>
+                    <gndo:gender gndo:term="https://d-nb.info/standards/vocab/gnd/gender#male https://d-nb.info/standards/vocab/gnd/gender#female">divers</gndo:gender>
+                    <gndo:gndSubjectCategory gndo:term="https://d-nb.info/standards/vocab/gnd/gnd-sc#9.5p">Personen zu Soziologie</gndo:gndSubjectCategory>
+                    <gndo:languageCode gndo:code="fre">fr</gndo:languageCode>
                 </person>
             </list>
         </data>

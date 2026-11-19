@@ -4787,6 +4787,11 @@
 				<item>
 					<xpath>gndo:pseudonym</xpath>
 					<addToDefault>true</addToDefault>
+					<groupEntity type="PERSON">
+						<field name="MD_VALUE">normalize-space(self::*)</field>
+						<field name="NORM_URI">@gndo:ref</field>
+						<field name="MD_URI">@ref</field>
+					</groupEntity>
 				</item>
 			</list>
 		</MD_PSEUDONYM>
@@ -4820,11 +4825,13 @@
 
 
 
+		<!-- ISO 639-2 code from @gndo:term (e.g. '.../iso639-2/deu') or @gndo:code (e.g. 'fre'), else the text -->
 		<MD_LANGUAGECODE>
 			<list>
 				<item>
-					<xpath>gndo:languageCode</xpath>
+					<xpath>gndo:languageCode/@gndo:term | gndo:languageCode/@gndo:code | gndo:languageCode[not(@gndo:term or @gndo:code)]</xpath>
 					<addToDefault>false</addToDefault>
+					<replace regex="^.*[#/]"></replace>
 				</item>
 			</list>
 		</MD_LANGUAGECODE>
@@ -4837,6 +4844,28 @@
 				</item>
 			</list>
 		</MD_GNDSUBJECTCATEGORY>
+
+		<!-- Code from @gndo:term, e.g. '9.5p'; several URIs in one attribute become one space-separated value -->
+		<MD_GNDSUBJECTCATEGORY_CODE>
+			<list>
+				<item>
+					<xpath>gndo:gndSubjectCategory/@gndo:term</xpath>
+					<addToDefault>false</addToDefault>
+					<replace regex="[^ ]*#"></replace>
+				</item>
+			</list>
+		</MD_GNDSUBJECTCATEGORY_CODE>
+
+		<!-- Code from @gndo:term, e.g. 'male'; several URIs in one attribute become one space-separated value -->
+		<MD_SEX_CODE>
+			<list>
+				<item>
+					<xpath>gndo:gender/@gndo:term</xpath>
+					<addToDefault>false</addToDefault>
+					<replace regex="[^ ]*#"></replace>
+				</item>
+			</list>
+		</MD_SEX_CODE>
 
 		<!-- Code only, e.g. 'XA-DE' ('ZZ' = unknown) -->
 		<MD_GEOGRAPHICAREACODE>
