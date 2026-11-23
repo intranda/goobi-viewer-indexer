@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<monuments xmlns:gml="http://www.opengis.net/gml/3.2" xmlns="http://denkxweb.de/">
+	<monument gml:id="monument.90000001" type="Baudenkmal">
+		<recId>90000001</recId>
+		<country>DE</country>
+		<name>Local images record 1</name>
+		<images>
+			<image preferred="true">
+				<standard url="90000001_1.jpg" type="image/jpeg" />
+				<description>first image</description>
+			</image>
+			<image preferred="false">
+				<standard url="90000001_2.jpg" type="image/jpeg" />
+				<description>second image</description>
+			</image>
+		</images>
+	</monument>
+	<monument gml:id="monument.90000002" type="Baudenkmal">
+		<recId>90000002</recId>
+		<country>DE</country>
+		<name>Local images record 2</name>
+		<images>
+			<image preferred="true">
+				<standard url="90000002_1.jpg" type="image/jpeg" />
+				<description>only image</description>
+			</image>
+		</images>
+	</monument>
+</monuments>

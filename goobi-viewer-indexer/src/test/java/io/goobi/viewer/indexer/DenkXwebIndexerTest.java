@@ -22,6 +22,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
@@ -101,6 +102,41 @@ class DenkXwebIndexerTest extends AbstractSolrEnabledTest {
             Assertions.assertEquals("Baudenkmal", doc.getFieldValue(SolrConstants.DOCSTRCT));
             Assertions.assertEquals("Baudenkmal", doc.getFieldValue(SolrConstants.DOCSTRCT_TOP));
         }
+    }
+
+    /**
+     * @see DenkXwebIndexer#index(Document,Map,ISolrWriteStrategy,int,boolean)
+     * @verifies return media file names of local images
+     */
+    @Test
+    void index_shouldReturnMediaFileNamesOfLocalImages() throws Exception {
+        List<Document> recordDocs = JDomXP.splitDenkXwebFile(new File("src/test/resources/DenkXweb/denkxweb_local_images.xml"));
+        Assertions.assertEquals(2, recordDocs.size());
+
+        IndexingResult result = new DenkXwebIndexer(hotfolder).index(recordDocs.get(0), new HashMap<>(), null, 1, false);
+        Assertions.assertEquals(IndexingResultStatus.OK, result.getStatus(), result.getError());
+        Assertions.assertEquals(Set.of("90000001_1.jpg", "90000001_2.jpg"), result.getMediaFileNames());
+    }
+
+    /**
+     * @see DenkXwebIndexer#index(Document,Map,ISolrWriteStrategy,int,boolean)
+     * @verifies not include media file names of previously indexed records
+     */
+    @Test
+    void index_shouldNotIncludeMediaFileNamesOfPreviouslyIndexedRecords() throws Exception {
+        List<Document> recordDocs = JDomXP.splitDenkXwebFile(new File("src/test/resources/DenkXweb/denkxweb_local_images.xml"));
+        Assertions.assertEquals(2, recordDocs.size());
+
+        // Same instance for both records, as in DenkXwebIndexer.addToIndex()
+        DenkXwebIndexer indexer = new DenkXwebIndexer(hotfolder);
+        IndexingResult result1 = indexer.index(recordDocs.get(0), new HashMap<>(), null, 1, false);
+        Assertions.assertEquals(IndexingResultStatus.OK, result1.getStatus(), result1.getError());
+        IndexingResult result2 = indexer.index(recordDocs.get(1), new HashMap<>(), null, 1, false);
+        Assertions.assertEquals(IndexingResultStatus.OK, result2.getStatus(), result2.getError());
+
+        Assertions.assertEquals(Set.of("90000002_1.jpg"), result2.getMediaFileNames());
+        // Result of the first record must not be modified by indexing the second one
+        Assertions.assertEquals(Set.of("90000001_1.jpg", "90000001_2.jpg"), result1.getMediaFileNames());
     }
 
     /**

@@ -267,10 +267,13 @@ public class LidoIndexer extends Indexer {
      * @return {@link IndexingResult}
      * @should index record correctly
      * @should update record correctly
+     * @should not include media file names of previously indexed records
      */
     public IndexingResult index(Document doc, Map<String, Path> dataFolders, ISolrWriteStrategy inWriteStrategy, int pageCountStart,
             List<String> imageXPaths, boolean downloadExternalImages, boolean useOldImageFolderIfAvailable) {
         IndexingResult ret = new IndexingResult();
+        // Instance is reused for all records of a multi-record file; the whitelist must only contain this record's files
+        imgFileNames.clear();
         String pi = null;
         ISolrWriteStrategy writeStrategy = inWriteStrategy;
         try {
@@ -395,7 +398,7 @@ public class LidoIndexer extends Indexer {
             ret.setDocStructType(indexObj.getType()).setNumPages(recordNumPages).setNumSourcePages(recordNumSourcePages);
 
             // Set image file names belonging to this record
-            ret.setMediaImageFileNames(imgFileNames);
+            ret.setMediaImageFileNames(new HashSet<>(imgFileNames));
             logger.debug("Finished writing data for '{}' to Solr.", pi);
         } catch (FatalIndexerException | IndexerException | IOException | JDOMException | SolrServerException | SolrException e) {
             if ("No image resource sets found.".equals(e.getMessage())) {

@@ -43,6 +43,7 @@ import io.goobi.viewer.indexer.model.IndexingResult.IndexingResultStatus;
 import io.goobi.viewer.indexer.model.SolrConstants;
 import io.goobi.viewer.indexer.model.SolrConstants.DocType;
 import io.goobi.viewer.indexer.model.datarepository.DataRepository;
+import io.goobi.viewer.indexer.model.writestrategy.ISolrWriteStrategy;
 
 class LidoIndexerTest extends AbstractSolrEnabledTest {
 
@@ -105,6 +106,32 @@ class LidoIndexerTest extends AbstractSolrEnabledTest {
 
         Assertions.assertEquals("video/mp4", doc.getFieldValue(SolrConstants.MIMETYPE));
         Assertions.assertEquals("Film77.mp4", doc.getFieldValue(SolrConstants.FILENAME + "_MP4"));
+    }
+
+    /**
+     * @see LidoIndexer#index(Document,Map,ISolrWriteStrategy,int,List,boolean,boolean)
+     * @verifies not include media file names of previously indexed records
+     */
+    @Test
+    void index_shouldNotIncludeMediaFileNamesOfPreviouslyIndexedRecords() throws Exception {
+        List<Document> lidoDocs = JDomXP.splitLidoFile(lidoFile);
+        List<String> imageXPaths = SolrIndexerDaemon.getInstance().getConfiguration().getStringList("init.lido.imageXPath");
+
+        // Same instance for both records, as in LidoIndexer.addToIndex()
+        LidoIndexer indexer = new LidoIndexer(hotfolder);
+        IndexingResult result1 = indexer.index(lidoDocs.get(0), new HashMap<>(), null, 1, imageXPaths, false, false);
+        Assertions.assertEquals(IndexingResultStatus.OK, result1.getStatus(), result1.getError());
+        Set<String> fileNames1 = new HashSet<>(result1.getMediaFileNames());
+        Assertions.assertFalse(fileNames1.isEmpty());
+
+        IndexingResult result2 = indexer.index(lidoDocs.get(1), new HashMap<>(), null, 1, imageXPaths, false, false);
+        Assertions.assertEquals(IndexingResultStatus.OK, result2.getStatus(), result2.getError());
+        Assertions.assertFalse(result2.getMediaFileNames().isEmpty());
+        for (String fileName : fileNames1) {
+            Assertions.assertFalse(result2.getMediaFileNames().contains(fileName), fileName);
+        }
+        // Result of the first record must not be modified by indexing the second one
+        Assertions.assertEquals(fileNames1, result1.getMediaFileNames());
     }
 
     /**

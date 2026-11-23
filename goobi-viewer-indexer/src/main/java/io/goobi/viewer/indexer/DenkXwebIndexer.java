@@ -233,10 +233,14 @@ public class DenkXwebIndexer extends Indexer {
      * @return {@link IndexingResult}
      * @should index record correctly
      * @should update record correctly
+     * @should return media file names of local images
+     * @should not include media file names of previously indexed records
      */
     public IndexingResult index(Document doc, Map<String, Path> dataFolders, final ISolrWriteStrategy inWriteStrategy, int pageCountStart,
             boolean downloadExternalImages) {
         IndexingResult ret = new IndexingResult();
+        // Instance is reused for all records of a multi-record file; the whitelist must only contain this record's files
+        imgFileNames.clear();
         String pi = null;
         ISolrWriteStrategy writeStrategy = inWriteStrategy;
         try {
@@ -355,7 +359,7 @@ public class DenkXwebIndexer extends Indexer {
             ret.setDocStructType(indexObj.getType()).setNumPages(recordNumPages).setNumSourcePages(recordNumSourcePages);
 
             // Set image file names belonging to this record
-            ret.setMediaImageFileNames(imgFileNames);
+            ret.setMediaImageFileNames(new HashSet<>(imgFileNames));
             logger.debug("Finished writing data for '{}' to Solr.", pi);
         } catch (FatalIndexerException | IndexerException | IOException | JDOMException | SolrServerException | SolrException e) {
             if ("No image resource sets found.".equals(e.getMessage())) {
@@ -510,6 +514,7 @@ public class DenkXwebIndexer extends Indexer {
         if (StringUtils.isNotEmpty(url)) {
             handleImageUrl(url, ret.getDoc(), fileName, dataFolders.get(DataRepository.PARAM_MEDIA), downloadExternalImages, false,
                     "true".equals(eleImage.getAttributeValue("preferred")));
+            imgFileNames.add(fileName);
         }
 
         addPageAdditionalTechMetadata(ret, dataFolders, fileName);
